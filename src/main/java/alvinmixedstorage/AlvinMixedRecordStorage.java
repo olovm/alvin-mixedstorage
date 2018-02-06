@@ -23,7 +23,7 @@ import java.util.Collection;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
-public class AlvinMixedRecordStorage implements RecordStorage {
+public final class AlvinMixedRecordStorage implements RecordStorage {
 
 	private static final String PLACE = "place";
 	private RecordStorage basicStorage;
