@@ -1,4 +1,4 @@
-package alvinmixedstorage;
+package se.uu.ub.cora.alvin.mixedstorage;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 

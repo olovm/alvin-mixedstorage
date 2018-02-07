@@ -1,4 +1,4 @@
-package alvinmixedstorage;
+package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
