@@ -25,24 +25,32 @@ import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public final class AlvinMixedRecordStorage implements RecordStorage {
 
+	private static final String COUNTRY = "country";
 	private static final String PLACE = "place";
 	private RecordStorage basicStorage;
-	private RecordStorage alvinToCoraStorage;
+	private RecordStorage alvinFedoraToCoraStorage;
+	private RecordStorage alvinDbToCoraStorage;
 
-	public static RecordStorage usingBasicAndAlvinToCoraStorage(RecordStorage basicStorage,
-			RecordStorage alvinToCoraStorage) {
-		return new AlvinMixedRecordStorage(basicStorage, alvinToCoraStorage);
+	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
+			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
+		return new AlvinMixedRecordStorage(basicStorage, alvinFedoraToCoraStorage,
+				alvinDbToCoraStorage);
 	}
 
-	private AlvinMixedRecordStorage(RecordStorage basicStorage, RecordStorage alvinToCoraStorage) {
+	private AlvinMixedRecordStorage(RecordStorage basicStorage,
+			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
 		this.basicStorage = basicStorage;
-		this.alvinToCoraStorage = alvinToCoraStorage;
+		this.alvinFedoraToCoraStorage = alvinFedoraToCoraStorage;
+		this.alvinDbToCoraStorage = alvinDbToCoraStorage;
 	}
 
 	@Override
 	public DataGroup read(String type, String id) {
 		if (PLACE.equals(type)) {
-			return alvinToCoraStorage.read(type, id);
+			return alvinFedoraToCoraStorage.read(type, id);
+		}
+		if (COUNTRY.equals(type)) {
+			return alvinDbToCoraStorage.read(type, id);
 		}
 		return basicStorage.read(type, id);
 	}
@@ -72,7 +80,10 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	@Override
 	public Collection<DataGroup> readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
-			return alvinToCoraStorage.readList(type, filter);
+			return alvinFedoraToCoraStorage.readList(type, filter);
+		}
+		if (COUNTRY.equals(type)) {
+			return alvinDbToCoraStorage.readList(type, filter);
 		}
 		return basicStorage.readList(type, filter);
 	}
