@@ -25,10 +25,11 @@ import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public final class AlvinMixedRecordStorage implements RecordStorage {
 
-	private static final String COUNTRY = "country";
 	private static final String PLACE = "place";
 	private RecordStorage basicStorage;
 	private RecordStorage alvinFedoraToCoraStorage;
+
+	// Left here since it is probably going to be needed again
 	private RecordStorage alvinDbToCoraStorage;
 
 	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
@@ -48,9 +49,6 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	public DataGroup read(String type, String id) {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.read(type, id);
-		}
-		if (COUNTRY.equals(type)) {
-			return alvinDbToCoraStorage.read(type, id);
 		}
 		return basicStorage.read(type, id);
 	}
@@ -81,9 +79,6 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	public Collection<DataGroup> readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.readList(type, filter);
-		}
-		if (COUNTRY.equals(type)) {
-			return alvinDbToCoraStorage.readList(type, filter);
 		}
 		return basicStorage.readList(type, filter);
 	}

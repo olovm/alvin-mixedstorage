@@ -107,19 +107,6 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
-	public void readCountryGoesToDbStorage() throws Exception {
-		RecordStorageSpyData expectedData = new RecordStorageSpyData();
-		expectedData.type = "country";
-		expectedData.id = "someId";
-		expectedData.answer = alvinMixedRecordStorage.read(expectedData.type, expectedData.id);
-
-		expectedData.calledMethod = "read";
-		assertNoInteractionWithStorage(basicStorage);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
-		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
-	}
-
-	@Test
 	public void readListGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
@@ -145,20 +132,6 @@ public class AlvinMixedRecordStorageTest {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
-	}
-
-	@Test
-	public void readCountryListGoesToAlvinToCoraStorage() throws Exception {
-		RecordStorageSpyData expectedData = new RecordStorageSpyData();
-		expectedData.type = "country";
-		expectedData.filter = DataGroup.withNameInData("filter");
-		expectedData.answer = alvinMixedRecordStorage.readList(expectedData.type,
-				expectedData.filter);
-
-		expectedData.calledMethod = "readList";
-		assertNoInteractionWithStorage(basicStorage);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
-		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
 	}
 
 	@Test
