@@ -45,12 +45,12 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
-	public void testInit() throws Exception {
+	public void testInit() {
 		assertNotNull(alvinMixedRecordStorage);
 	}
 
 	@Test
-	public void alvinMixedStorageImplementsRecordStorage() throws Exception {
+	public void alvinMixedStorageImplementsRecordStorage() {
 		assertTrue(alvinMixedRecordStorage instanceof RecordStorage);
 	}
 
@@ -112,7 +112,7 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.type = "someType";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = alvinMixedRecordStorage.readList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
@@ -126,7 +126,7 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.type = "place";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = alvinMixedRecordStorage.readList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readList";
 		assertNoInteractionWithStorage(basicStorage);
@@ -203,7 +203,7 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.type = "someType";
 		expectedData.filter = DataGroup.withNameInData("filter");
 		expectedData.answer = alvinMixedRecordStorage.readAbstractList(expectedData.type,
-				expectedData.filter);
+				expectedData.filter).listOfDataGroups;
 
 		expectedData.calledMethod = "readAbstractList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);

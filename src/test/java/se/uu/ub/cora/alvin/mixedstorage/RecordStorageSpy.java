@@ -2,8 +2,10 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public class RecordStorageSpy implements RecordStorage {
@@ -62,7 +64,7 @@ public class RecordStorageSpy implements RecordStorage {
 	}
 
 	@Override
-	public Collection<DataGroup> readList(String type, DataGroup filter) {
+	public SpiderReadResult readList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readList";
@@ -70,11 +72,13 @@ public class RecordStorageSpy implements RecordStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		return readList;
+		SpiderReadResult spiderReadResult = new SpiderReadResult();
+		spiderReadResult.listOfDataGroups = (List) readList;
+		return spiderReadResult;
 	}
 
 	@Override
-	public Collection<DataGroup> readAbstractList(String type, DataGroup filter) {
+	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readAbstractList";
@@ -82,7 +86,9 @@ public class RecordStorageSpy implements RecordStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		return readList;
+		SpiderReadResult spiderReadResult = new SpiderReadResult();
+		spiderReadResult.listOfDataGroups = (List) readList;
+		return spiderReadResult;
 	}
 
 	@Override
