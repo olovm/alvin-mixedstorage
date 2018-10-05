@@ -23,17 +23,17 @@
 	<parent>
 		<groupId>se.uu.ub.cora</groupId>
 		<artifactId>cora-parent</artifactId>
-		<version>0.6-SNAPSHOT</version>
+		<version>0.7-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>alvinmixedstorage</artifactId>
-	<version>0.2-SNAPSHOT</version>
+	<version>0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Alvin Mixed Storage</name>
 
 	<properties>
-		<spider.version>0.14-SNAPSHOT</spider.version>
+		<spider.version>0.15-SNAPSHOT</spider.version>
 	</properties>
 
 	<scm>
@@ -41,21 +41,6 @@
 		<developerConnection>scm:git:https://github.com/lsu-ub-uu/alvin-mixedstorage.git</developerConnection>
 		<url>https://github.com/lsu-ub-uu/alvin-mixedstorage.git</url>
 	</scm>
-
-	<repositories>
-		<repository>
-			<id>maven-public</id>
-			<name>LSU Nexus Repository</name>
-			<url>http://epc.ub.uu.se/nexus/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<updatePolicy>daily</updatePolicy>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
