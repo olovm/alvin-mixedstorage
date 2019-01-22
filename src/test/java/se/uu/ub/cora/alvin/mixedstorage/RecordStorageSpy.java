@@ -73,7 +73,7 @@ public class RecordStorageSpy implements RecordStorage {
 		readList.add(dummyDataGroup);
 		data.answer = readList;
 		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List) readList;
+		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
 		return spiderReadResult;
 	}
 
@@ -87,7 +87,7 @@ public class RecordStorageSpy implements RecordStorage {
 		readList.add(dummyDataGroup);
 		data.answer = readList;
 		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List) readList;
+		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
 		return spiderReadResult;
 	}
 
