@@ -32,7 +32,7 @@
 	<name>Alvin Mixed Storage</name>
 
 	<properties>
-		<spider.version>0.17.0</spider.version>
+		<spider.version>0.18.0</spider.version>
 	</properties>
 
 	<scm>
