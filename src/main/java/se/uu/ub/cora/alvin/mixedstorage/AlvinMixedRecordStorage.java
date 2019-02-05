@@ -73,7 +73,12 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	@Override
 	public void update(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		if (PLACE.equals(type)) {
+			alvinFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList,
+					dataDivider);
+		} else {
+			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		}
 	}
 
 	@Override
