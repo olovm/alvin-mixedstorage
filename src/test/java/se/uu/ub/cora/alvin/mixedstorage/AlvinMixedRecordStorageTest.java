@@ -198,6 +198,28 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
+	public void updatePlaceGoesToFedoraStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "place";
+		expectedData.id = "someId";
+		expectedData.record = DataGroup.withNameInData("dummyRecord");
+		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
+		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.dataDivider = "someDataDivider";
+		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		expectedData.calledMethod = "update";
+		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinDbToCoraStorage);
+
+		// assertNoInteractionWithStorage(basicStorage);
+		// assertNoInteractionWithStorage(alvinDbToCoraStorage);
+		// assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+	}
+
+	@Test
 	public void readAbstractListGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
