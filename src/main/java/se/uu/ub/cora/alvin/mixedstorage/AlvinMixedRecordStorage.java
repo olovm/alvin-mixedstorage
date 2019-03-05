@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -57,7 +57,12 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	@Override
 	public void create(String type, String id, DataGroup record, DataGroup collectedTerms,
 			DataGroup linkList, String dataDivider) {
-		basicStorage.create(type, id, record, collectedTerms, linkList, dataDivider);
+		if (PLACE.equals(type)) {
+			alvinFedoraToCoraStorage.create(type, id, record, collectedTerms, linkList,
+					dataDivider);
+		} else {
+			basicStorage.create(type, id, record, collectedTerms, linkList, dataDivider);
+		}
 	}
 
 	@Override
