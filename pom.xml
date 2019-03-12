@@ -32,7 +32,8 @@
 	<name>Alvin Mixed Storage</name>
 
 	<properties>
-		<spider.version>0.18.0</spider.version>
+		<httphandler.version>0.5.1</httphandler.version>
+		<spider.version>0.20.0</spider.version>
 	</properties>
 
 	<scm>
@@ -43,6 +44,12 @@
   </scm>
 
 	<dependencies>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>httphandler</artifactId>
+			<version>${httphandler.version}</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>spider</artifactId>
