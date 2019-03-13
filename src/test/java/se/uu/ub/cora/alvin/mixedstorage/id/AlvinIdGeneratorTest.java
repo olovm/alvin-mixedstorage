@@ -29,10 +29,9 @@ import se.uu.ub.cora.alvin.mixedstorage.HttpHandlerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.HttpHandlerSpy;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraException;
 import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
-import se.uu.ub.cora.spider.record.storage.RecordIdGenerator;
 
 public class AlvinIdGeneratorTest {
-	private RecordIdGenerator idGenerator;
+	private AlvinIdGenerator idGenerator;
 	private HttpHandlerFactorySpy httpHandlerFactory;
 	private String fedoraBaseURL = "http://alvin-cora-fedora:8088/fedora/";
 	private String fedoraUsername = "fedoraUser";
@@ -93,6 +92,13 @@ public class AlvinIdGeneratorTest {
 	public void testErrorFetchingPlacePid() throws Exception {
 		httpHandlerFactory.responseCode = 500;
 		idGenerator.getIdForType("place");
+	}
+
+	@Test
+	public void testMethodsNeededForTest() throws Exception {
+		assertEquals(idGenerator.getFedoraURL(), fedoraBaseURL);
+		assertEquals(idGenerator.getFedoraUsername(), fedoraUsername);
+		assertEquals(idGenerator.getFedoraPassword(), fedoraPassword);
 	}
 
 }

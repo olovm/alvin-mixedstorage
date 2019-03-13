@@ -31,7 +31,7 @@ public class AlvinIdGenerator implements RecordIdGenerator {
 	private HttpHandlerFactory httpHandlerFactory;
 	private IdGeneratorConnectionInfo connectionInfo;
 
-	public static AlvinIdGenerator usingHttpHandlerFactoryAndConnectionInfo(
+	static AlvinIdGenerator usingHttpHandlerFactoryAndConnectionInfo(
 			HttpHandlerFactory httpHandlerFactory,
 			IdGeneratorConnectionInfo idGeneratorConnectionInfo) {
 		return new AlvinIdGenerator(httpHandlerFactory, idGeneratorConnectionInfo);
@@ -77,5 +77,30 @@ public class AlvinIdGenerator implements RecordIdGenerator {
 	private String parseXMLAndExtractPid(String nextPidXML) {
 		XMLXPathParser parser = XMLXPathParser.forXML(nextPidXML);
 		return parser.getStringFromDocumentUsingXPath("/pidList/pid/text()");
+	}
+
+	HttpHandlerFactory getHttpHandlerFactory() {
+		// needed for test
+		return httpHandlerFactory;
+	}
+
+	IdGeneratorConnectionInfo getConnectInfo() {
+		// needed for test
+		return connectionInfo;
+	}
+
+	public String getFedoraURL() {
+		// needed for test
+		return connectionInfo.fedoraURL;
+	}
+
+	public String getFedoraUsername() {
+		// needed for test
+		return connectionInfo.fedoraUsername;
+	}
+
+	public String getFedoraPassword() {
+		// needed for test
+		return connectionInfo.fedoraPassword;
 	}
 }
