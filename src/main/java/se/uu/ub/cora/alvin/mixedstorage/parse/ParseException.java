@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Uppsala University Library
+ * Copyright 2018 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -16,18 +16,26 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
+package se.uu.ub.cora.alvin.mixedstorage.parse;
 
-package se.uu.ub.cora.alvin.mixedstorage;
+public final class ParseException extends RuntimeException {
 
-public class IdGeneratorConnectionInfo {
-	public final String fedoraURL;
-	public final String fedoraUserName;
-	public final String fedoraPassword;
+	private static final long serialVersionUID = 1L;
 
-	public IdGeneratorConnectionInfo(String fedoraURL, String fedoraUserName,
-			String fedoraPassword) {
-		this.fedoraURL = fedoraURL;
-		this.fedoraUserName = fedoraUserName;
-		this.fedoraPassword = fedoraPassword;
+	public static ParseException withMessage(String message) {
+		return new ParseException(message);
 	}
+
+	public static ParseException withMessageAndException(String message, Exception e) {
+		return new ParseException(message, e);
+	}
+
+	private ParseException(String message) {
+		super(message);
+	}
+
+	private ParseException(String message, Exception e) {
+		super(message, e);
+	}
+
 }

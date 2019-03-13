@@ -34,6 +34,8 @@ public class HttpHandlerSpy implements HttpHandler {
 	public Map<String, String> requestProperties = new HashMap<String, String>();
 	public List<String> outputStrings = new ArrayList<String>();
 	public boolean responseCodeWasRequested = false;
+	public String username;
+	public String password;
 
 	@Override
 	public void setRequestMethod(String requestMetod) {
@@ -79,6 +81,14 @@ public class HttpHandlerSpy implements HttpHandler {
 	public String getHeaderField(String name) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setBasicAuthorization(String username, String password) {
+		this.username = username;
+		this.password = password;
+		// TODO Auto-generated method stub
+
 	}
 
 }

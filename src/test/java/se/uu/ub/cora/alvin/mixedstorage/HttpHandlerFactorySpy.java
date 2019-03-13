@@ -23,10 +23,10 @@ public class HttpHandlerFactorySpy implements HttpHandlerFactory {
 
 		int numOfHandlersFactored = factoredHttpHandlers.size();
 
-		// httpHandlerSpy.responseText = responseText;
-		httpHandlerSpy.responseText = responseTexts.get(numOfHandlersFactored - 1);
-		// httpHandlerSpy.responseCode = responseCode;
-		httpHandlerSpy.responseCode = responseCodes.get(numOfHandlersFactored - 1);
+		httpHandlerSpy.responseText = responseText;
+		// httpHandlerSpy.responseText = responseTexts.get(numOfHandlersFactored - 1);
+		httpHandlerSpy.responseCode = responseCode;
+		// httpHandlerSpy.responseCode = responseCodes.get(numOfHandlersFactored - 1);
 		return httpHandlerSpy;
 	}
 

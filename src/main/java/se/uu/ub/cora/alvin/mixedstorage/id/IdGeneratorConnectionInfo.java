@@ -17,27 +17,17 @@
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package se.uu.ub.cora.alvin.mixedstorage;
+package se.uu.ub.cora.alvin.mixedstorage.id;
 
-import se.uu.ub.cora.httphandler.HttpHandlerFactory;
-import se.uu.ub.cora.spider.record.storage.RecordIdGenerator;
+public class IdGeneratorConnectionInfo {
+	public final String fedoraURL;
+	public final String fedoraUsername;
+	public final String fedoraPassword;
 
-public class AlvinIdGenerator implements RecordIdGenerator {
-
-	public static AlvinIdGenerator usingHttpHandlerFactoryAndConnectionInfo(
-			HttpHandlerFactory httpHandlerFactory,
-			IdGeneratorConnectionInfo idGeneratorConnectionInfo) {
-		return new AlvinIdGenerator(httpHandlerFactory, idGeneratorConnectionInfo);
+	public IdGeneratorConnectionInfo(String fedoraURL, String fedoraUsername,
+			String fedoraPassword) {
+		this.fedoraURL = fedoraURL;
+		this.fedoraUsername = fedoraUsername;
+		this.fedoraPassword = fedoraPassword;
 	}
-
-	private AlvinIdGenerator(HttpHandlerFactory httpHandlerFactory,
-			IdGeneratorConnectionInfo idGeneratorConnectionInfo) {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public String getIdForType(String type) {
-		return type + ":" + System.nanoTime();
-	}
-
 }
