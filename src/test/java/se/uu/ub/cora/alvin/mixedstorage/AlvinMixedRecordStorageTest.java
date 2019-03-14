@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -153,6 +153,19 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
+	public void createPlaceGoesToAlvinToCoraStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "place";
+		alvinMixedRecordStorage.create(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		expectedData.calledMethod = "create";
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinDbToCoraStorage);
+		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+	}
+
+	@Test
 	public void deleteByTypeAndIdGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
@@ -214,9 +227,6 @@ public class AlvinMixedRecordStorageTest {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 
-		// assertNoInteractionWithStorage(basicStorage);
-		// assertNoInteractionWithStorage(alvinDbToCoraStorage);
-		// assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
 	}
 
 	@Test
