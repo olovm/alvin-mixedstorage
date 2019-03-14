@@ -39,4 +39,11 @@ public class RecordReaderSpy implements RecordReader {
 
 	}
 
+	@Override
+	public List<Map<String, String>> readFromTableUsingConditions(String arg0,
+			Map<String, String> arg1) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
