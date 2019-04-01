@@ -539,4 +539,14 @@ public class FedoraRecordStorageTest {
 		alvinToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null,
 				null);
 	}
+
+	@Test
+	public void testSpikeSendMessageToFedora() throws Exception {
+		alvinToCoraRecordStorage.spikeSendMessageToFedora();
+	}
+
+	@Test
+	public void testSpikeSendMessageToFedoraRabbit() throws Exception {
+		alvinToCoraRecordStorage.spikeSendMessageToFedoraRabbit();
+	}
 }

@@ -24,12 +24,33 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.AMQP.BasicProperties;
+import com.rabbitmq.client.Channel;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
@@ -248,6 +269,115 @@ public final class FedoraRecordStorage implements RecordStorage {
 		httpHandler.setOutput(fedoraXML);
 		int responseCode = httpHandler.getResponseCode();
 		throwErrorIfNotOkFromFedora(id, responseCode);
+		spikeSendMessageToFedora();
+	}
+
+	void spikeSendMessageToFedora() {
+
+		try {
+			// The configuration for the Qpid InitialContextFactory has been supplied in
+			// a jndi.properties file in the classpath, which results in it being picked
+			// up automatically by the InitialContext constructor.
+			Context context = new InitialContext();
+
+			ConnectionFactory factory = (ConnectionFactory) context.lookup("myFactoryLookup");
+			Destination queue = (Destination) context.lookup("myQueueLookup");
+
+			Connection connection = factory.createConnection("guest", "guest");
+			connection.setExceptionListener(new MyExceptionListener());
+			connection.start();
+
+			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+			// Create a temporary queue and consumer to receive responses, and a producer to
+			// send requests.
+			TemporaryQueue responseQueue = session.createTemporaryQueue();
+			MessageConsumer messageConsumer = session.createConsumer(responseQueue);
+			MessageProducer messageProducer = session.createProducer(queue);
+
+			// Send some requests and receive the responses.
+			// String[] requests = new String[] { "Twas brillig, and the slithy toves",
+			// "Did gire and gymble in the wabe.", "All mimsy were the borogroves,",
+			// "And the mome raths outgrabe." };
+			String[] requests = new String[] {
+					"{\"pid\":\"alvin-place:1\",\"routingKey\":\"alvin.updates.place\",\"action\":\"UPDATE\",\"dsId\":null,\"headers\":{\"ACTION\":\"UPDATE\",\"PID\":\"alvin-place:1\"}}" };
+
+			for (String request : requests) {
+				TextMessage requestMessage = session.createTextMessage(request);
+				// BytesMessage requestMessage = session.createBytesMessage();
+				requestMessage.setStringProperty("content", "application/json");
+				requestMessage.setStringProperty("PID", "alvin-place:1");
+				requestMessage.setStringProperty("ACTION", "UPDATE");
+				requestMessage.setStringProperty("__TypeId__",
+						"epc.messaging.amqp.EPCFedoraMessage");
+				requestMessage.setObjectProperty("ContentType", "application/json");
+				// org.apache.qpid.proton.message.Message m =
+				// (org.apache.qpid.proton.message.Message) requestMessage;
+				// m.setContentType("application/json");
+				// requestMessage.setcon
+				// requestMessage.setJMSReplyTo(responseQueue);
+				requestMessage.setJMSType("alvin.updates.place");
+
+				messageProducer.send(requestMessage, DeliveryMode.NON_PERSISTENT,
+						Message.DEFAULT_PRIORITY, Message.DEFAULT_TIME_TO_LIVE);
+
+				TextMessage responseMessage = (TextMessage) messageConsumer.receive(2000);
+				if (responseMessage != null) {
+					System.out
+							.println("[CLIENT] " + request + " ---> " + responseMessage.getText());
+				} else {
+					System.out.println("[CLIENT] Response for '" + request
+							+ "' was not received within the timeout, exiting.");
+					break;
+				}
+			}
+
+			connection.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
+	}
+
+	void spikeSendMessageToFedoraRabbit() {
+		String EXCHANGE_NAME = "index";
+		try {
+			com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
+			factory.setHost("messaging.alvin-portal.org");
+			factory.setPort(5672);
+			factory.setVirtualHost("alvin");
+			com.rabbitmq.client.Connection connection = factory.newConnection();
+			Channel channel = connection.createChannel();
+
+			// channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+
+			String message = "{\"pid\":\"alvin-place:1\",\"routingKey\":\"alvin.updates.place\","
+					+ "\"action\":\"UPDATE\",\"dsId\":null,"
+					+ "\"headers\":{\"ACTION\":\"UPDATE\",\"PID\":\"alvin-place:1\"}}";
+			Map<String, Object> headers = new HashMap<>();
+			headers.put("__TypeId__", "epc.messaging.amqp.EPCFedoraMessage");
+			headers.put("ACTION", "UPDATE");
+			headers.put("PID", "alvin-place:1");
+			BasicProperties props = new AMQP.BasicProperties.Builder()
+					.contentType("application/json").headers(headers).build();
+			channel.basicPublish(EXCHANGE_NAME, "alvin.updates.place", props, message.getBytes());
+			System.out.println(" [x] Sent '" + message + "'");
+
+			channel.close();
+			connection.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println(e);
+		}
+	}
+
+	private static class MyExceptionListener implements ExceptionListener {
+		@Override
+		public void onException(JMSException exception) {
+			System.out.println("[CLIENT] Connection ExceptionListener fired, exiting.");
+			exception.printStackTrace(System.out);
+			System.exit(1);
+		}
 	}
 
 	private void throwErrorIfNotOkFromFedora(String id, int responseCode) {
