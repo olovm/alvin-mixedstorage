@@ -315,26 +315,28 @@ public final class FedoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	private SpiderReadResult tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora() {
+	private SpiderReadResult tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora()
+			throws UnsupportedEncodingException {
 		SpiderReadResult spiderReadResult = new SpiderReadResult();
 		spiderReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPlaceListFromFedora();
 		return spiderReadResult;
 	}
 
-	private Collection<DataGroup> tryReadAndConvertPlaceListFromFedora() {
+	private Collection<DataGroup> tryReadAndConvertPlaceListFromFedora()
+			throws UnsupportedEncodingException {
 		String placeListXML = getPlaceListXMLFromFedora();
 		NodeList list = extractNodeListWithPidsFromXML(placeListXML);
 		return constructCollectionOfPlacesFromFedora(list);
 	}
 
-	private String getPlaceListXMLFromFedora() {
+	private String getPlaceListXMLFromFedora() throws UnsupportedEncodingException {
 		HttpHandler httpHandler = createHttpHandlerForPlaceList();
 		return httpHandler.getResponseText();
 	}
 
-	private HttpHandler createHttpHandlerForPlaceList() {
-		String url = baseURL
-				+ "objects?pid=true&maxResults=100&resultFormat=xml&query=pid%7Ealvin-place:*";
+	private HttpHandler createHttpHandlerForPlaceList() throws UnsupportedEncodingException {
+		String query = URLEncoder.encode("state=A pid~alvin-place:*", UTF_8);
+		String url = baseURL + "objects?pid=true&maxResults=100&resultFormat=xml&query=" + query;
 		HttpHandler httpHandler = httpHandlerFactory.factor(url);
 		httpHandler.setRequestMethod("GET");
 		return httpHandler;
