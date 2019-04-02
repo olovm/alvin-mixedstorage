@@ -81,7 +81,7 @@ public class FedoraRecordStorageTest {
 		DataGroup readPlace = alvinToCoraRecordStorage.read("place", "alvin-place:22");
 		assertEquals(httpHandlerFactory.urls.get(0),
 				baseURL + "objects?pid=true&maxResults=100&resultFormat=xml&"
-						+ "query=state%3DA+pid%3Dalvin-place%3Aalvin-place%3A22");
+						+ "query=state%3DA+pid%3Dalvin-place%3A22");
 		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
 		assertEquals(httpHandler.requestMethod, "GET");
 

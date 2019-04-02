@@ -90,7 +90,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void ensurePlaceIsNotDeleted(String id) {
-		String query = "state=A pid=alvin-place:" + id;
+		String query = "state=A pid=" + id;
 		String placeListXML = getRecordListXMLFromFedora(query);
 		NodeList list = extractNodeListWithPidsFromXML(placeListXML);
 		if (0 == list.getLength()) {
