@@ -68,13 +68,13 @@ public final class FedoraRecordStorage implements RecordStorage {
 	@Override
 	public DataGroup read(String type, String id) {
 		if (PLACE.equals(type)) {
+			ensurePlaceIsNotDeleted(id);
 			return readAndConvertPlaceFromFedora(id);
 		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
 	}
 
 	private DataGroup readAndConvertPlaceFromFedora(String id) {
-		ensurePlaceIsNotDeleted(id);
 		HttpHandler httpHandler = createHttpHandlerForReadingPlace(id);
 		int responseCode = httpHandler.getResponseCode();
 		throwErrorIfRecordNotFound(id, responseCode);
