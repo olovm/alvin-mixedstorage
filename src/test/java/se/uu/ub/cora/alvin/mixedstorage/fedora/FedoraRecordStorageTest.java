@@ -3,18 +3,16 @@
  *
  * This file is part of Cora.
  *
- *     Cora is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * Cora is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ * Cora is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Cora. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
@@ -36,6 +34,7 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public class FedoraRecordStorageTest {
@@ -74,22 +73,69 @@ public class FedoraRecordStorageTest {
 
 	@Test
 	public void readPlaceCallsFedoraAndReturnsConvertedResult() throws Exception {
+		httpHandlerFactory.responseCodes.add(200);
+		httpHandlerFactory.responseTexts.add(createXMLForPlaceList());
 		httpHandlerFactory.responseTexts.add("Dummy response text");
 		httpHandlerFactory.responseCodes.add(200);
 
 		DataGroup readPlace = alvinToCoraRecordStorage.read("place", "alvin-place:22");
 		assertEquals(httpHandlerFactory.urls.get(0),
-				baseURL + "objects/alvin-place:22/datastreams/METADATA/content");
-		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 1);
+				baseURL + "objects?pid=true&maxResults=100&resultFormat=xml&"
+						+ "query=state%3DA+pid%3Dalvin-place%3A22");
 		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
 		assertEquals(httpHandler.requestMethod, "GET");
+
+		assertEquals(httpHandlerFactory.urls.get(1),
+				baseURL + "objects/alvin-place:22/datastreams/METADATA/content");
+		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 2);
+		HttpHandlerSpy httpHandler2 = httpHandlerFactory.factoredHttpHandlers.get(1);
+		assertEquals(httpHandler2.requestMethod, "GET");
 
 		assertEquals(converterFactory.factoredToCoraConverters.size(), 1);
 		assertEquals(converterFactory.factoredToCoraTypes.get(0), "place");
 		AlvinFedoraToCoraConverterSpy alvinToCoraConverter = (AlvinFedoraToCoraConverterSpy) converterFactory.factoredToCoraConverters
 				.get(0);
-		assertEquals(alvinToCoraConverter.xml, httpHandlerFactory.responseTexts.get(0));
+		assertEquals(alvinToCoraConverter.xml, httpHandlerFactory.responseTexts.get(1));
 		assertEquals(readPlace, alvinToCoraConverter.convertedDataGroup);
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "Record not found for type: place and id: alvin-place:22")
+	public void testRecordNotFoundInStorage() throws Exception {
+		httpHandlerFactory.responseCodes.add(200);
+		httpHandlerFactory.responseTexts.add(createXMLForPlaceListNoRecordsFound());
+		httpHandlerFactory.responseTexts.add("Dummy response text");
+		httpHandlerFactory.responseCodes.add(404);
+		alvinToCoraRecordStorage.read("place", "alvin-place:22");
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "Record not found for type: place and id: alvin-place:22")
+	public void testRecordMarkedAsDeletedInStorage() throws Exception {
+		httpHandlerFactory.responseTexts.add(createXMLForPlaceListNoRecordsFound());
+		httpHandlerFactory.responseCodes.add(200);
+		alvinToCoraRecordStorage.read("place", "alvin-place:22");
+	}
+
+	private String createXMLForPlaceListNoRecordsFound() {
+		return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				+ "<result xmlns=\"http://www.fedora.info/definitions/1/0/types/\" "
+				+ "xmlns:types=\"http://www.fedora.info/definitions/1/0/types/\" "
+				+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+				+ "xsi:schemaLocation=\"http://www.fedora.info/definitions/1/0/types/ "
+				+ "http://localhost:8088/fedora/schema/findObjects.xsd\">\n" + "  <resultList>\n"
+				+ "  </resultList>\n" + "</result>";
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "Record not found for type: place and id: alvin-place:22")
+	public void testRecordFoundWhenLookingForNonDeletedButThenDeletedBeforeWeCanReadIt()
+			throws Exception {
+		httpHandlerFactory.responseTexts.add(createXMLForPlaceList());
+		httpHandlerFactory.responseCodes.add(200);
+		httpHandlerFactory.responseTexts.add("Dummy response text");
+		httpHandlerFactory.responseCodes.add(404);
+		alvinToCoraRecordStorage.read("place", "alvin-place:22");
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
@@ -458,7 +504,7 @@ public class FedoraRecordStorageTest {
 		Collection<DataGroup> readPlaceList = alvinToCoraRecordStorage.readList("place",
 				DataGroup.withNameInData("filter")).listOfDataGroups;
 		assertEquals(httpHandlerFactory.urls.get(0), baseURL
-				+ "objects?pid=true&maxResults=100&resultFormat=xml&query=pid%7Ealvin-place:*");
+				+ "objects?pid=true&maxResults=100&resultFormat=xml&query=state%3DA+pid%7Ealvin-place%3A*");
 		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 7);
 		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
 		assertEquals(httpHandler.requestMethod, "GET");
