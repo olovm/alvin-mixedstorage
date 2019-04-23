@@ -3,6 +3,7 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	requires transitive se.uu.ub.cora.spider;
 	requires transitive se.uu.ub.cora.httphandler;
 	requires transitive java.xml;
+	requires se.uu.ub.cora.gatekeeper;
 
 	exports se.uu.ub.cora.alvin.mixedstorage.db;
 	exports se.uu.ub.cora.alvin.mixedstorage.fedora;

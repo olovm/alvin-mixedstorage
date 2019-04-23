@@ -32,9 +32,11 @@
 	<name>Alvin Mixed Storage</name>
 
 	<properties>
+		<logger.version>1.0.0</logger.version>
+		<gatekeeper.version>1.1-SNAPSHOT</gatekeeper.version>
 		<httphandler.version>1.0.0</httphandler.version>
 		<spider.version>1.0.0</spider.version>
-		<sqldatabase.version>1.0.0</sqldatabase.version>
+		<sqldatabase.version>1.1-SNAPSHOT</sqldatabase.version>
 	</properties>
 
 	<scm>
@@ -45,6 +47,18 @@
   </scm>
 
 	<dependencies>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>logger</artifactId>
+			<version>${logger.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>gatekeeper</artifactId>
+			<version>${gatekeeper.version}</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>httphandler</artifactId>
