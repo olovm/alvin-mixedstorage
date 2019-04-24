@@ -20,20 +20,27 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertNotNull;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinMixedUserStorageTest {
+	private DataReader dataReaderForUsers;
+	private UserStorage userStorageForGuest;
+	private UserStorage alvinMixedUserStorage;
+
+	@BeforeMethod
+	public void BeforeMethod() {
+		dataReaderForUsers = new DataReaderSpy();
+		userStorageForGuest = new UserStorageSpy();
+		alvinMixedUserStorage = AlvinMixedUserStorage.usingUserStorageForGuestAndDataReaderForUsers(
+				userStorageForGuest, dataReaderForUsers);
+	}
+
 	@Test
 	public void test() {
-		// SqlConnectionProvider sqlConnectionProvider = null;
-		DataReader dataReaderForUsers = null;
-		UserStorage userStorageForGuest = null;
-		UserStorage alvinMixedUserStorage = AlvinMixedUserStorage
-				.usingUserStorageForGuestAndDataReaderForUsers(userStorageForGuest,
-						dataReaderForUsers);
 		assertNotNull(alvinMixedUserStorage);
 	}
 }

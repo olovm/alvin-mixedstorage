@@ -18,30 +18,22 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import java.util.List;
+import java.util.Map;
+
 import se.uu.ub.cora.sqldatabase.DataReader;
 
-public class AlvinMixedUserStorage implements UserStorage {
-
-	public static AlvinMixedUserStorage usingUserStorageForGuestAndDataReaderForUsers(
-			UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
-		return new AlvinMixedUserStorage(userStorageForGuest, dataReaderForUsers);
-	}
-
-	private AlvinMixedUserStorage(UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
-		// TODO Auto-generated constructor stub
-	}
+public class DataReaderSpy implements DataReader {
 
 	@Override
-	public DataGroup getUserById(String id) {
-
+	public List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues(String sql,
+			List<Object> values) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
+	public Map<String, Object> readOneRowOrFailUsingSqlAndValues(String sql, List<Object> values) {
 		// TODO Auto-generated method stub
 		return null;
 	}

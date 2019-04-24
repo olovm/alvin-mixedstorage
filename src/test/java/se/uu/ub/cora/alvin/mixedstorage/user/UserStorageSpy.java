@@ -20,22 +20,11 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
-import se.uu.ub.cora.sqldatabase.DataReader;
 
-public class AlvinMixedUserStorage implements UserStorage {
-
-	public static AlvinMixedUserStorage usingUserStorageForGuestAndDataReaderForUsers(
-			UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
-		return new AlvinMixedUserStorage(userStorageForGuest, dataReaderForUsers);
-	}
-
-	private AlvinMixedUserStorage(UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
-		// TODO Auto-generated constructor stub
-	}
+public class UserStorageSpy implements UserStorage {
 
 	@Override
 	public DataGroup getUserById(String id) {
-
 		// TODO Auto-generated method stub
 		return null;
 	}
