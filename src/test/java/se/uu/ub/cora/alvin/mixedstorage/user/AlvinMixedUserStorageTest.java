@@ -18,17 +18,19 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinMixedUserStorageTest {
 	private DataReader dataReaderForUsers;
-	private UserStorage userStorageForGuest;
+	private UserStorageSpy userStorageForGuest;
 	private UserStorage alvinMixedUserStorage;
 
 	@BeforeMethod
@@ -42,5 +44,12 @@ public class AlvinMixedUserStorageTest {
 	@Test
 	public void test() {
 		assertNotNull(alvinMixedUserStorage);
+	}
+
+	@Test
+	public void testGetGuestUser() {
+		DataGroup userById = alvinMixedUserStorage.getUserById("someId");
+		assertEquals(userStorageForGuest.idSentToGetUerById, "someId");
+		assertEquals(userById, userStorageForGuest.userById);
 	}
 }

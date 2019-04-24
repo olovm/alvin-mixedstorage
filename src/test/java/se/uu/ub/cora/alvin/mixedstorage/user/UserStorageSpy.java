@@ -23,10 +23,14 @@ import se.uu.ub.cora.gatekeeper.user.UserStorage;
 
 public class UserStorageSpy implements UserStorage {
 
+	public String idSentToGetUerById;
+	public DataGroup userById;
+
 	@Override
 	public DataGroup getUserById(String id) {
-		// TODO Auto-generated method stub
-		return null;
+		idSentToGetUerById = id;
+		userById = DataGroup.withNameInData("user");
+		return userById;
 	}
 
 	@Override

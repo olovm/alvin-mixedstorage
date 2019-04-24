@@ -24,20 +24,21 @@ import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinMixedUserStorage implements UserStorage {
 
+	private UserStorage userStorageForGuest;
+
 	public static AlvinMixedUserStorage usingUserStorageForGuestAndDataReaderForUsers(
 			UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
 		return new AlvinMixedUserStorage(userStorageForGuest, dataReaderForUsers);
 	}
 
 	private AlvinMixedUserStorage(UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
+		this.userStorageForGuest = userStorageForGuest;
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public DataGroup getUserById(String id) {
-
-		// TODO Auto-generated method stub
-		return null;
+		return userStorageForGuest.getUserById(id);
 	}
 
 	@Override
