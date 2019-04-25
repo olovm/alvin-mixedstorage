@@ -20,7 +20,6 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
@@ -33,7 +32,10 @@ public class AlvinMixedUserStorageTest {
 	private DataReaderSpy dataReaderForUsers;
 	private UserStorageSpy userStorageForGuest;
 	private UserStorage alvinMixedUserStorage;
-	private String userId = "someId";
+	private String userId = "someId@ab.sdl.tld";
+	private String sqlToGetUserAndRoles = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser"
+			+ " left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?"
+			+ " and alvinuser.domain=?;";
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -50,22 +52,37 @@ public class AlvinMixedUserStorageTest {
 
 	@Test
 	public void testGetGuestUserGoesToUserStorage() {
-		DataGroup userById = alvinMixedUserStorage.getUserById("someId");
-		assertEquals(userStorageForGuest.idSentToGetUserById, userId);
-		assertEquals(userById, userStorageForGuest.userById);
+		DataGroup user = alvinMixedUserStorage.getUserById("someId");
+		assertEquals(userStorageForGuest.idSentToGetUserById, "someId");
+		assertEquals(user, userStorageForGuest.userGroupById);
 	}
 
 	@Test
-	public void testGetUserByIdFromLoginGoesUsesDataReader() {
-		String sql = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser"
-				+ " left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?";
-
-		DataGroup userByIdFromLogin = alvinMixedUserStorage.getUserByIdFromLogin(userId);
+	public void testGetUserByIdFromLoginUsesDataReader() {
+		alvinMixedUserStorage.getUserByIdFromLogin(userId);
 
 		assertTrue(dataReaderForUsers.executePreparedStatementWasCalled);
-		assertEquals(dataReaderForUsers.sqlSentToReader, sql);
-		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 1);
-		assertSame(dataReaderForUsers.valuesSentToReader.get(0), userId);
-
+		assertEquals(dataReaderForUsers.sqlSentToReader, sqlToGetUserAndRoles);
+		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 2);
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(0), "someId");
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(1), "sdl");
 	}
+
+	@Test
+	public void testGetUserByIdFromLoginUsesDataReaderOtherIdFromLogin() {
+		alvinMixedUserStorage.getUserByIdFromLogin("otherId@user.uu.se");
+
+		assertTrue(dataReaderForUsers.executePreparedStatementWasCalled);
+		assertEquals(dataReaderForUsers.sqlSentToReader, sqlToGetUserAndRoles);
+		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 2);
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(0), "otherId");
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(1), "uu");
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginReturnsDataGroupWithUserInf() {
+		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
+		assertNotNull(userDataGroup);
+	}
+
 }

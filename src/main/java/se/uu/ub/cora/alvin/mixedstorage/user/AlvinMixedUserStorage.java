@@ -48,12 +48,17 @@ public class AlvinMixedUserStorage implements UserStorage {
 	@Override
 	public DataGroup getUserByIdFromLogin(String idFromLogin) {
 		String sql = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser "
-				+ "left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?";
+				+ "left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?"
+				+ " and alvinuser.domain=?;";
 
 		List<Object> values = new ArrayList<>();
-		values.add(idFromLogin);
+		int indexOfAt = idFromLogin.indexOf('@');
+		values.add(idFromLogin.substring(0, indexOfAt));
+		String loginDomainName = idFromLogin.substring(indexOfAt + 1);
+		String[] loginDomainNameParts = loginDomainName.split("\\.");
+		values.add(loginDomainNameParts[loginDomainNameParts.length - 2]);
 		dataReaderForUsers.executePreparedStatementQueryUsingSqlAndValues(sql, values);
-		return null;
+		return DataGroup.withNameInData("");
 	}
 
 }
