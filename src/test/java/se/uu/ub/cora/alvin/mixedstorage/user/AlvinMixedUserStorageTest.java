@@ -20,18 +20,20 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
-import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinMixedUserStorageTest {
-	private DataReader dataReaderForUsers;
+	private DataReaderSpy dataReaderForUsers;
 	private UserStorageSpy userStorageForGuest;
 	private UserStorage alvinMixedUserStorage;
+	private String userId = "someId";
 
 	@BeforeMethod
 	public void BeforeMethod() {
@@ -47,9 +49,23 @@ public class AlvinMixedUserStorageTest {
 	}
 
 	@Test
-	public void testGetGuestUser() {
+	public void testGetGuestUserGoesToUserStorage() {
 		DataGroup userById = alvinMixedUserStorage.getUserById("someId");
-		assertEquals(userStorageForGuest.idSentToGetUerById, "someId");
+		assertEquals(userStorageForGuest.idSentToGetUserById, userId);
 		assertEquals(userById, userStorageForGuest.userById);
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginGoesUsesDataReader() {
+		String sql = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser"
+				+ " left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?";
+
+		DataGroup userByIdFromLogin = alvinMixedUserStorage.getUserByIdFromLogin(userId);
+
+		assertTrue(dataReaderForUsers.executePreparedStatementWasCalled);
+		assertEquals(dataReaderForUsers.sqlSentToReader, sql);
+		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 1);
+		assertSame(dataReaderForUsers.valuesSentToReader.get(0), userId);
+
 	}
 }

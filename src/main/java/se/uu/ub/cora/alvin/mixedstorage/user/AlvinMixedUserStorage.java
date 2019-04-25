@@ -18,6 +18,9 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
@@ -25,6 +28,7 @@ import se.uu.ub.cora.sqldatabase.DataReader;
 public class AlvinMixedUserStorage implements UserStorage {
 
 	private UserStorage userStorageForGuest;
+	private DataReader dataReaderForUsers;
 
 	public static AlvinMixedUserStorage usingUserStorageForGuestAndDataReaderForUsers(
 			UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
@@ -33,7 +37,7 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 	private AlvinMixedUserStorage(UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
 		this.userStorageForGuest = userStorageForGuest;
-		// TODO Auto-generated constructor stub
+		this.dataReaderForUsers = dataReaderForUsers;
 	}
 
 	@Override
@@ -43,7 +47,12 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 	@Override
 	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		// TODO Auto-generated method stub
+		String sql = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser "
+				+ "left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?";
+
+		List<Object> values = new ArrayList<>();
+		values.add(idFromLogin);
+		dataReaderForUsers.executePreparedStatementQueryUsingSqlAndValues(sql, values);
 		return null;
 	}
 
