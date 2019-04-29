@@ -177,11 +177,9 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 	private void createAndAddLinkedUserRoleUsingParentGroupAndRoleId(DataGroup userRole,
 			String roleId) {
-		DataGroup linkedUserRole = DataGroup.withNameInData("userRole");
+		DataGroup linkedUserRole = DataGroup.asLinkWithNameInDataTypeAndId("userRole",
+				"permissionRole", roleId);
 		userRole.addChild(linkedUserRole);
-		linkedUserRole
-				.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", "permissionRole"));
-		linkedUserRole.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", roleId));
 	}
 
 	private void createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(DataGroup userRole,
@@ -198,10 +196,8 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 	private void createAndAddRuleLinkUsingParentGroupAndRuleId(DataGroup permissionTermRulePart,
 			String ruleLinkRecordId) {
-		DataGroup ruleLink = DataGroup.withNameInData("rule");
-		ruleLink.addChild(
-				DataAtomic.withNameInDataAndValue("linkedRecordType", "collectPermissionTerm"));
-		ruleLink.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", ruleLinkRecordId));
+		DataGroup ruleLink = DataGroup.asLinkWithNameInDataTypeAndId("rule",
+				"collectPermissionTerm", ruleLinkRecordId);
 		permissionTermRulePart.addChild(ruleLink);
 	}
 
