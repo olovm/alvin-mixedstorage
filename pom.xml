@@ -35,7 +35,7 @@
 		<logger.version>1.0.0</logger.version>
 		<gatekeeper.version>1.1-SNAPSHOT</gatekeeper.version>
 		<httphandler.version>1.0.0</httphandler.version>
-		<spider.version>1.0.0</spider.version>
+		<spider.version>1.1-SNAPSHOT</spider.version>
 		<sqldatabase.version>1.1-SNAPSHOT</sqldatabase.version>
 	</properties>
 

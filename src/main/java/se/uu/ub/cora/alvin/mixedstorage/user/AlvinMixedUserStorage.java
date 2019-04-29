@@ -135,46 +135,74 @@ public class AlvinMixedUserStorage implements UserStorage {
 		userGroup.addAttributeByIdWithValue("type", "coraUser");
 		userGroup.addChild(DataAtomic.withNameInDataAndValue("userId", idFromLogin));
 
+		Map<String, Object> firstRowFromDb = dbResult.get(0);
+		createAndAddRecordInfo(userGroup, firstRowFromDb);
+		possiblyAddFirstName(userGroup, firstRowFromDb);
+		possiblyAddLastName(userGroup, firstRowFromDb);
+
+		addUserRoles(userGroup);
+		return userGroup;
+	}
+
+	private void createAndAddRecordInfo(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
 		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
 		userGroup.addChild(recordInfo);
-		Map<String, Object> firstRowFromDb = dbResult.get(0);
 		String idFromDb = String.valueOf(firstRowFromDb.get("id"));
 		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", idFromDb));
+	}
 
+	private void possiblyAddFirstName(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
 		if (firstRowFromDb.containsKey("firstname")) {
 			userGroup.addChild(DataAtomic.withNameInDataAndValue("userFirstName",
 					(String) firstRowFromDb.get("firstname")));
 		}
+	}
+
+	private void possiblyAddLastName(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
 		if (firstRowFromDb.containsKey("lastname")) {
 			userGroup.addChild(DataAtomic.withNameInDataAndValue("userLastName",
 					(String) firstRowFromDb.get("lastname")));
 		}
+	}
 
+	private void addUserRoles(DataGroup userGroup) {
 		DataGroup userRole = DataGroup.withNameInData("userRole");
 		userGroup.addChild(userRole);
 		userRole.setRepeatId("0");
 
+		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userRole, "metadataAdmin");
+		createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(userRole, "systemPermissionTerm",
+				"system.*");
+	}
+
+	private void createAndAddLinkedUserRoleUsingParentGroupAndRoleId(DataGroup userRole,
+			String roleId) {
 		DataGroup linkedUserRole = DataGroup.withNameInData("userRole");
 		userRole.addChild(linkedUserRole);
 		linkedUserRole
 				.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", "permissionRole"));
-		linkedUserRole
-				.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", "metadataAdmin"));
+		linkedUserRole.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", roleId));
+	}
 
+	private void createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(DataGroup userRole,
+			String ruleLinkRecordId, String rulePartValue) {
 		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
 		userRole.addChild(permissionTermRulePart);
 		permissionTermRulePart.setRepeatId("0");
 
+		createAndAddRuleLinkUsingParentGroupAndRuleId(permissionTermRulePart, ruleLinkRecordId);
+
+		permissionTermRulePart.addChild(
+				DataAtomic.withNameInDataAndValueAndRepeatId("value", rulePartValue, "0"));
+	}
+
+	private void createAndAddRuleLinkUsingParentGroupAndRuleId(DataGroup permissionTermRulePart,
+			String ruleLinkRecordId) {
 		DataGroup ruleLink = DataGroup.withNameInData("rule");
 		ruleLink.addChild(
 				DataAtomic.withNameInDataAndValue("linkedRecordType", "collectPermissionTerm"));
-		ruleLink.addChild(
-				DataAtomic.withNameInDataAndValue("linkedRecordId", "systemPermissionTerm"));
+		ruleLink.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", ruleLinkRecordId));
 		permissionTermRulePart.addChild(ruleLink);
-
-		permissionTermRulePart
-				.addChild(DataAtomic.withNameInDataAndValueAndRepeatId("value", "system.*", "0"));
-		return userGroup;
 	}
 
 }
