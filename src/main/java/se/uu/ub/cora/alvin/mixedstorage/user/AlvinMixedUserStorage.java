@@ -20,15 +20,21 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinMixedUserStorage implements UserStorage {
 
 	private UserStorage userStorageForGuest;
 	private DataReader dataReaderForUsers;
+	private Logger log = LoggerProvider.getLoggerForClass(AlvinMixedUserStorage.class);
 
 	public static AlvinMixedUserStorage usingUserStorageForGuestAndDataReaderForUsers(
 			UserStorage userStorageForGuest, DataReader dataReaderForUsers) {
@@ -47,18 +53,128 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 	@Override
 	public DataGroup getUserByIdFromLogin(String idFromLogin) {
+		logAndThrowExceptionIfUnexpectedFormatOf(idFromLogin);
+
+		List<Map<String, Object>> dbResult = queryDbForUserUsingIdFromLogin(idFromLogin);
+		throwExceptionIfUserInfoNotFoundInDb(idFromLogin, dbResult);
+		throwExceptionIfUserHasNoAdminGroup(idFromLogin, dbResult);
+
+		return createDataGroupWithUserInfo(idFromLogin, dbResult);
+	}
+
+	private void logAndThrowExceptionIfUnexpectedFormatOf(String idFromLogin) {
+		if (!idFromLogin.matches("^\\w+@(\\w+\\.){1,}\\w+$")) {
+			String errorMessage = "Unrecognized format of userIdFromLogin: " + idFromLogin;
+			log.logErrorUsingMessage(errorMessage);
+			throw UserException.withMessage(errorMessage);
+		}
+	}
+
+	private List<Map<String, Object>> queryDbForUserUsingIdFromLogin(String idFromLogin) {
 		String sql = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser "
 				+ "left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?"
 				+ " and alvinuser.domain=?;";
 
+		List<Object> values = createValueListFromLogin(idFromLogin);
+		return dataReaderForUsers.executePreparedStatementQueryUsingSqlAndValues(sql, values);
+	}
+
+	private List<Object> createValueListFromLogin(String idFromLogin) {
 		List<Object> values = new ArrayList<>();
+		String userId = getUserIdFromIdFromLogin(idFromLogin);
+		values.add(userId);
+		String domain = getDomainFromLogin(idFromLogin);
+		values.add(domain);
+		return values;
+	}
+
+	private String getUserIdFromIdFromLogin(String idFromLogin) {
 		int indexOfAt = idFromLogin.indexOf('@');
-		values.add(idFromLogin.substring(0, indexOfAt));
-		String loginDomainName = idFromLogin.substring(indexOfAt + 1);
-		String[] loginDomainNameParts = loginDomainName.split("\\.");
-		values.add(loginDomainNameParts[loginDomainNameParts.length - 2]);
-		dataReaderForUsers.executePreparedStatementQueryUsingSqlAndValues(sql, values);
-		return DataGroup.withNameInData("");
+		return idFromLogin.substring(0, indexOfAt);
+	}
+
+	private String getDomainFromLogin(String idFromLogin) {
+		String[] splitAtAt = idFromLogin.split("@");
+		String domainPart = splitAtAt[1];
+
+		String[] loginDomainNameParts = domainPart.split("\\.");
+		int secondLevelDomainPosition = loginDomainNameParts.length - 2;
+		return loginDomainNameParts[secondLevelDomainPosition];
+	}
+
+	private void throwExceptionIfUserInfoNotFoundInDb(String idFromLogin,
+			List<Map<String, Object>> dbResult) {
+		if (dbResult.isEmpty()) {
+			throw new RecordNotFoundException("No user found for login: " + idFromLogin);
+		}
+	}
+
+	private void throwExceptionIfUserHasNoAdminGroup(String idFromLogin,
+			List<Map<String, Object>> dbResult) {
+		if (userHasNoAdminGroupRight(dbResult)) {
+			throw new RecordNotFoundException("User is not admin: " + idFromLogin);
+		}
+	}
+
+	private boolean userHasNoAdminGroupRight(List<Map<String, Object>> dbResult) {
+		for (Map<String, Object> dbRow : dbResult) {
+			if (userHasAdminGroup(dbRow)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean userHasAdminGroup(Map<String, Object> dbRow) {
+		return dbRow.get("group_id").equals(54);
+	}
+
+	private DataGroup createDataGroupWithUserInfo(String idFromLogin,
+			List<Map<String, Object>> dbResult) {
+		DataGroup userGroup = DataGroup.withNameInData("user");
+		userGroup.addAttributeByIdWithValue("type", "coraUser");
+		userGroup.addChild(DataAtomic.withNameInDataAndValue("userId", idFromLogin));
+
+		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
+		userGroup.addChild(recordInfo);
+		Map<String, Object> firstRowFromDb = dbResult.get(0);
+		String idFromDb = String.valueOf(firstRowFromDb.get("id"));
+		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", idFromDb));
+
+		if (firstRowFromDb.containsKey("firstname")) {
+			userGroup.addChild(DataAtomic.withNameInDataAndValue("userFirstName",
+					(String) firstRowFromDb.get("firstname")));
+		}
+		if (firstRowFromDb.containsKey("lastname")) {
+			userGroup.addChild(DataAtomic.withNameInDataAndValue("userLastName",
+					(String) firstRowFromDb.get("lastname")));
+		}
+
+		DataGroup userRole = DataGroup.withNameInData("userRole");
+		userGroup.addChild(userRole);
+		userRole.setRepeatId("0");
+
+		DataGroup linkedUserRole = DataGroup.withNameInData("userRole");
+		userRole.addChild(linkedUserRole);
+		linkedUserRole
+				.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", "permissionRole"));
+		linkedUserRole
+				.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", "metadataAdmin"));
+
+		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
+		userRole.addChild(permissionTermRulePart);
+		permissionTermRulePart.setRepeatId("0");
+
+		DataGroup ruleLink = DataGroup.withNameInData("rule");
+		ruleLink.addChild(
+				DataAtomic.withNameInDataAndValue("linkedRecordType", "collectPermissionTerm"));
+		ruleLink.addChild(
+				DataAtomic.withNameInDataAndValue("linkedRecordId", "systemPermissionTerm"));
+		permissionTermRulePart.addChild(ruleLink);
+
+		permissionTermRulePart
+				.addChild(DataAtomic.withNameInDataAndValueAndRepeatId("value", "system.*", "0"));
+		return userGroup;
 	}
 
 }

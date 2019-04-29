@@ -19,26 +19,35 @@
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
+import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 
 public class AlvinMixedUserStorageTest {
 	private DataReaderSpy dataReaderForUsers;
 	private UserStorageSpy userStorageForGuest;
 	private UserStorage alvinMixedUserStorage;
-	private String userId = "someId@ab.sdl.tld";
+	private String userId = "someId@ab.sld.tld";
 	private String sqlToGetUserAndRoles = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser"
 			+ " left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?"
 			+ " and alvinuser.domain=?;";
+	private LoggerFactorySpy loggerFactorySpy;
+	private String testedClassName = "AlvinMixedUserStorage";
 
 	@BeforeMethod
 	public void BeforeMethod() {
+		loggerFactorySpy = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		dataReaderForUsers = new DataReaderSpy();
 		userStorageForGuest = new UserStorageSpy();
 		alvinMixedUserStorage = AlvinMixedUserStorage.usingUserStorageForGuestAndDataReaderForUsers(
@@ -65,7 +74,7 @@ public class AlvinMixedUserStorageTest {
 		assertEquals(dataReaderForUsers.sqlSentToReader, sqlToGetUserAndRoles);
 		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 2);
 		assertEquals(dataReaderForUsers.valuesSentToReader.get(0), "someId");
-		assertEquals(dataReaderForUsers.valuesSentToReader.get(1), "sdl");
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(1), "sld");
 	}
 
 	@Test
@@ -80,9 +89,100 @@ public class AlvinMixedUserStorageTest {
 	}
 
 	@Test
-	public void testGetUserByIdFromLoginReturnsDataGroupWithUserInf() {
-		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
-		assertNotNull(userDataGroup);
+	public void testGetUserByIdFromLoginUsesDataReaderOnlySecondLevelDomainIdFromLogin() {
+		alvinMixedUserStorage.getUserByIdFromLogin("otherId@uu.se");
+
+		assertTrue(dataReaderForUsers.executePreparedStatementWasCalled);
+		assertEquals(dataReaderForUsers.sqlSentToReader, sqlToGetUserAndRoles);
+		assertEquals(dataReaderForUsers.valuesSentToReader.size(), 2);
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(0), "otherId");
+		assertEquals(dataReaderForUsers.valuesSentToReader.get(1), "uu");
 	}
 
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "No user found for login: userIdNotFound@some.domain.org")
+	public void testUserNotFound() {
+		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotFound@some.domain.org");
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User is not admin: userIdNotAdmin@some.domain.org")
+	public void testUserWithoutAdminGroup() {
+		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotAdmin@some.domain.org");
+	}
+
+	@Test(expectedExceptions = UserException.class, expectedExceptionsMessageRegExp = ""
+			+ "Unrecognized format of userIdFromLogin: userId@somedomainorg")
+	public void testUnexpectedFormatOfUserIdFromLogin() {
+		alvinMixedUserStorage.getUserByIdFromLogin("userId@somedomainorg");
+	}
+
+	@Test
+	public void testUnexpectedFormatOfUserIdFromLoginIsLogged() {
+		try {
+			alvinMixedUserStorage.getUserByIdFromLogin("userId@somedomainorg");
+		} catch (Exception e) {
+
+		}
+		assertEquals(loggerFactorySpy.getErrorLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Unrecognized format of userIdFromLogin: userId@somedomainorg");
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginReturnsDataGroupWithUserInfo() {
+		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
+		assertNotNull(userDataGroup);
+		assertEquals(userDataGroup.getNameInData(), "user");
+		assertEquals(userDataGroup.getAttribute("type"), "coraUser");
+
+		assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userId"), userId);
+		DataGroup recordInfo = userDataGroup.getFirstGroupWithNameInData("recordInfo");
+		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), "52");
+
+		assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userFirstName"),
+				"SomeFirstName");
+		assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userLastName"),
+				"SomeLastName");
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginReturnsDataGroupWithoutNameIfMissing() {
+		DataGroup userDataGroup = alvinMixedUserStorage
+				.getUserByIdFromLogin("userHasNoName@some.domain.org");
+
+		assertFalse(userDataGroup.containsChildWithNameInData("userFirstName"));
+		assertFalse(userDataGroup.containsChildWithNameInData("userLastName"));
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfo() {
+		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
+		assertTrue(userDataGroup.containsChildWithNameInData("userRole"));
+		DataGroup userRole = userDataGroup.getFirstGroupWithNameInData("userRole");
+		assertEquals(userRole.getRepeatId(), "0");
+
+		DataGroup linkedUserRole = userRole.getFirstGroupWithNameInData("userRole");
+		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"permissionRole");
+		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"),
+				"metadataAdmin");
+
+		DataGroup permissionTermRulePart = userRole
+				.getFirstGroupWithNameInData("permissionTermRulePart");
+		assertEquals(permissionTermRulePart.getRepeatId(), "0");
+
+		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"collectPermissionTerm");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
+				"systemPermissionTerm");
+
+		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
+		assertEquals(value.getValue(), "system.*");
+		assertEquals(value.getRepeatId(), "0");
+
+		// TODO: add more rules
+		assertTrue(false);
+
+	}
 }
