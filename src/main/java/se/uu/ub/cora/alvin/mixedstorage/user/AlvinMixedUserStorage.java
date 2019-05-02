@@ -167,31 +167,13 @@ public class AlvinMixedUserStorage implements UserStorage {
 	}
 
 	private void addUserRoles(DataGroup userGroup) {
-		DataGroup userRole = DataGroup.withNameInData(USER_ROLE);
-		userGroup.addChild(userRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userRole, "metadataAdmin");
-		addSystemPermissionTermAccessToAllSystems(userRole);
+		createUserRoleWithRoleIdAndAddToUserGroup("metadataAdmin", userGroup);
+		createUserRoleWithRoleIdAndAddToUserGroup("systemConfigurator", userGroup);
+		createUserRoleWithRoleIdAndAddToUserGroup("binaryUserRole", userGroup);
+		createUserRoleWithRoleIdAndAddToUserGroup("userAdminRole", userGroup);
 
-		DataGroup systemConfigRole = DataGroup.withNameInData(USER_ROLE);
-		userGroup.addChild(systemConfigRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(systemConfigRole, "systemConfigurator");
-		addSystemPermissionTermAccessToAllSystems(systemConfigRole);
-
-		DataGroup binaryUserRole = DataGroup.withNameInData(USER_ROLE);
-		userGroup.addChild(binaryUserRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(binaryUserRole, "binaryUserRole");
-		addSystemPermissionTermAccessToAllSystems(binaryUserRole);
-
-		DataGroup userAdminRole = DataGroup.withNameInData(USER_ROLE);
-		userGroup.addChild(userAdminRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userAdminRole, "userAdminRole");
-		addSystemPermissionTermAccessToAllSystems(userAdminRole);
-
-		DataGroup systemOneSystemUserRole = DataGroup.withNameInData(USER_ROLE);
-		userGroup.addChild(systemOneSystemUserRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(systemOneSystemUserRole,
-				"systemOneSystemUserRole");
-		addSystemPermissionTermAccessToAllSystems(systemOneSystemUserRole);
+		DataGroup systemOneSystemUserRole = createUserRoleWithRoleIdAndAddToUserGroup(
+				"systemOneSystemUserRole", userGroup);
 
 		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
 		systemOneSystemUserRole.addChild(permissionTermRulePart);
@@ -202,6 +184,15 @@ public class AlvinMixedUserStorage implements UserStorage {
 				"system.permissionUnit_uu.ub", "0"));
 
 		addRepeatIdToAllUserRoles(userGroup);
+	}
+
+	private DataGroup createUserRoleWithRoleIdAndAddToUserGroup(String roleId,
+			DataGroup userGroup) {
+		DataGroup userRole = DataGroup.withNameInData(USER_ROLE);
+		userGroup.addChild(userRole);
+		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userRole, roleId);
+		addSystemPermissionTermAccessToAllSystems(userRole);
+		return userRole;
 	}
 
 	private void createAndAddLinkedUserRoleUsingParentGroupAndRoleId(DataGroup userRole,
@@ -241,5 +232,15 @@ public class AlvinMixedUserStorage implements UserStorage {
 			role.setRepeatId(String.valueOf(repeatId));
 			repeatId++;
 		}
+	}
+
+	public UserStorage getUserStorageForGuest() {
+		// needed for test
+		return userStorageForGuest;
+	}
+
+	public DataReader getDataReaderForUsers() {
+		// needed for test
+		return dataReaderForUsers;
 	}
 }

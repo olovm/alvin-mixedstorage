@@ -21,6 +21,7 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
@@ -31,14 +32,13 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 
 public class AlvinMixedUserStorageTest {
 	private DataReaderSpy dataReaderForUsers;
 	private UserStorageSpy userStorageForGuest;
-	private UserStorage alvinMixedUserStorage;
+	private AlvinMixedUserStorage alvinMixedUserStorage;
 	private String userId = "someId@ab.sld.tld";
 	private String sqlToGetUserAndRoles = "select alvinuser.*, role.group_id from alvin_seam_user alvinuser"
 			+ " left join alvin_role role on alvinuser.id = role.user_id where  alvinuser.userid = ?"
@@ -59,6 +59,16 @@ public class AlvinMixedUserStorageTest {
 	@Test
 	public void test() {
 		assertNotNull(alvinMixedUserStorage);
+	}
+
+	@Test
+	public void testGetUserStorageForGuest() {
+		assertSame(alvinMixedUserStorage.getUserStorageForGuest(), userStorageForGuest);
+	}
+
+	@Test
+	public void testGetDataReaderForUsers() {
+		assertSame(alvinMixedUserStorage.getDataReaderForUsers(), dataReaderForUsers);
 	}
 
 	@Test

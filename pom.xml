@@ -36,6 +36,7 @@
 		<gatekeeper.version>1.1-SNAPSHOT</gatekeeper.version>
 		<httphandler.version>1.0.0</httphandler.version>
 		<spider.version>1.1-SNAPSHOT</spider.version>
+		<basicstorage.version>1.1.0</basicstorage.version>
 		<sqldatabase.version>1.1-SNAPSHOT</sqldatabase.version>
 	</properties>
 
@@ -69,6 +70,11 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>spider</artifactId>
 			<version>${spider.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>basicstorage</artifactId>
+			<version>${basicstorage.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>se.uu.ub.cora</groupId>
