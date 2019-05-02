@@ -23,6 +23,8 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.List;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -157,32 +159,78 @@ public class AlvinMixedUserStorageTest {
 	@Test
 	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfo() {
 		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
-		assertTrue(userDataGroup.containsChildWithNameInData("userRole"));
-		DataGroup userRole = userDataGroup.getFirstGroupWithNameInData("userRole");
-		assertEquals(userRole.getRepeatId(), "0");
+		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 5);
 
-		DataGroup linkedUserRole = userRole.getFirstGroupWithNameInData("userRole");
-		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"permissionRole");
-		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"metadataAdmin");
+		assertCorrectUserRoleWithSystemPermissionTerm(
+				userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataAdmin", "0",
+				"system.*");
+
+		assertCorrectUserRoleWithSystemPermissionTerm(
+				userDataGroup.getAllGroupsWithNameInData("userRole").get(1), "systemConfigurator",
+				"1", "system.*");
+
+		assertCorrectUserRoleWithSystemPermissionTerm(
+				userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "binaryUserRole", "2",
+				"system.*");
+
+		assertCorrectUserRoleWithSystemPermissionTerm(
+				userDataGroup.getAllGroupsWithNameInData("userRole").get(3), "userAdminRole", "3",
+				"system.*");
+
+		DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
+		assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
+				"system.*");
+
+		List<DataGroup> permissionTermRuleParts = userRole
+				.getAllGroupsWithNameInData("permissionTermRulePart");
+
+		DataGroup extraPermissionRulePart = permissionTermRuleParts.get(1);
+		assertEquals(extraPermissionRulePart.getRepeatId(), "1");
+		DataGroup ruleLink = extraPermissionRulePart.getFirstGroupWithNameInData("rule");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"collectPermissionTerm");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
+				"permissionUnitPermissionTerm");
+		assertRulePartContainsCorrectValue(extraPermissionRulePart, "system.permissionUnit_uu.ub");
+
+	}
+
+	private void assertCorrectUserRoleWithSystemPermissionTerm(DataGroup userRole, String roleId,
+			String repeatId, String rulePartValue) {
+		assertEquals(userRole.getRepeatId(), repeatId);
+
+		assertDataGroupContainsRoleWithId(userRole, roleId);
 
 		DataGroup permissionTermRulePart = userRole
 				.getFirstGroupWithNameInData("permissionTermRulePart");
 		assertEquals(permissionTermRulePart.getRepeatId(), "0");
 
+		assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
+				"systemPermissionTerm");
+
+		assertRulePartContainsCorrectValue(permissionTermRulePart, rulePartValue);
+	}
+
+	private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
+			String rulePartValue) {
+		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
+		assertEquals(value.getValue(), rulePartValue);
+		assertEquals(value.getRepeatId(), "0");
+	}
+
+	private void assertDataGroupContainsRoleWithId(DataGroup userRole, String roleId) {
+		DataGroup linkedUserRole = userRole.getFirstGroupWithNameInData("userRole");
+		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"permissionRole");
+		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleId);
+	}
+
+	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
+			String linkedPermissionTerm) {
 		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
 		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"collectPermissionTerm");
 		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"systemPermissionTerm");
-
-		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
-		assertEquals(value.getValue(), "system.*");
-		assertEquals(value.getRepeatId(), "0");
-
-		// TODO: add more rules
-		// assertTrue(false);
-
+				linkedPermissionTerm);
 	}
 }
