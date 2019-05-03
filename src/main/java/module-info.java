@@ -12,5 +12,8 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	exports se.uu.ub.cora.alvin.mixedstorage.id;
 	exports se.uu.ub.cora.alvin.mixedstorage.parse;
 
+	provides se.uu.ub.cora.gatekeeper.user.UserStorageProvider
+			with se.uu.ub.cora.alvin.mixedstorage.user.FromAlvinClassicUserStorageProvider;
+
 	opens place;
 }

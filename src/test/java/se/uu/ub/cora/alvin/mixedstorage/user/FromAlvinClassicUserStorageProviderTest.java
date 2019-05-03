@@ -18,6 +18,8 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -30,14 +32,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.naming.InitialContext;
+
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
+import se.uu.ub.cora.connection.ContextConnectionProviderImp;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
-import se.uu.ub.cora.sqldatabase.DataReader;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
 import se.uu.ub.cora.storage.UserStorageImp;
 import se.uu.ub.cora.storage.testdata.TestDataAppTokenStorage;
 
@@ -46,6 +52,7 @@ public class FromAlvinClassicUserStorageProviderTest {
 	private Map<String, String> initInfo;
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "FromAlvinClassicUserStorageProvider";
+	private UserStorageProvider userStorageProvider;
 
 	@BeforeMethod
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
@@ -58,6 +65,9 @@ public class FromAlvinClassicUserStorageProviderTest {
 
 		initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", basePath);
+		initInfo.put("databaseLookupName", "java:/comp/env/jdbc/postgres");
+
+		userStorageProvider = new FromAlvinClassicUserStorageProvider();
 	}
 
 	private void deleteFiles(String path) throws IOException {
@@ -89,23 +99,67 @@ public class FromAlvinClassicUserStorageProviderTest {
 	}
 
 	@Test
+	public void testPreferenceLevel() {
+		userStorageProvider.startUsingInitInfo(initInfo);
+		assertEquals(userStorageProvider.getPreferenceLevel(), 10);
+	}
+
+	@Test
 	public void testInit() throws Exception {
-		UserStorageProvider userStorageProvider = new FromAlvinClassicUserStorageProvider();
 		userStorageProvider.startUsingInitInfo(initInfo);
 		AlvinMixedUserStorage userStorage = (AlvinMixedUserStorage) userStorageProvider
 				.getUserStorage();
 		UserStorageImp userStorageForGuest = (UserStorageImp) userStorage.getUserStorageForGuest();
-		// todo: type userStorageForGuest
+
 		assertSame(userStorageForGuest.getInitInfo(), initInfo);
-		DataReader dataReader = userStorage.getDataReaderForUsers();
-		// assertSame(userStorage.getInitInfo(), initInfo);
-		// type etc. for data reader
-		assertTrue(false);
+		assertEquals(userStorageForGuest.getClass(), UserStorageImp.class);
+
+		DataReaderImp dataReader = (DataReaderImp) userStorage.getDataReaderForUsers();
+		assertEquals(dataReader.getClass(), DataReaderImp.class);
+
+		SqlConnectionProvider sqlConnectionProvider = dataReader.getSqlConnectionProvider();
+		assertEquals(sqlConnectionProvider.getClass(), ContextConnectionProviderImp.class);
+
+		ContextConnectionProviderImp contextConnectionProviderImp = (ContextConnectionProviderImp) sqlConnectionProvider;
+
+		assertEquals(contextConnectionProviderImp.getName(), initInfo.get("databaseLookupName"));
+		assertTrue(contextConnectionProviderImp.getContext() instanceof InitialContext);
+	}
+
+	@Test
+	public void testStartupLogsInfo() throws Exception {
+		userStorageProvider.startUsingInitInfo(initInfo);
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+	}
+
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""
+			+ "Error starting ContextConnectionProviderImp")
+	public void testMissingDatabaseLookupName() {
+		initInfo.remove("databaseLookupName");
+		userStorageProvider.startUsingInitInfo(initInfo);
+	}
+
+	@Test
+	public void testMissingDatabaseLookupNameLogsError() throws Exception {
+		initInfo.remove("databaseLookupName");
+		startUserStorageProviderMakeSureAnExceptionIsThrown();
+		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"InitInfo must contain databaseLookupName");
+	}
+
+	private void startUserStorageProviderMakeSureAnExceptionIsThrown() {
+		Exception caughtException = null;
+		try {
+			userStorageProvider.startUsingInitInfo(initInfo);
+		} catch (Exception e) {
+			caughtException = e;
+		}
+		assertNotNull(caughtException);
 	}
 
 	@Test
 	public void testOnlyOneInstanceOfUserStorageIsReturned() throws Exception {
-		UserStorageProvider userStorageProvider = new FromAlvinClassicUserStorageProvider();
 		userStorageProvider.startUsingInitInfo(initInfo);
 		AlvinMixedUserStorage userStorage = (AlvinMixedUserStorage) userStorageProvider
 				.getUserStorage();

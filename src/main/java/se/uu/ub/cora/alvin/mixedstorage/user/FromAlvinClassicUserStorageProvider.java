@@ -20,13 +20,27 @@ package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import java.util.Map;
 
+import javax.naming.InitialContext;
+
+import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
 import se.uu.ub.cora.storage.UserStorageImp;
 
 public class FromAlvinClassicUserStorageProvider implements UserStorageProvider {
 
 	private AlvinMixedUserStorage userStorage;
+	private Map<String, String> initInfo;
+	private Logger log = LoggerProvider
+			.getLoggerForClass(FromAlvinClassicUserStorageProvider.class);
+
+	@Override
+	public int getPreferenceLevel() {
+		return 10;
+	}
 
 	@Override
 	public UserStorage getUserStorage() {
@@ -35,9 +49,38 @@ public class FromAlvinClassicUserStorageProvider implements UserStorageProvider 
 
 	@Override
 	public void startUsingInitInfo(Map<String, String> initInfo) {
+		this.initInfo = initInfo;
 		UserStorage userStorageForGuest = new UserStorageImp(initInfo);
+		ContextConnectionProviderImp sqlConnectionProvider = createConnectionProvider();
+
+		DataReaderImp dataReader = DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
 		userStorage = AlvinMixedUserStorage
-				.usingUserStorageForGuestAndDataReaderForUsers(userStorageForGuest, null);
+				.usingUserStorageForGuestAndDataReaderForUsers(userStorageForGuest, dataReader);
+	}
+
+	private ContextConnectionProviderImp createConnectionProvider() {
+		try {
+			InitialContext context = new InitialContext();
+			String name = tryToGetInitParameter("databaseLookupName");
+			return ContextConnectionProviderImp.usingInitialContextAndName(context, name);
+		} catch (Exception e) {
+			throw new RuntimeException("Error starting ContextConnectionProviderImp", e);
+		}
+	}
+
+	private String tryToGetInitParameter(String parameterName) {
+		throwErrorIfKeyIsMissingFromInitInfo(parameterName);
+		String parameter = initInfo.get(parameterName);
+		log.logInfoUsingMessage("Found " + parameter + " as " + parameterName);
+		return parameter;
+	}
+
+	private void throwErrorIfKeyIsMissingFromInitInfo(String key) {
+		if (!initInfo.containsKey(key)) {
+			String errorMessage = "InitInfo must contain " + key;
+			log.logFatalUsingMessage(errorMessage);
+			throw new RuntimeException(errorMessage);
+		}
 	}
 
 }
