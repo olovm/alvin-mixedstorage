@@ -101,7 +101,7 @@ public class FromAlvinClassicUserStorageProviderTest {
 	@Test
 	public void testPreferenceLevel() {
 		userStorageProvider.startUsingInitInfo(initInfo);
-		assertEquals(userStorageProvider.getPreferenceLevel(), 10);
+		assertEquals(userStorageProvider.getOrderToSelectImplementionsBy(), 10);
 	}
 
 	@Test

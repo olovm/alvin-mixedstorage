@@ -38,7 +38,7 @@ public class FromAlvinClassicUserStorageProvider implements UserStorageProvider 
 			.getLoggerForClass(FromAlvinClassicUserStorageProvider.class);
 
 	@Override
-	public int getPreferenceLevel() {
+	public int getOrderToSelectImplementionsBy() {
 		return 10;
 	}
 
