@@ -18,24 +18,24 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import static org.testng.Assert.assertEquals;
 
-public class UserStorageSpy implements UserStorage {
+import org.testng.annotations.Test;
 
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
-
-	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = DataGroup.withNameInData("user");
-		return userGroupById;
+public class UserExceptionTest {
+	@Test
+	public void testInit() {
+		String message = "message";
+		UserException exception = UserException.withMessage(message);
+		assertEquals(exception.getMessage(), "message");
 	}
 
-	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
-	}
+	@Test
+	public void testWithMessageAndException() throws Exception {
+		Exception e = new Exception("some message");
+		UserException exception = UserException.withMessageAndException("second message", e);
+		assertEquals(exception.getMessage(), "second message");
+		assertEquals(exception.getCause().getMessage(), "some message");
 
+	}
 }

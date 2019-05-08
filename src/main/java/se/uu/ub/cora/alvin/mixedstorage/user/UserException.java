@@ -18,24 +18,22 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+public class UserException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
 
-public class UserStorageSpy implements UserStorage {
-
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
-
-	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = DataGroup.withNameInData("user");
-		return userGroupById;
+	public static UserException withMessage(String message) {
+		return new UserException(message);
 	}
 
-	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
+	public static UserException withMessageAndException(String message, Exception e) {
+		return new UserException(message, e);
 	}
 
+	private UserException(String message) {
+		super(message);
+	}
+
+	private UserException(String message, Exception e) {
+		super(message, e);
+	}
 }

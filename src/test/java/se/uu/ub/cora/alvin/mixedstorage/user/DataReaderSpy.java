@@ -19,6 +19,7 @@
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +35,33 @@ public class DataReaderSpy implements DataReader {
 	@Override
 	public List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues(String sql,
 			List<Object> values) {
+		Object userId = values.get(0);
+		if ("userIdNotFound".equals(userId)) {
+			return Collections.emptyList();
+		}
 		executePreparedStatementWasCalled = true;
 		sqlSentToReader = sql;
 		valuesSentToReader.addAll(values);
 
 		List<Map<String, Object>> listOfRows = new ArrayList<>();
+		if ("userIdNotAdmin".equals(userId)) {
+			listOfRows.add(createDbRowUsingGroupId(22));
+		}
+
+		if ("someId".equals(userId) || "otherId".equals(userId)) {
+			listOfRows.add(createDbRowUsingGroupId(53));
+			listOfRows.add(createDbRowUsingGroupId(54));
+		}
+		if ("userHasNoName".equals(userId)) {
+			Map<String, Object> dbRowUsingGroupId = createDbRowUsingGroupId(54);
+			dbRowUsingGroupId.remove("firstname");
+			dbRowUsingGroupId.remove("lastname");
+			listOfRows.add(dbRowUsingGroupId);
+		}
+		return listOfRows;
+	}
+
+	private Map<String, Object> createDbRowUsingGroupId(int groupId) {
 		Map<String, Object> row1 = new HashMap<>();
 		row1.put("id", 52);
 		// row1.put("lastupdated", '2014-04-17 10:12:52.87');
@@ -46,12 +69,9 @@ public class DataReaderSpy implements DataReader {
 		row1.put("email", "");
 		row1.put("firstname", "SomeFirstName");
 		row1.put("lastname", "SomeLastName");
-		row1.put("userId", "user52");
-		row1.put("groupid", 54);
-
-		listOfRows.add(row1);
-
-		return listOfRows;
+		row1.put("userid", "user52");
+		row1.put("group_id", groupId);
+		return row1;
 	}
 
 	@Override
