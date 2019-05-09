@@ -135,6 +135,7 @@ public class AlvinMixedUserStorage implements UserStorage {
 		DataGroup userGroup = DataGroup.withNameInData("user");
 		userGroup.addAttributeByIdWithValue("type", "coraUser");
 		userGroup.addChild(DataAtomic.withNameInDataAndValue("userId", idFromLogin));
+		userGroup.addChild(DataAtomic.withNameInDataAndValue("activeStatus", "active"));
 
 		Map<String, Object> firstRowFromDb = dbResult.get(0);
 		createAndAddRecordInfo(userGroup, firstRowFromDb);

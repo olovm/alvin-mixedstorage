@@ -155,6 +155,7 @@ public class AlvinMixedUserStorageTest {
 				"SomeFirstName");
 		assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userLastName"),
 				"SomeLastName");
+		assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("activeStatus"), "active");
 	}
 
 	@Test
