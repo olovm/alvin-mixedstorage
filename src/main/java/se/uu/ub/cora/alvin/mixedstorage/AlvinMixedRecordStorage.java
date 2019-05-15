@@ -96,6 +96,9 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 
 	@Override
 	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+		if ("user".equals(type)) {
+			return alvinDbToCoraStorage.readAbstractList(type, filter);
+		}
 		return basicStorage.readAbstractList(type, filter);
 	}
 

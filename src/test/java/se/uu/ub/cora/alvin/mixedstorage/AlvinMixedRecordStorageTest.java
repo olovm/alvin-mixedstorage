@@ -298,4 +298,18 @@ public class AlvinMixedRecordStorageTest {
 		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
+
+	@Test
+	public void readAbstractListForUserGoesToAlvinToCoraStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.answer = alvinMixedRecordStorage.readAbstractList(expectedData.type,
+				expectedData.filter).listOfDataGroups;
+
+		expectedData.calledMethod = "readAbstractList";
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
+	}
 }

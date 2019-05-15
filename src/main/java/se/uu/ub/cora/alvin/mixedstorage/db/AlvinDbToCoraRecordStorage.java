@@ -134,7 +134,12 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	@Override
 	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
-		throw NotImplementedException.withMessage("readAbstractList is not implemented");
+		if ("user".contentEquals(type)) {
+			converterFactory.factor(null);
+			return null;
+		}
+		throw NotImplementedException
+				.withMessage("readAbstractList is not implemented for type " + type);
 	}
 
 	@Override
