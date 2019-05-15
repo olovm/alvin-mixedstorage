@@ -26,7 +26,7 @@
 	</parent>
 
 	<artifactId>alvinmixedstorage</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Alvin Mixed Storage</name>
@@ -37,7 +37,7 @@
 		<httphandler.version>1.0.0</httphandler.version>
 		<spider.version>1.0.0</spider.version>
 		<basicstorage.version>1.1.0</basicstorage.version>
-		<sqldatabase.version>1.1-SNAPSHOT</sqldatabase.version>
+		<sqldatabase.version>1.1.1</sqldatabase.version>
 	</properties>
 
 	<scm>
