@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -135,11 +135,32 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
 		if ("user".contentEquals(type)) {
-			converterFactory.factor(null);
-			return null;
+			return readAllUsersFromDbAndConvertToDataGroup(type);
 		}
 		throw NotImplementedException
 				.withMessage("readAbstractList is not implemented for type " + type);
+	}
+
+	private SpiderReadResult readAllUsersFromDbAndConvertToDataGroup(String type) {
+		List<Map<String, String>> readAllFromTable = readAllUsersFromDb();
+		SpiderReadResult spiderReadResult = new SpiderReadResult();
+		spiderReadResult.listOfDataGroups = convertDataAndAddToList(type, readAllFromTable);
+		return spiderReadResult;
+	}
+
+	private List<DataGroup> convertDataAndAddToList(String type,
+			List<Map<String, String>> readAllFromTable) {
+		List<DataGroup> convertedList = new ArrayList<>();
+		for (Map<String, String> map : readAllFromTable) {
+			DataGroup convertedUser = convertOneMapFromDbToDataGroup(type, map);
+			convertedList.add(convertedUser);
+		}
+		return convertedList;
+	}
+
+	private List<Map<String, String>> readAllUsersFromDb() {
+		RecordReader recordReader = recordReaderFactory.factor();
+		return recordReader.readAllFromTable("alvin_seam_user");
 	}
 
 	@Override
