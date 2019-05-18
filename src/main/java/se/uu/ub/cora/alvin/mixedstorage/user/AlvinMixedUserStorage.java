@@ -118,24 +118,13 @@ public class AlvinMixedUserStorage implements UserStorage {
 	}
 
 	private boolean userHasNoAdminGroupRight(List<Map<String, Object>> dbResult) {
-		for (Map<String, Object> dbRow : dbResult) {
-			if (userHasAdminGroup(dbRow)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean userHasAdminGroup(Map<String, Object> dbRow) {
-		return dbRow.get("group_id").equals(54);
+		return !UserRoleConverterHelper.userHasAdminGroupRight(dbResult);
 	}
 
 	private DataGroup createDataGroupWithUserInfo(String idFromLogin,
 			List<Map<String, Object>> dbResult) {
-		DataGroup userGroup = DataGroup.withNameInData("user");
-		userGroup.addAttributeByIdWithValue("type", "coraUser");
+		DataGroup userGroup = UserConverterHelper.createBasicActiveUser();
 		userGroup.addChild(DataAtomic.withNameInDataAndValue("userId", idFromLogin));
-		userGroup.addChild(DataAtomic.withNameInDataAndValue("activeStatus", "active"));
 
 		Map<String, Object> firstRowFromDb = dbResult.get(0);
 		createAndAddRecordInfo(userGroup, firstRowFromDb);
@@ -172,59 +161,17 @@ public class AlvinMixedUserStorage implements UserStorage {
 		createUserRoleWithRoleIdAndAddToUserGroup("systemConfigurator", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("binaryUserRole", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("userAdminRole", userGroup);
-
-		DataGroup systemOneSystemUserRole = createUserRoleWithRoleIdAndAddToUserGroup(
-				"systemOneSystemUserRole", userGroup);
-
-		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
-		systemOneSystemUserRole.addChild(permissionTermRulePart);
-		permissionTermRulePart.setRepeatId("1");
-		createAndAddRuleLinkUsingParentGroupAndRuleId(permissionTermRulePart,
-				"permissionUnitPermissionTerm");
-		permissionTermRulePart.addChild(DataAtomic.withNameInDataAndValueAndRepeatId("value",
-				"system.permissionUnit_uu.ub", "0"));
-
+		createUserRoleWithRoleIdAndAddToUserGroup("systemOneSystemUserRole", userGroup);
 		addRepeatIdToAllUserRoles(userGroup);
 	}
 
 	private DataGroup createUserRoleWithRoleIdAndAddToUserGroup(String roleId,
 			DataGroup userGroup) {
-		DataGroup userRole = DataGroup.withNameInData(USER_ROLE);
+		DataGroup userRole = UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId(roleId);
 		userGroup.addChild(userRole);
-		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userRole, roleId);
-		addSystemPermissionTermAccessToAllSystems(userRole);
+
 		return userRole;
-	}
-
-	private void createAndAddLinkedUserRoleUsingParentGroupAndRoleId(DataGroup userRole,
-			String roleId) {
-		DataGroup linkedUserRole = DataGroup.asLinkWithNameInDataAndTypeAndId(USER_ROLE,
-				"permissionRole", roleId);
-		userRole.addChild(linkedUserRole);
-	}
-
-	private void addSystemPermissionTermAccessToAllSystems(DataGroup userRole) {
-		createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(userRole, "systemPermissionTerm",
-				"system.*");
-	}
-
-	private void createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(DataGroup userRole,
-			String ruleLinkRecordId, String rulePartValue) {
-		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
-		userRole.addChild(permissionTermRulePart);
-		permissionTermRulePart.setRepeatId("0");
-
-		createAndAddRuleLinkUsingParentGroupAndRuleId(permissionTermRulePart, ruleLinkRecordId);
-
-		permissionTermRulePart.addChild(
-				DataAtomic.withNameInDataAndValueAndRepeatId("value", rulePartValue, "0"));
-	}
-
-	private void createAndAddRuleLinkUsingParentGroupAndRuleId(DataGroup permissionTermRulePart,
-			String ruleLinkRecordId) {
-		DataGroup ruleLink = DataGroup.asLinkWithNameInDataAndTypeAndId("rule",
-				"collectPermissionTerm", ruleLinkRecordId);
-		permissionTermRulePart.addChild(ruleLink);
 	}
 
 	private void addRepeatIdToAllUserRoles(DataGroup userGroup) {

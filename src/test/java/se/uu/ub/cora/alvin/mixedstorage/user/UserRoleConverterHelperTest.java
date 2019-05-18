@@ -35,7 +35,7 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
-public class UserRoleConverterTest {
+public class UserRoleConverterHelperTest {
 	List<Map<String, Object>> rowsFromDb = new ArrayList<>();
 
 	@BeforeMethod
@@ -51,14 +51,14 @@ public class UserRoleConverterTest {
 
 	@Test
 	public void testPrivateConstructor() throws Exception {
-		Constructor<UserRoleConverter> constructor = UserRoleConverter.class
+		Constructor<UserRoleConverterHelper> constructor = UserRoleConverterHelper.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 	}
 
 	@Test(expectedExceptions = InvocationTargetException.class)
 	public void testPrivateConstructorInvoke() throws Exception {
-		Constructor<UserRoleConverter> constructor = UserRoleConverter.class
+		Constructor<UserRoleConverterHelper> constructor = UserRoleConverterHelper.class
 				.getDeclaredConstructor();
 		assertTrue(Modifier.isPrivate(constructor.getModifiers()));
 		constructor.setAccessible(true);
@@ -66,52 +66,20 @@ public class UserRoleConverterTest {
 	}
 
 	@Test
-	public void testNotAdmin() {
-		List<DataGroup> roles = UserRoleConverter.convert(rowsFromDb);
-		assertTrue(roles.isEmpty());
-	}
+	public void testCreateRole() {
+		String roleId = "someRoleId";
 
-	@Test
-	public void testAdmin() {
-		Map<String, Object> rowFromDb = new HashMap<>();
-		rowFromDb.put("id", 53);
-		rowFromDb.put("name", "ADMIN");
-		rowFromDb.put("group_id", 54);
-		rowFromDb.put("user_id", 1);
-		rowsFromDb.add(rowFromDb);
+		DataGroup role = UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId(roleId);
 
-		List<DataGroup> roles = UserRoleConverter.convert(rowsFromDb);
-		assertCorrectRoleInListUsingIndexNameAndRepeatId(roles, 0, "metadataAdmin", "0");
-		assertCorrectRoleInListUsingIndexNameAndRepeatId(roles, 1, "systemConfigurator", "1");
-		assertCorrectRoleInListUsingIndexNameAndRepeatId(roles, 2, "binaryUserRole", "2");
-		assertCorrectRoleInListUsingIndexNameAndRepeatId(roles, 3, "userAdminRole", "3");
-		assertCorrectRoleInListUsingIndexNameAndRepeatId(roles, 4, "systemOneSystemUserRole", "4");
+		assertEquals(role.getNameInData(), "userRole");
 
-		List<DataGroup> permissionTermRuleParts = roles.get(4)
-				.getAllGroupsWithNameInData("permissionTermRulePart");
-		DataGroup extraPermissionRulePart = permissionTermRuleParts.get(1);
-		assertEquals(extraPermissionRulePart.getRepeatId(), "1");
-		DataGroup ruleLink = extraPermissionRulePart.getFirstGroupWithNameInData("rule");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"collectPermissionTerm");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"permissionUnitPermissionTerm");
-		assertRulePartContainsCorrectValue(extraPermissionRulePart, "system.permissionUnit_uu.ub");
-
-		assertEquals(roles.size(), 5);
-	}
-
-	private void assertCorrectRoleInListUsingIndexNameAndRepeatId(List<DataGroup> roles, int index,
-			String roleName, String repeatId) {
-		DataGroup outerUserRole = roles.get(index);
-		assertEquals(outerUserRole.getRepeatId(), repeatId);
-
-		DataGroup innerUserRole = outerUserRole.getFirstGroupWithNameInData("userRole");
+		DataGroup innerUserRole = role.getFirstGroupWithNameInData("userRole");
 		assertEquals(innerUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
 				"permissionRole");
-		assertEquals(innerUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleName);
+		assertEquals(innerUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleId);
 
-		DataGroup permissionTermRulePart = outerUserRole
+		DataGroup permissionTermRulePart = role
 				.getFirstGroupWithNameInData("permissionTermRulePart");
 		assertEquals(permissionTermRulePart.getRepeatId(), "0");
 

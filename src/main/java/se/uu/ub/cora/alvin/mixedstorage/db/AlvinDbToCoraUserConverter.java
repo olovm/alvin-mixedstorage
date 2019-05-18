@@ -1,10 +1,9 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
+import se.uu.ub.cora.alvin.mixedstorage.user.UserConverterHelper;
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
@@ -48,44 +47,27 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	}
 
 	private void addUpdatedInfoToRecordInfo(DataGroup recordInfo) {
-		DataGroup updated = DataGroup.withNameInData("updated");
-		updated.setRepeatId("0");
-		DataGroup updatedBy = DataGroup.asLinkWithNameInDataAndTypeAndId("updatedBy", "coraUser",
-				"coraUser:4412566252284358");
-		updated.addChild(updatedBy);
-		updated.addChild(
-				DataAtomic.withNameInDataAndValue("tsUpdated", getPredefinedTimestampAsString()));
+		DataGroup updated = UserConverterHelper
+				.createUpdatedInfoUsingUserId("coraUser:4412566252284358");
 		recordInfo.addChild(updated);
 	}
 
 	private void createAndAddDataDivider(DataGroup recordInfo) {
-		DataGroup dataDivider = DataGroup.asLinkWithNameInDataAndTypeAndId("dataDivider", "system",
-				"alvin");
+		DataGroup dataDivider = UserConverterHelper.createDataDivider();
 		recordInfo.addChild(dataDivider);
 	}
 
 	private void createAndAddType(DataGroup recordInfo) {
-		DataGroup type = DataGroup.asLinkWithNameInDataAndTypeAndId("type", "recordType",
-				"coraUser");
+		DataGroup type = UserConverterHelper.createType();
 		recordInfo.addChild(type);
 	}
 
 	private void addCreatedInfoToRecordInfo(DataGroup recordInfo) {
-		DataGroup createdByGroup = createLinkToUserUsingUserIdAndNameInData("createdBy");
+		DataGroup createdByGroup = UserConverterHelper
+				.createCreatedByUsingUserId("coraUser:4412566252284358");
 		recordInfo.addChild(createdByGroup);
-		String predefinedTimestamp = getPredefinedTimestampAsString();
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("tsCreated", predefinedTimestamp));
-	}
-
-	private DataGroup createLinkToUserUsingUserIdAndNameInData(String nameInData) {
-		return DataGroup.asLinkWithNameInDataAndTypeAndId(nameInData, "coraUser",
-				"coraUser:4412566252284358");
-	}
-
-	private String getPredefinedTimestampAsString() {
-		LocalDateTime localDateTime = LocalDateTime.of(2017, 10, 01, 00, 00, 00, 0);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-		return localDateTime.format(formatter);
+		DataAtomic tsCreated = UserConverterHelper.createTsCreated();
+		recordInfo.addChild(tsCreated);
 	}
 
 }

@@ -18,45 +18,25 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
-public class UserRoleConverter {
+public class UserRoleConverterHelper {
 
 	private static final String USER_ROLE = "userRole";
 
-	private UserRoleConverter() {
+	private UserRoleConverterHelper() {
 		throw new UnsupportedOperationException();
 	}
 
-	public static List<DataGroup> convert(List<Map<String, Object>> rowsFromDb) {
-		List<DataGroup> roles = new ArrayList<>();
-		possiblyConvertAndAddRoles(rowsFromDb, roles);
-		return roles;
+	public static DataGroup createUserRoleWithAllSystemsPermissionUsingRoleId(String roleId) {
+		return createUserRoleWithRoleId(roleId);
 	}
 
-	private static void possiblyConvertAndAddRoles(List<Map<String, Object>> rowsFromDb,
-			List<DataGroup> roles) {
-		if (userHasAdminGroupRight(rowsFromDb)) {
-			addUserRoles(roles);
-		}
-	}
-
-	private static void addUserRoles(List<DataGroup> roles) {
-		createAndAddRoleWithRoleId(roles, "metadataAdmin");
-		createAndAddRoleWithRoleId(roles, "systemConfigurator");
-		createAndAddRoleWithRoleId(roles, "binaryUserRole");
-		createAndAddRoleWithRoleId(roles, "userAdminRole");
-
-		createAndAddRoleWithExtraRulePart(roles);
-		addRepeatIdToAllUserRoles(roles);
-	}
-
-	private static boolean userHasAdminGroupRight(List<Map<String, Object>> dbResult) {
+	public static boolean userHasAdminGroupRight(List<Map<String, Object>> dbResult) {
 		for (Map<String, Object> dbRow : dbResult) {
 			if (userHasAdminGroup(dbRow)) {
 				return true;
@@ -67,28 +47,6 @@ public class UserRoleConverter {
 
 	private static boolean userHasAdminGroup(Map<String, Object> dbRow) {
 		return dbRow.get("group_id").equals(54);
-	}
-
-	private static void createAndAddRoleWithExtraRulePart(List<DataGroup> roles) {
-		DataGroup systemOneSystemUserRole = createUserRoleWithRoleId("systemOneSystemUserRole");
-		roles.add(systemOneSystemUserRole);
-
-		createAndAddExtraRulePart(systemOneSystemUserRole);
-	}
-
-	private static void createAndAddExtraRulePart(DataGroup systemOneSystemUserRole) {
-		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
-		permissionTermRulePart.setRepeatId("1");
-		createAndAddRuleLinkUsingParentGroupAndRuleId(permissionTermRulePart,
-				"permissionUnitPermissionTerm");
-		permissionTermRulePart.addChild(DataAtomic.withNameInDataAndValueAndRepeatId("value",
-				"system.permissionUnit_uu.ub", "0"));
-		systemOneSystemUserRole.addChild(permissionTermRulePart);
-	}
-
-	private static void createAndAddRoleWithRoleId(List<DataGroup> roles, String roleId) {
-		DataGroup metadataAdmin = createUserRoleWithRoleId(roleId);
-		roles.add(metadataAdmin);
 	}
 
 	private static DataGroup createUserRoleWithRoleId(String roleId) {
@@ -127,14 +85,6 @@ public class UserRoleConverter {
 		DataGroup ruleLink = DataGroup.asLinkWithNameInDataAndTypeAndId("rule",
 				"collectPermissionTerm", ruleLinkRecordId);
 		permissionTermRulePart.addChild(ruleLink);
-	}
-
-	private static void addRepeatIdToAllUserRoles(List<DataGroup> roles) {
-		int repeatId = 0;
-		for (DataGroup role : roles) {
-			role.setRepeatId(String.valueOf(repeatId));
-			repeatId++;
-		}
 	}
 
 }
