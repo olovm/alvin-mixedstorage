@@ -18,20 +18,25 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.sqldatabase.DataReaderImp;
+import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
+import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraConverterFactoryTest {
 	private AlvinDbToCoraConverterFactory alvinDbToCoraConverterFactoryImp;
+	private DataReader dataReader;
 
 	@BeforeMethod
 	public void beforeMethod() {
-		alvinDbToCoraConverterFactoryImp = new AlvinDbToCoraConverterFactoryImp();
+		dataReader = new DataReaderSpy();
+		alvinDbToCoraConverterFactoryImp = AlvinDbToCoraConverterFactoryImp
+				.usingDataReader(dataReader);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
@@ -40,10 +45,10 @@ public class AlvinDbToCoraConverterFactoryTest {
 		alvinDbToCoraConverterFactoryImp.factor("someType");
 	}
 
-	@Test
+	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
+			+ "No converter implemented for: country")
 	public void testFactoryCountry() throws Exception {
-		AlvinDbToCoraConverter converter = alvinDbToCoraConverterFactoryImp.factor("country");
-		assertTrue(converter instanceof AlvinDbToCoraCountryConverter);
+		alvinDbToCoraConverterFactoryImp.factor("country");
 	}
 
 	@Test
@@ -57,6 +62,6 @@ public class AlvinDbToCoraConverterFactoryTest {
 		AlvinDbToCoraUserConverter converter = (AlvinDbToCoraUserConverter) alvinDbToCoraConverterFactoryImp
 				.factor("coraUser");
 
-		assertTrue(converter.getDataReader() instanceof DataReaderImp);
+		assertEquals(converter.getDataReader(), dataReader);
 	}
 }

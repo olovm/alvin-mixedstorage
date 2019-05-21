@@ -78,11 +78,6 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
-	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> map) {
-		AlvinDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
-		return dbToCoraConverter.fromMap(map);
-	}
-
 	@Override
 	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
 		if ("user".contentEquals(type)) {
@@ -107,6 +102,11 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 			convertedList.add(convertedUser);
 		}
 		return convertedList;
+	}
+
+	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> map) {
+		AlvinDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
+		return dbToCoraConverter.fromMap(map);
 	}
 
 	private List<Map<String, Object>> readAllUsersFromDb() {
