@@ -10,10 +10,10 @@ public class AlvinDbToCoraCountryConverter implements AlvinDbToCoraConverter {
 
 	private static final String COUNTRY_STRING = "country";
 	private static final String ALPHA2CODE = "alpha2code";
-	private Map<String, String> map;
+	private Map<String, Object> map;
 
 	@Override
-	public DataGroup fromMap(Map<String, String> map) {
+	public DataGroup fromMap(Map<String, Object> map) {
 		this.map = map;
 		checkMapContainsRequiredValue(ALPHA2CODE);
 
@@ -34,8 +34,8 @@ public class AlvinDbToCoraCountryConverter implements AlvinDbToCoraConverter {
 
 	private DataGroup createCountryDataGroupWithRecordInfo() {
 		DataGroup country = DataGroup.withNameInData(COUNTRY_STRING);
-		DataGroup recordInfo = createAndAddRecordInfo(map);
-		country.addChild(recordInfo);
+		// DataGroup recordInfo = createAndAddRecordInfo(map);
+		// country.addChild(recordInfo);
 		return country;
 	}
 
@@ -85,8 +85,8 @@ public class AlvinDbToCoraCountryConverter implements AlvinDbToCoraConverter {
 		return type;
 	}
 
-	private void addChildrenFromMapToDataGroup(Map<String, String> map, DataGroup country) {
-		String alpha2 = map.get(ALPHA2CODE);
+	private void addChildrenFromMapToDataGroup(Map<String, Object> map, DataGroup country) {
+		String alpha2 = (String) map.get(ALPHA2CODE);
 		possiblyAddTextLink(country, alpha2);
 		addAtomicChildrenToDataGroup(country);
 	}
@@ -123,7 +123,7 @@ public class AlvinDbToCoraCountryConverter implements AlvinDbToCoraConverter {
 	}
 
 	private DataAtomic createDataAtomicWithNameInDataUsingKey(String nameInData, String key) {
-		String value = map.get(key);
+		String value = (String) map.get(key);
 		return DataAtomic.withNameInDataAndValue(nameInData, value);
 	}
 

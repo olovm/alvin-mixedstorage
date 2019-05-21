@@ -9,16 +9,16 @@ import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
 public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
-	private Map<String, String> map;
+	private Map<String, Object> map;
 
 	@Override
-	public DataGroup fromMap(Map<String, String> map) {
+	public DataGroup fromMap(Map<String, Object> map) {
 		this.map = map;
 		checkMapContainsRequiredValue("id");
 		checkMapContainsRequiredValue("domain");
 		checkMapContainsRequiredValue("userid");
 
-		return createUserDataGroup(map);
+		return createUserDataGroup();
 	}
 
 	private void checkMapContainsRequiredValue(String valueToGet) {
@@ -30,7 +30,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		}
 	}
 
-	private DataGroup createUserDataGroup(Map<String, String> map) {
+	private DataGroup createUserDataGroup() {
 		DataGroup user = DataGroup.withNameInData("user");
 		createAndAddRecordInfo(user);
 		return user;
@@ -38,7 +38,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 	private void createAndAddRecordInfo(DataGroup user) {
 		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", map.get("id")));
+		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", String.valueOf(map.get("id"))));
 		createAndAddType(recordInfo);
 		createAndAddDataDivider(recordInfo);
 		addCreatedInfoToRecordInfo(recordInfo);

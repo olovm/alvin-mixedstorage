@@ -31,32 +31,38 @@ public class DataReaderSpy implements DataReader {
 	public boolean executePreparedStatementWasCalled = false;
 	public String sqlSentToReader;
 	public List<Object> valuesSentToReader = new ArrayList<>();
+	public List<Map<String, Object>> listOfRows;
 
 	@Override
 	public List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues(String sql,
 			List<Object> values) {
-		Object userId = values.get(0);
-		if ("userIdNotFound".equals(userId)) {
-			return Collections.emptyList();
-		}
 		executePreparedStatementWasCalled = true;
 		sqlSentToReader = sql;
 		valuesSentToReader.addAll(values);
+		listOfRows = new ArrayList<>();
+		if (!values.isEmpty()) {
+			Object userId = values.get(0);
+			if ("userIdNotFound".equals(userId)) {
+				return Collections.emptyList();
+			}
 
-		List<Map<String, Object>> listOfRows = new ArrayList<>();
-		if ("userIdNotAdmin".equals(userId)) {
-			listOfRows.add(createDbRowUsingGroupId(22));
-		}
+			if ("userIdNotAdmin".equals(userId)) {
+				listOfRows.add(createDbRowUsingGroupId(22));
+			}
 
-		if ("someId".equals(userId) || "otherId".equals(userId)) {
+			if ("someId".equals(userId) || "otherId".equals(userId)) {
+				listOfRows.add(createDbRowUsingGroupId(53));
+				listOfRows.add(createDbRowUsingGroupId(54));
+			}
+			if ("userHasNoName".equals(userId)) {
+				Map<String, Object> dbRowUsingGroupId = createDbRowUsingGroupId(54);
+				dbRowUsingGroupId.remove("firstname");
+				dbRowUsingGroupId.remove("lastname");
+				listOfRows.add(dbRowUsingGroupId);
+			}
+		} else if (sql.contains("seam_user")) {
 			listOfRows.add(createDbRowUsingGroupId(53));
 			listOfRows.add(createDbRowUsingGroupId(54));
-		}
-		if ("userHasNoName".equals(userId)) {
-			Map<String, Object> dbRowUsingGroupId = createDbRowUsingGroupId(54);
-			dbRowUsingGroupId.remove("firstname");
-			dbRowUsingGroupId.remove("lastname");
-			listOfRows.add(dbRowUsingGroupId);
 		}
 		return listOfRows;
 	}

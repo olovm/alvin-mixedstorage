@@ -15,14 +15,14 @@ import se.uu.ub.cora.bookkeeper.data.DataGroup;
 public class AlvinDbToCoraUserConverterTest {
 
 	private AlvinDbToCoraUserConverter converter;
-	private Map<String, String> rowFromDb;
+	private Map<String, Object> rowFromDb;
 
 	// TODO: id är integer????
 
 	@BeforeMethod
 	public void beforeMethod() {
 		rowFromDb = new HashMap<>();
-		rowFromDb.put("id", "52");
+		rowFromDb.put("id", 52);
 		rowFromDb.put("domain", "uu");
 		rowFromDb.put("firstname", "someFirstname");
 		rowFromDb.put("lastname", "someLastname");
@@ -49,9 +49,10 @@ public class AlvinDbToCoraUserConverterTest {
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
 			+ "Error converting user to Cora user: Map does not contain value for id")
 	public void testMapWithNonEmptyValueANDEmptyValueThrowsError() {
-		Map<String, String> rowFromDb = new HashMap<>();
+		Map<String, Object> rowFromDb = new HashMap<>();
 		rowFromDb.put("domain", "uu");
 		rowFromDb.put("id", "");
+		// TODO: uncomment
 		converter.fromMap(rowFromDb);
 	}
 
