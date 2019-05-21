@@ -38,9 +38,9 @@ public class DataReaderSpy implements DataReader {
 			List<Object> values) {
 		executePreparedStatementWasCalled = true;
 		sqlSentToReader = sql;
-		valuesSentToReader.addAll(values);
 		listOfRows = new ArrayList<>();
-		if (!values.isEmpty()) {
+		if (values != null && !values.isEmpty()) {
+			valuesSentToReader.addAll(values);
 			Object userId = values.get(0);
 			if ("userIdNotFound".equals(userId)) {
 				return Collections.emptyList();

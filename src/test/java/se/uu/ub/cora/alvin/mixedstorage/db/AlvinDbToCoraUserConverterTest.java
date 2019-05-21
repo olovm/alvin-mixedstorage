@@ -1,23 +1,28 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
+import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
+import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraUserConverterTest {
 
 	private AlvinDbToCoraUserConverter converter;
 	private Map<String, Object> rowFromDb;
-
-	// TODO: id är integer????
+	private DataReaderSpy dataReader;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -27,7 +32,10 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("firstname", "someFirstname");
 		rowFromDb.put("lastname", "someLastname");
 		rowFromDb.put("userid", "user52");
-		converter = new AlvinDbToCoraUserConverter();
+
+		dataReader = new DataReaderSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReader);
+
 	}
 
 	@Test(expectedExceptions = ConversionException.class, expectedExceptionsMessageRegExp = ""
@@ -42,7 +50,7 @@ public class AlvinDbToCoraUserConverterTest {
 			+ "Error converting user to Cora user: Map does not contain value for id")
 	public void testMapWithEmptyValueThrowsError() {
 		rowFromDb = new HashMap<>();
-		rowFromDb.put("id", "");
+		rowFromDb.put("id", null);
 		converter.fromMap(rowFromDb);
 	}
 
@@ -51,8 +59,7 @@ public class AlvinDbToCoraUserConverterTest {
 	public void testMapWithNonEmptyValueANDEmptyValueThrowsError() {
 		Map<String, Object> rowFromDb = new HashMap<>();
 		rowFromDb.put("domain", "uu");
-		rowFromDb.put("id", "");
-		// TODO: uncomment
+		rowFromDb.put("id", null);
 		converter.fromMap(rowFromDb);
 	}
 
@@ -68,7 +75,7 @@ public class AlvinDbToCoraUserConverterTest {
 			+ "Error converting user to Cora user: Map does not contain value for domain")
 	public void mapDoesNotContainDomain() {
 		rowFromDb = new HashMap<>();
-		rowFromDb.put("id", "52");
+		rowFromDb.put("id", 52);
 		converter.fromMap(rowFromDb);
 	}
 
@@ -76,7 +83,7 @@ public class AlvinDbToCoraUserConverterTest {
 			+ "Error converting user to Cora user: Map does not contain value for userid")
 	public void mapDoesNotContainUserId() {
 		rowFromDb = new HashMap<>();
-		rowFromDb.put("id", "52");
+		rowFromDb.put("id", 52);
 		rowFromDb.put("domain", "uu");
 		converter.fromMap(rowFromDb);
 	}
@@ -88,28 +95,106 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("email", "");
 		DataGroup user = converter.fromMap(rowFromDb);
 		assertEquals(user.getNameInData(), "user");
+		assertEquals(user.getAttribute("type"), "coraUser");
 
-		assertCorrectRecordInfoWithId(user, "52");
-		// assertEquals(user.getFirstAtomicValueWithNameInData("iso31661Alpha2"), "someAlpha2Code");
-		// assertEquals(user.getChildren().size(), 2);
+		assertCorrectRecordInfoWithId(user, 52);
+		assertEquals(user.getFirstAtomicValueWithNameInData("activeStatus"), "active");
+
+		assertFalse(user.containsChildWithNameInData("userFirstname"));
+		assertFalse(user.containsChildWithNameInData("userLastname"));
+		assertFalse(user.containsChildWithNameInData("email"));
 	}
 
-	// @Test
-	// public void testMinimalNullValuesReturnsDataGroupWithCorrectRecordInfo() {
-	// rowFromDb.put("defaultname", null);
-	// rowFromDb.put("alpha3code", null);
-	// rowFromDb.put("numericalcode", null);
-	// DataGroup country = converter.fromMap(rowFromDb);
-	// assertEquals(country.getNameInData(), "country");
-	//
-	// assertCorrectRecordInfoWithId(country, "someAlpha2Code");
-	// assertEquals(country.getFirstAtomicValueWithNameInData("iso31661Alpha2"), "someAlpha2Code");
-	// assertEquals(country.getChildren().size(), 2);
-	// }
-	//
-	private void assertCorrectRecordInfoWithId(DataGroup country, String id) {
+	@Test
+	public void testCompleteUser() {
+		rowFromDb.put("firstname", "johan");
+		rowFromDb.put("lastname", "andersson");
+		rowFromDb.put("email", "johan.andersson@ub.uu.se");
+		DataGroup user = converter.fromMap(rowFromDb);
+		assertEquals(user.getFirstAtomicValueWithNameInData("userFirstname"), "johan");
+		assertEquals(user.getFirstAtomicValueWithNameInData("userLastname"), "andersson");
+		// assertEquals(user.getFirstAtomicValueWithNameInData("email"),
+		// "johan.andersson@ub.uu.se");
+	}
+
+	@Test
+	public void testUser() {
+		rowFromDb.put("id", 54);
+		DataGroup user = converter.fromMap(rowFromDb);
+		assertTrue(dataReader.executePreparedStatementWasCalled);
+		assertTrue(dataReader.valuesSentToReader.contains(54));
+	}
+
+	@Test
+	public void testUserRoles() {
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(52));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 4);
+
+		assertCorrectRole(userRoles, 0, "metadataAdmin");
+		assertCorrectRole(userRoles, 1, "binaryUserRole");
+		assertCorrectRole(userRoles, 2, "systemConfigurator");
+		assertCorrectRole(userRoles, 3, "systemOneSystemUserRole");
+	}
+
+	@Test
+	public void testNoUserRoles() {
+		rowFromDb.put("id", 54);
+		DataReader dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+		assertFalse(user.containsChildWithNameInData("userRole"));
+	}
+
+	private void assertCorrectRole(List<DataGroup> userRoles, int index, String roleId) {
+		DataGroup role = userRoles.get(index);
+
+		DataGroup permissionTermRulePart = role
+				.getFirstGroupWithNameInData("permissionTermRulePart");
+		assertEquals(permissionTermRulePart.getRepeatId(), "0");
+
+		assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
+				"systemPermissionTerm");
+
+		assertRulePartContainsCorrectValue(permissionTermRulePart, "system.*");
+
+		String linkedRecordIdBinaryUserRole = extractRoleIdUsingRole(role);
+
+		assertEquals(linkedRecordIdBinaryUserRole, roleId);
+	}
+
+	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
+			String linkedPermissionTerm) {
+		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
+				"collectPermissionTerm");
+		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
+				linkedPermissionTerm);
+	}
+
+	private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
+			String rulePartValue) {
+		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
+		assertEquals(value.getValue(), rulePartValue);
+		assertEquals(value.getRepeatId(), "0");
+	}
+
+	private String extractRoleIdUsingRole(DataGroup dataGroup) {
+		DataGroup userRole = dataGroup.getFirstGroupWithNameInData("userRole");
+		String linkedRecordId = userRole.getFirstAtomicValueWithNameInData("linkedRecordId");
+		return linkedRecordId;
+	}
+
+	private void assertCorrectRecordInfoWithId(DataGroup country, int id) {
 		DataGroup recordInfo = country.getFirstGroupWithNameInData("recordInfo");
-		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), id);
+		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), String.valueOf(id));
 
 		DataGroup type = recordInfo.getFirstGroupWithNameInData("type");
 		assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordType"), "recordType");
@@ -120,9 +205,7 @@ public class AlvinDbToCoraUserConverterTest {
 		assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordId"), "alvin");
 
 		assertCorrectCreatedInfo(recordInfo);
-
 		assertCorrectUpdatedInfo(recordInfo);
-
 	}
 
 	private void assertCorrectCreatedInfo(DataGroup recordInfo) {

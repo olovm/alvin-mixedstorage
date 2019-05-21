@@ -1,15 +1,28 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
 import se.uu.ub.cora.alvin.mixedstorage.user.UserConverterHelper;
+import se.uu.ub.cora.alvin.mixedstorage.user.UserRoleConverterHelper;
 import se.uu.ub.cora.bookkeeper.data.DataAtomic;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
+	public static AlvinDbToCoraUserConverter usingDataReader(DataReader dataReader) {
+		return new AlvinDbToCoraUserConverter(dataReader);
+	}
+
 	private Map<String, Object> map;
+	private DataReader dataReader;
+
+	private AlvinDbToCoraUserConverter(DataReader dataReader) {
+		this.dataReader = dataReader;
+	}
 
 	@Override
 	public DataGroup fromMap(Map<String, Object> map) {
@@ -22,7 +35,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	}
 
 	private void checkMapContainsRequiredValue(String valueToGet) {
-		if (map.isEmpty() || !map.containsKey(valueToGet) || "".equals(map.get(valueToGet))) {
+		if (map.isEmpty() || valueIsEmpty(valueToGet)) {
 			throw ConversionException.withMessageAndException(
 					"Error converting user to Cora user: Map does not contain value for "
 							+ valueToGet,
@@ -30,9 +43,19 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		}
 	}
 
+	private boolean valueIsEmpty(String valueToGet) {
+		return !map.containsKey(valueToGet) || "".equals(map.get(valueToGet))
+				|| map.get(valueToGet) == null;
+	}
+
 	private DataGroup createUserDataGroup() {
-		DataGroup user = DataGroup.withNameInData("user");
+		DataGroup user = UserConverterHelper.createBasicActiveUser();
+
 		createAndAddRecordInfo(user);
+		possiblyAddFirstname(user);
+		possiblyAddLastname(user);
+		List<Map<String, Object>> readUserRoles = readUserRoles();
+		possiblyAddUserRoles(user, readUserRoles);
 		return user;
 	}
 
@@ -68,6 +91,57 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		recordInfo.addChild(createdByGroup);
 		DataAtomic tsCreated = UserConverterHelper.createTsCreated();
 		recordInfo.addChild(tsCreated);
+	}
+
+	private void possiblyAddFirstname(DataGroup user) {
+		possiblyAddAtomicValueToUserUsingValueToGetAndNameInData(user, "firstname",
+				"userFirstname");
+	}
+
+	private void possiblyAddAtomicValueToUserUsingValueToGetAndNameInData(DataGroup user,
+			String valueToGet, String nameInData) {
+		if (!valueIsEmpty(valueToGet)) {
+			String firstname = (String) map.get(valueToGet);
+			user.addChild(DataAtomic.withNameInDataAndValue(nameInData, firstname));
+		}
+	}
+
+	private void possiblyAddLastname(DataGroup user) {
+		possiblyAddAtomicValueToUserUsingValueToGetAndNameInData(user, "lastname", "userLastname");
+	}
+
+	private List<Map<String, Object>> readUserRoles() {
+		List<Object> values = new ArrayList<>();
+		values.add(map.get("id"));
+
+		return dataReader.executePreparedStatementQueryUsingSqlAndValues(
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?",
+				values);
+
+	}
+
+	private void possiblyAddUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {
+		if (UserRoleConverterHelper.userHasAdminGroupRight(readUserRoles)) {
+			addUserRoles(user);
+		}
+	}
+
+	private void addUserRoles(DataGroup user) {
+		user.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("metadataAdmin"));
+
+		user.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("binaryUserRole"));
+
+		user.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("systemConfigurator"));
+
+		user.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("systemOneSystemUserRole"));
+	}
+
+	public DataReader getDataReader() {
+		return dataReader;
 	}
 
 }

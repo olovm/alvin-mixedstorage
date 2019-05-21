@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -26,6 +26,10 @@ public class AlvinDbToCoraConverterFactoryImp implements AlvinDbToCoraConverterF
 	public AlvinDbToCoraConverter factor(String type) {
 		if ("country".equals(type)) {
 			return new AlvinDbToCoraCountryConverter();
+		}
+
+		if ("coraUser".equals(type)) {
+			return AlvinDbToCoraUserConverter.usingDataReader(null);
 		}
 		throw NotImplementedException.withMessage("No converter implemented for: " + type);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -24,6 +24,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
 
 public class AlvinDbToCoraConverterFactoryTest {
 	private AlvinDbToCoraConverterFactory alvinDbToCoraConverterFactoryImp;
@@ -40,8 +41,22 @@ public class AlvinDbToCoraConverterFactoryTest {
 	}
 
 	@Test
-	public void testFactoryPlace() throws Exception {
+	public void testFactoryCountry() throws Exception {
 		AlvinDbToCoraConverter converter = alvinDbToCoraConverterFactoryImp.factor("country");
 		assertTrue(converter instanceof AlvinDbToCoraCountryConverter);
+	}
+
+	@Test
+	public void testCoraUser() throws Exception {
+		AlvinDbToCoraConverter converter = alvinDbToCoraConverterFactoryImp.factor("coraUser");
+		assertTrue(converter instanceof AlvinDbToCoraUserConverter);
+	}
+
+	@Test
+	public void testDataReaderInUserConverter() throws Exception {
+		AlvinDbToCoraUserConverter converter = (AlvinDbToCoraUserConverter) alvinDbToCoraConverterFactoryImp
+				.factor("coraUser");
+
+		assertTrue(converter.getDataReader() instanceof DataReaderImp);
 	}
 }
