@@ -53,14 +53,14 @@ public class AlvinDbToCoraConverterFactoryTest {
 
 	@Test
 	public void testCoraUser() throws Exception {
-		AlvinDbToCoraConverter converter = alvinDbToCoraConverterFactoryImp.factor("coraUser");
+		AlvinDbToCoraConverter converter = alvinDbToCoraConverterFactoryImp.factor("user");
 		assertTrue(converter instanceof AlvinDbToCoraUserConverter);
 	}
 
 	@Test
 	public void testDataReaderInUserConverter() throws Exception {
 		AlvinDbToCoraUserConverter converter = (AlvinDbToCoraUserConverter) alvinDbToCoraConverterFactoryImp
-				.factor("coraUser");
+				.factor("user");
 
 		assertEquals(converter.getDataReader(), dataReader);
 	}

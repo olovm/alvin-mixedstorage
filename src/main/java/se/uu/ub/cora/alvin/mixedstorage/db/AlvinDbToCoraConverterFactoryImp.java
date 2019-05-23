@@ -35,7 +35,7 @@ public class AlvinDbToCoraConverterFactoryImp implements AlvinDbToCoraConverterF
 
 	@Override
 	public AlvinDbToCoraConverter factor(String type) {
-		if ("coraUser".equals(type)) {
+		if ("user".equals(type)) {
 			return AlvinDbToCoraUserConverter.usingDataReader(dataReader);
 		}
 		throw NotImplementedException.withMessage("No converter implemented for: " + type);

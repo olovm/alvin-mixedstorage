@@ -110,8 +110,8 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private List<Map<String, Object>> readAllUsersFromDb() {
-		return dataReader.executePreparedStatementQueryUsingSqlAndValues("select * from seam_user",
-				Collections.emptyList());
+		return dataReader.executePreparedStatementQueryUsingSqlAndValues(
+				"select * from alvin_seam_user", Collections.emptyList());
 	}
 
 	@Override

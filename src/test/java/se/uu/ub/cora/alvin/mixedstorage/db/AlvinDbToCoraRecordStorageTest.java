@@ -112,7 +112,7 @@ public class AlvinDbToCoraRecordStorageTest {
 	@Test
 	public void testReadUserAbstractListCallsDataReader() throws Exception {
 		alvinToCoraRecordStorage.readAbstractList("user", DataGroup.withNameInData("filter"));
-		assertEquals(dataReader.sqlSentToReader, "select * from seam_user");
+		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user");
 	}
 
 	@Test
