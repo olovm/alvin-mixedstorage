@@ -67,6 +67,12 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.read("country", "someId");
 	}
 
+	@Test
+	public void testReadUserCallsDataReader() throws Exception {
+		alvinToCoraRecordStorage.read("user", "someUserId");
+		assertTrue(dataReader.executePreparedStatementWasCalled);
+	}
+
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "create is not implemented")
 	public void createThrowsNotImplementedException() throws Exception {

@@ -51,7 +51,14 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.read(type, id);
 		}
+		if (userButNotGuestUser(type, id)) {
+			return alvinDbToCoraStorage.read(type, id);
+		}
 		return basicStorage.read(type, id);
+	}
+
+	private boolean userButNotGuestUser(String type, String id) {
+		return "user".contentEquals(type) && !"coraUser:5368244264733286".equals(id);
 	}
 
 	@Override
