@@ -27,8 +27,10 @@ import java.util.Map;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
@@ -48,7 +50,41 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	@Override
 	public DataGroup read(String type, String id) {
+		if ("user".equals(type)) {
+			return readAndConvertUser(type, id);
+		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
+	}
+
+	private DataGroup readAndConvertUser(String type, String id) {
+		throwErrorIfIdNotAnIntegerValue(id);
+		Map<String, Object> map = tryToReadUserFromDb(id);
+		return convertOneMapFromDbToDataGroup(type, map);
+	}
+
+	private Map<String, Object> tryToReadUserFromDb(String id) {
+		try {
+			List<Object> values = createListOfValuesWithId(id);
+			return dataReader.readOneRowOrFailUsingSqlAndValues(
+					"select * from alvin_seam_user where id = ?", values);
+		} catch (SqlStorageException e) {
+			throw new RecordNotFoundException("User not found: " + id);
+		}
+	}
+
+	private List<Object> createListOfValuesWithId(String id) {
+		Integer idAsInteger = Integer.valueOf(id);
+		List<Object> values = new ArrayList<>();
+		values.add(idAsInteger);
+		return values;
+	}
+
+	private void throwErrorIfIdNotAnIntegerValue(String id) {
+		try {
+			Integer.valueOf(id);
+		} catch (NumberFormatException ne) {
+			throw new RecordNotFoundException("User not found: " + id);
+		}
 	}
 
 	@Override

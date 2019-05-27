@@ -120,7 +120,11 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
-	public void readUserGUESTGoesToAlvinToCoraStorage() throws Exception {
+	public void readUserGUESTGoesToBasicStorage() throws Exception {
+		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
+		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, alvinFeodraToCoraStorage, alvinDbToCoraStorageSpy);
+
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
 		expectedData.id = "coraUser:5368244264733286";
@@ -128,7 +132,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "read";
 		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
-		assertNoInteractionWithStorage(alvinDbToCoraStorage);
+		assertTrue(alvinDbToCoraStorageSpy.readWasCalled);
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
 	}
 

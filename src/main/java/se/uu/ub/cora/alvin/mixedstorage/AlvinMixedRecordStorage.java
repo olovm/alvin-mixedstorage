@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public final class AlvinMixedRecordStorage implements RecordStorage {
@@ -30,7 +31,6 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	private RecordStorage basicStorage;
 	private RecordStorage alvinFedoraToCoraStorage;
 
-	// Left here since it is probably going to be needed again
 	private RecordStorage alvinDbToCoraStorage;
 
 	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
@@ -51,14 +51,19 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.read(type, id);
 		}
-		if (userButNotGuestUser(type, id)) {
-			return alvinDbToCoraStorage.read(type, id);
+		if ("user".equals(type)) {
+			return handleUser(type, id);
 		}
 		return basicStorage.read(type, id);
 	}
 
-	private boolean userButNotGuestUser(String type, String id) {
-		return "user".contentEquals(type) && !"coraUser:5368244264733286".equals(id);
+	private DataGroup handleUser(String type, String id) {
+		try {
+			return alvinDbToCoraStorage.read(type, id);
+		} catch (RecordNotFoundException e) {
+			// do nothing, we keep looking in basicstorage
+		}
+		return basicStorage.read(type, id);
 	}
 
 	@Override

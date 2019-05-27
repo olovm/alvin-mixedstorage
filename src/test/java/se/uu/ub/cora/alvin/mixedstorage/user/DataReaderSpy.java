@@ -25,13 +25,16 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.DataReader;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class DataReaderSpy implements DataReader {
 
 	public boolean executePreparedStatementWasCalled = false;
+	public boolean readOneRowWasCalled = false;
 	public String sqlSentToReader;
 	public List<Object> valuesSentToReader = new ArrayList<>();
 	public List<Map<String, Object>> listOfRows;
+	public Map<String, Object> row;
 
 	@Override
 	public List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues(String sql,
@@ -82,7 +85,15 @@ public class DataReaderSpy implements DataReader {
 
 	@Override
 	public Map<String, Object> readOneRowOrFailUsingSqlAndValues(String sql, List<Object> values) {
-		return null;
+		readOneRowWasCalled = true;
+		sqlSentToReader = sql;
+		valuesSentToReader.addAll(values);
+		if (values.get(0).equals(60000)) {
+			throw SqlStorageException.withMessage("Error from spy");
+		}
+
+		row = createDbRowUsingGroupId(53);
+		return row;
 	}
 
 }

@@ -30,6 +30,7 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public class AlvinDbToCoraRecordStorageTest {
@@ -67,10 +68,36 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.read("country", "someId");
 	}
 
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User not found: notAnInt")
+	public void testReadUserCallsDataReaderWithStringIdThrowsException() throws Exception {
+		alvinToCoraRecordStorage.read("user", "notAnInt");
+	}
+
 	@Test
 	public void testReadUserCallsDataReader() throws Exception {
-		alvinToCoraRecordStorage.read("user", "someUserId");
-		assertTrue(dataReader.executePreparedStatementWasCalled);
+		alvinToCoraRecordStorage.read("user", "53");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+		List<Object> valuesSentToReader = dataReader.valuesSentToReader;
+		assertEquals(valuesSentToReader.get(0), 53);
+		assertEquals(valuesSentToReader.size(), 1);
+	}
+
+	@Test
+	public void testReadUserUsesConverter() throws Exception {
+		DataGroup user = alvinToCoraRecordStorage.read("user", "53");
+		assertTrue(converterFactory.factorWasCalled);
+		assertEquals(converterFactory.factoredTypes.get(0), "user");
+		AlvinDbToCoraConverterSpy converter = (AlvinDbToCoraConverterSpy) converterFactory.factoredConverters
+				.get(0);
+		assertEquals(converter.convertedDbDataGroup, user);
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User not found: 60000")
+	public void testReadUserWhenUserNotFound() throws Exception {
+		alvinToCoraRecordStorage.read("user", "60000");
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
