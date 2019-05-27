@@ -24,6 +24,6 @@ import se.uu.ub.cora.bookkeeper.data.DataGroup;
 
 public interface AlvinDbToCoraConverter {
 
-	DataGroup fromMap(Map<String, String> map);
+	DataGroup fromMap(Map<String, Object> map);
 
 }

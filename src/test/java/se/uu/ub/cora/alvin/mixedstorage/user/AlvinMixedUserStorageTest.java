@@ -24,8 +24,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
-import java.util.List;
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -191,18 +189,6 @@ public class AlvinMixedUserStorageTest {
 		DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
 		assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
 				"system.*");
-
-		List<DataGroup> permissionTermRuleParts = userRole
-				.getAllGroupsWithNameInData("permissionTermRulePart");
-
-		DataGroup extraPermissionRulePart = permissionTermRuleParts.get(1);
-		assertEquals(extraPermissionRulePart.getRepeatId(), "1");
-		DataGroup ruleLink = extraPermissionRulePart.getFirstGroupWithNameInData("rule");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"collectPermissionTerm");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"permissionUnitPermissionTerm");
-		assertRulePartContainsCorrectValue(extraPermissionRulePart, "system.permissionUnit_uu.ub");
 
 	}
 

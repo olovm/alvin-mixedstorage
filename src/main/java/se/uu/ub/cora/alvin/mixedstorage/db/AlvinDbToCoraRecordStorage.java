@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -20,53 +20,71 @@ package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.spider.data.SpiderReadResult;
+import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
-import se.uu.ub.cora.sqldatabase.RecordReader;
-import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+import se.uu.ub.cora.sqldatabase.DataReader;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
-	private static final String COUNTRY = "country";
 	private AlvinDbToCoraConverterFactory converterFactory;
-	private RecordReaderFactory recordReaderFactory;
+	private DataReader dataReader;
 
-	private AlvinDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
+	private AlvinDbToCoraRecordStorage(DataReader dataReader,
 			AlvinDbToCoraConverterFactory converterFactory) {
-		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
+		this.dataReader = dataReader;
 	}
 
-	public static AlvinDbToCoraRecordStorage usingRecordReaderFactoryAndConverterFactory(
-			RecordReaderFactory recordReaderFactory,
-			AlvinDbToCoraConverterFactory converterFactory) {
-		return new AlvinDbToCoraRecordStorage(recordReaderFactory, converterFactory);
+	public static AlvinDbToCoraRecordStorage usingDataReaderAndConverterFactory(
+			DataReader dataReader, AlvinDbToCoraConverterFactory converterFactory) {
+		return new AlvinDbToCoraRecordStorage(dataReader, converterFactory);
 	}
 
 	@Override
 	public DataGroup read(String type, String id) {
-		if (COUNTRY.equals(type)) {
-			return readAndConvertCountryFromDb(type, id);
+		if ("user".equals(type)) {
+			return readAndConvertUser(type, id);
 		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
 	}
 
-	private DataGroup readAndConvertCountryFromDb(String type, String id) {
-		Map<String, String> readRow = readOneRowFromDbUsingTypeAndId(type, id);
-		return convertOneMapFromDbToDataGroup(type, readRow);
+	private DataGroup readAndConvertUser(String type, String id) {
+		throwErrorIfIdNotAnIntegerValue(id);
+		Map<String, Object> map = tryToReadUserFromDb(id);
+		return convertOneMapFromDbToDataGroup(type, map);
 	}
 
-	private Map<String, String> readOneRowFromDbUsingTypeAndId(String type, String id) {
-		RecordReader recordReader = recordReaderFactory.factor();
-		Map<String, String> conditions = new HashMap<>();
-		conditions.put("alpha2code", id);
-		return recordReader.readOneRowFromDbUsingTableAndConditions(type, conditions);
+	private Map<String, Object> tryToReadUserFromDb(String id) {
+		try {
+			List<Object> values = createListOfValuesWithId(id);
+			return dataReader.readOneRowOrFailUsingSqlAndValues(
+					"select * from alvin_seam_user where id = ?", values);
+		} catch (SqlStorageException e) {
+			throw new RecordNotFoundException("User not found: " + id);
+		}
+	}
+
+	private List<Object> createListOfValuesWithId(String id) {
+		Integer idAsInteger = Integer.valueOf(id);
+		List<Object> values = new ArrayList<>();
+		values.add(idAsInteger);
+		return values;
+	}
+
+	private void throwErrorIfIdNotAnIntegerValue(String id) {
+		try {
+			Integer.valueOf(id);
+		} catch (NumberFormatException ne) {
+			throw new RecordNotFoundException("User not found: " + id);
+		}
 	}
 
 	@Override
@@ -93,48 +111,43 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	@Override
 	public SpiderReadResult readList(String type, DataGroup filter) {
-		if (COUNTRY.equals(type)) {
-			return readAllFromDbAndConvertToDataGroup(type);
-		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
-	}
-
-	private SpiderReadResult readAllFromDbAndConvertToDataGroup(String type) {
-		List<Map<String, String>> readAllFromTable = readAllFromDb(type);
-		return createSpiderReadResultFromDbData(type, readAllFromTable);
-	}
-
-	private List<Map<String, String>> readAllFromDb(String type) {
-		RecordReader recordReader = recordReaderFactory.factor();
-		return recordReader.readAllFromTable(type);
-	}
-
-	private SpiderReadResult createSpiderReadResultFromDbData(String type,
-			List<Map<String, String>> readAllFromTable) {
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = convertListOfMapsFromDbToDataGroups(type,
-				readAllFromTable);
-		return spiderReadResult;
-	}
-
-	private List<DataGroup> convertListOfMapsFromDbToDataGroups(String type,
-			List<Map<String, String>> readAllFromTable) {
-		List<DataGroup> convertedList = new ArrayList<>();
-		for (Map<String, String> map : readAllFromTable) {
-			DataGroup convertedGroup = convertOneMapFromDbToDataGroup(type, map);
-			convertedList.add(convertedGroup);
-		}
-		return convertedList;
-	}
-
-	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, String> map) {
-		AlvinDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
-		return dbToCoraConverter.fromMap(map);
 	}
 
 	@Override
 	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
-		throw NotImplementedException.withMessage("readAbstractList is not implemented");
+		if ("user".contentEquals(type)) {
+			return readAllUsersFromDbAndConvertToDataGroup(type);
+		}
+		throw NotImplementedException
+				.withMessage("readAbstractList is not implemented for type " + type);
+	}
+
+	private SpiderReadResult readAllUsersFromDbAndConvertToDataGroup(String type) {
+		List<Map<String, Object>> readAllFromTable = readAllUsersFromDb();
+		SpiderReadResult spiderReadResult = new SpiderReadResult();
+		spiderReadResult.listOfDataGroups = convertDataAndAddToList(type, readAllFromTable);
+		return spiderReadResult;
+	}
+
+	private List<DataGroup> convertDataAndAddToList(String type,
+			List<Map<String, Object>> readAllFromTable) {
+		List<DataGroup> convertedList = new ArrayList<>();
+		for (Map<String, Object> map : readAllFromTable) {
+			DataGroup convertedUser = convertOneMapFromDbToDataGroup(type, map);
+			convertedList.add(convertedUser);
+		}
+		return convertedList;
+	}
+
+	private DataGroup convertOneMapFromDbToDataGroup(String type, Map<String, Object> map) {
+		AlvinDbToCoraConverter dbToCoraConverter = converterFactory.factor(type);
+		return dbToCoraConverter.fromMap(map);
+	}
+
+	private List<Map<String, Object>> readAllUsersFromDb() {
+		return dataReader.executePreparedStatementQueryUsingSqlAndValues(
+				"select * from alvin_seam_user", Collections.emptyList());
 	}
 
 	@Override
