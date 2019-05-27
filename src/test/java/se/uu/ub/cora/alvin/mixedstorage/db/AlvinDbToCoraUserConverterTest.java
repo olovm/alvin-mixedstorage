@@ -192,8 +192,8 @@ public class AlvinDbToCoraUserConverterTest {
 		return linkedRecordId;
 	}
 
-	private void assertCorrectRecordInfoWithId(DataGroup country, int id) {
-		DataGroup recordInfo = country.getFirstGroupWithNameInData("recordInfo");
+	private void assertCorrectRecordInfoWithId(DataGroup dataGroup, int id) {
+		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), String.valueOf(id));
 
 		DataGroup type = recordInfo.getFirstGroupWithNameInData("type");
