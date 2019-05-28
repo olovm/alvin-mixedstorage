@@ -36,7 +36,7 @@
 		<gatekeeper.version>1.1.0</gatekeeper.version>
 		<httphandler.version>1.0.0</httphandler.version>
 		<spider.version>1.2.0</spider.version>
-		<basicstorage.version>1.1.0</basicstorage.version>
+		<basicstorage.version>1.2.0</basicstorage.version>
 		<sqldatabase.version>1.1.1</sqldatabase.version>
 	</properties>
 
