@@ -169,8 +169,20 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
+		if ("user".equals(type)) {
+			return userExistsInDb(id);
+		}
 		throw NotImplementedException.withMessage(
 				"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+	}
+
+	private boolean userExistsInDb(String id) {
+		try {
+			tryToReadUserFromDb(id);
+			return true;
+		} catch (RecordNotFoundException e) {
+			return false;
+		}
 	}
 
 }

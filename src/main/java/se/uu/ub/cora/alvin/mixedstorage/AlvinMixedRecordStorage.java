@@ -132,6 +132,23 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
+		if ("user".equals(type)) {
+			return handleRecordExistsForAbstractOrImplementingForUser(type, id);
+		}
+		return recordExistsInBasicStorage(type, id);
+	}
+
+	private boolean handleRecordExistsForAbstractOrImplementingForUser(String type, String id) {
+		boolean recordExistsInDb = recordExistsInDb(type, id);
+		return recordExistsInDb ? recordExistsInDb : recordExistsInBasicStorage(type, id);
+	}
+
+	private boolean recordExistsInDb(String type, String id) {
+		return alvinDbToCoraStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type,
+				id);
+	}
+
+	private boolean recordExistsInBasicStorage(String type, String id) {
 		return basicStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type, id);
 	}
 

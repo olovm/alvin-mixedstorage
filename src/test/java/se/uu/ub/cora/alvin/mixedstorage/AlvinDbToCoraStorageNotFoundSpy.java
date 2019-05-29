@@ -8,6 +8,7 @@ import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
 import se.uu.ub.cora.spider.record.storage.RecordStorage;
 
 public class AlvinDbToCoraStorageNotFoundSpy implements RecordStorage {
+	public RecordStorageSpyData data = new RecordStorageSpyData();
 	public boolean readWasCalled = false;
 
 	@Override
@@ -75,7 +76,10 @@ public class AlvinDbToCoraStorageNotFoundSpy implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
-		// TODO Auto-generated method stub
+		data.type = type;
+		data.id = id;
+		data.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+		data.answer = false;
 		return false;
 	}
 
