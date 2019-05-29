@@ -19,6 +19,7 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -209,5 +210,23 @@ public class AlvinDbToCoraRecordStorageTest {
 			throws Exception {
 		alvinToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null,
 				null);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUser() {
+		boolean userExists = alvinToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "26");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+		assertTrue(userExists);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUserWhenUserDoesNotExist() {
+		boolean userExists = alvinToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "60000");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+		assertFalse(userExists);
 	}
 }

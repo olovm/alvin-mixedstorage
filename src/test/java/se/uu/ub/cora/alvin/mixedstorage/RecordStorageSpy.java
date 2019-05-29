@@ -129,7 +129,10 @@ public class RecordStorageSpy implements RecordStorage {
 		data.id = id;
 		data.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
 		data.answer = false;
-		return false;
+		if ("coraUser:5368244264733286".equals(id)) {
+			data.answer = true;
+		}
+		return (boolean) data.answer;
 	}
 
 }
