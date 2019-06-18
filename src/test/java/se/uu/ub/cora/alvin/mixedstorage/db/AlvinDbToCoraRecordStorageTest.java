@@ -75,6 +75,13 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.read("user", "notAnInt");
 	}
 
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User not found: notAnInt")
+	public void testRecordExistsForAbstractOrImplementingRecordTypeAndRecordId() throws Exception {
+		alvinToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user",
+				"notAnInt");
+	}
+
 	@Test
 	public void testReadUserCallsDataReader() throws Exception {
 		alvinToCoraRecordStorage.read("user", "53");
@@ -204,21 +211,24 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.recordsExistForRecordType(null);
 	}
 
-	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
-			+ "recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented")
-	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdThrowsNotImplementedException()
-			throws Exception {
-		alvinToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(null,
-				null);
-	}
-
-	@Test
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User not found: notAnId")
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUser() {
 		boolean userExists = alvinToCoraRecordStorage
-				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "26");
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "notAnId");
 		assertTrue(dataReader.readOneRowWasCalled);
 		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
-		assertTrue(userExists);
+		assertFalse(userExists);
+	}
+
+	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
+			+ "User not found: notAnId")
+	public void recordDoesNotExistAndThrowsRecordNotFoundExceptionIfCalledWithNonInteger() {
+		boolean userExists = alvinToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "notAnId");
+		assertTrue(dataReader.readOneRowWasCalled);
+		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+		assertFalse(userExists);
 	}
 
 	@Test
