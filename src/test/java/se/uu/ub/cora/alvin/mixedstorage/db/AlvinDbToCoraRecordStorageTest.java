@@ -211,14 +211,21 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.recordsExistForRecordType(null);
 	}
 
-	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
-			+ "User not found: notAnId")
+	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
+			+ "recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented for notUser")
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdThrowsNotImplementedException()
+			throws Exception {
+		alvinToCoraRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("notUser", null);
+	}
+
+	@Test
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUser() {
 		boolean userExists = alvinToCoraRecordStorage
-				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "notAnId");
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "26");
 		assertTrue(dataReader.readOneRowWasCalled);
 		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
-		assertFalse(userExists);
+		assertTrue(userExists);
 	}
 
 	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
@@ -239,4 +246,5 @@ public class AlvinDbToCoraRecordStorageTest {
 		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
 		assertFalse(userExists);
 	}
+
 }
