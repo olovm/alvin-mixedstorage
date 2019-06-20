@@ -347,7 +347,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 
 	private HttpHandler createHttpHandlerForRecordList(String query) {
 		String urlEncodedQuery = URLEncoder.encode(query);
-		String url = baseURL + "objects?pid=true&maxResults=100&resultFormat=xml&query="
+		String url = baseURL + "objects?pid=true&maxResults=10000&resultFormat=xml&query="
 				+ urlEncodedQuery;
 		HttpHandler httpHandler = httpHandlerFactory.factor(url);
 		httpHandler.setRequestMethod("GET");
