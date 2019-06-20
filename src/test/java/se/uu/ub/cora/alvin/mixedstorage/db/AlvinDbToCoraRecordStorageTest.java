@@ -75,13 +75,6 @@ public class AlvinDbToCoraRecordStorageTest {
 		alvinToCoraRecordStorage.read("user", "notAnInt");
 	}
 
-	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
-			+ "User not found: notAnInt")
-	public void testRecordExistsForAbstractOrImplementingRecordTypeAndRecordId() throws Exception {
-		alvinToCoraRecordStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user",
-				"notAnInt");
-	}
-
 	@Test
 	public void testReadUserCallsDataReader() throws Exception {
 		alvinToCoraRecordStorage.read("user", "53");
@@ -228,13 +221,10 @@ public class AlvinDbToCoraRecordStorageTest {
 		assertTrue(userExists);
 	}
 
-	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
-			+ "User not found: notAnId")
-	public void recordDoesNotExistAndThrowsRecordNotFoundExceptionIfCalledWithNonInteger() {
+	@Test
+	public void recordDoesNotExistWhenIdNotAnInt() {
 		boolean userExists = alvinToCoraRecordStorage
-				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "notAnId");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "notAnInt");
 		assertFalse(userExists);
 	}
 
