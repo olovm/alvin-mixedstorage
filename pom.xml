@@ -44,7 +44,7 @@
 		<connection>scm:git:https://github.com/lsu-ub-uu/alvin-mixedstorage.git</connection>
 		<developerConnection>scm:git:https://github.com/lsu-ub-uu/alvin-mixedstorage.git</developerConnection>
 		<url>https://github.com/lsu-ub-uu/alvin-mixedstorage.git</url>
-	  <tag>HEAD</tag>
+	  <tag>release/1.6</tag>
   </scm>
 
 	<dependencies>
