@@ -105,4 +105,19 @@ public class UserRoleConverterHelperTest {
 		assertEquals(value.getRepeatId(), "0");
 	}
 
+	@Test
+	public void testRoleMapping() {
+		String coraRoleId = UserRoleConverterHelper.getMatchingCoraRole(50);
+		assertEquals(coraRoleId, "userAdminRole");
+
+		String coraRoleId2 = UserRoleConverterHelper.getMatchingCoraRole(51);
+		assertEquals(coraRoleId2, "personAdminRole");
+		String coraRoleId3 = UserRoleConverterHelper.getMatchingCoraRole(52);
+		assertEquals(coraRoleId3, "organisationAdminRole");
+		String coraRoleId4 = UserRoleConverterHelper.getMatchingCoraRole(53);
+		assertEquals(coraRoleId4, "placeAdminRole");
+
+		String coraRoleId5 = UserRoleConverterHelper.getMatchingCoraRole(5300);
+		assertEquals(coraRoleId5, "");
+	}
 }

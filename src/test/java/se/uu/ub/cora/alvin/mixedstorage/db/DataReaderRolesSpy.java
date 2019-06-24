@@ -23,7 +23,38 @@ public class DataReaderRolesSpy implements DataReader {
 		int id = (int) values.get(0);
 		if (id == 52) {
 			Map<String, Object> role = new HashMap<>();
+			// admin role
 			role.put("group_id", 54);
+			listOfRows.add(role);
+		}
+		if (id == 100 || id == 110) {
+			Map<String, Object> role = new HashMap<>();
+			// user admin role
+			role.put("group_id", 50);
+			listOfRows.add(role);
+		}
+		if (id == 101 || id == 110) {
+			Map<String, Object> role = new HashMap<>();
+			// person admin role
+			role.put("group_id", 51);
+			listOfRows.add(role);
+		}
+		if (id == 102 || id == 110) {
+			Map<String, Object> role = new HashMap<>();
+			// organisation admin role
+			role.put("group_id", 52);
+			listOfRows.add(role);
+		}
+		if (id == 103 || id == 110) {
+			Map<String, Object> role = new HashMap<>();
+			// place admin role
+			role.put("group_id", 53);
+			listOfRows.add(role);
+		}
+		if (id == 1000) {
+			Map<String, Object> role = new HashMap<>();
+			// place admin role
+			role.put("group_id", 12345);
 			listOfRows.add(role);
 		}
 

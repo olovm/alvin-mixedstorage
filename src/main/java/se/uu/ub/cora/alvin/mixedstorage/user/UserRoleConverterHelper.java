@@ -87,4 +87,17 @@ public class UserRoleConverterHelper {
 		permissionTermRulePart.addChild(ruleLink);
 	}
 
+	public static String getMatchingCoraRole(int roleId) {
+		if (50 == roleId) {
+			return "userAdminRole";
+		} else if (51 == roleId) {
+			return "personAdminRole";
+		} else if (52 == roleId) {
+			return "organisationAdminRole";
+		} else if (53 == roleId) {
+			return "placeAdminRole";
+		}
+		return "";
+	}
+
 }
