@@ -146,7 +146,6 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 			Object id = role.get("group_id");
 			String matchingCoraRole = UserRoleConverterHelper.getMatchingCoraRole((int) id);
 			addRoleIfFoundMatchingInCora(user, matchingCoraRole);
-
 		}
 	}
 
