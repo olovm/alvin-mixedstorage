@@ -26,7 +26,7 @@
 	</parent>
 
 	<artifactId>alvinmixedstorage</artifactId>
-	<version>1.6-SNAPSHOT</version>
+	<version>1.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Alvin Mixed Storage</name>

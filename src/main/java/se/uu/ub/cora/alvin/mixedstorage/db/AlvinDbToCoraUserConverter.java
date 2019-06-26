@@ -113,7 +113,6 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	private List<Map<String, Object>> readUserRoles() {
 		List<Object> values = new ArrayList<>();
 		values.add(map.get("id"));
-
 		return dataReader.executePreparedStatementQueryUsingSqlAndValues(
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?",
 				values);
@@ -122,11 +121,13 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 	private void possiblyAddUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {
 		if (UserRoleConverterHelper.userHasAdminGroupRight(readUserRoles)) {
-			addUserRoles(user);
+			addUserRolesForAdminUser(user);
+		} else {
+			addUserRoles(user, readUserRoles);
 		}
 	}
 
-	private void addUserRoles(DataGroup user) {
+	private void addUserRolesForAdminUser(DataGroup user) {
 		user.addChild(UserRoleConverterHelper
 				.createUserRoleWithAllSystemsPermissionUsingRoleId("metadataAdmin"));
 
@@ -138,6 +139,21 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 		user.addChild(UserRoleConverterHelper
 				.createUserRoleWithAllSystemsPermissionUsingRoleId("systemOneSystemUserRole"));
+	}
+
+	private void addUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {
+		for (Map<String, Object> role : readUserRoles) {
+			Object id = role.get("group_id");
+			String matchingCoraRole = UserRoleConverterHelper.getMatchingCoraRole((int) id);
+			addRoleIfFoundMatchingInCora(user, matchingCoraRole);
+		}
+	}
+
+	private void addRoleIfFoundMatchingInCora(DataGroup user, String matchingCoraRole) {
+		if (!matchingCoraRole.isBlank()) {
+			user.addChild(UserRoleConverterHelper
+					.createUserRoleWithAllSystemsPermissionUsingRoleId(matchingCoraRole));
+		}
 	}
 
 	public DataReader getDataReader() {

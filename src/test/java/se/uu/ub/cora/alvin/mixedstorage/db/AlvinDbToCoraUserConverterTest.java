@@ -113,20 +113,18 @@ public class AlvinDbToCoraUserConverterTest {
 		DataGroup user = converter.fromMap(rowFromDb);
 		assertEquals(user.getFirstAtomicValueWithNameInData("userFirstname"), "johan");
 		assertEquals(user.getFirstAtomicValueWithNameInData("userLastname"), "andersson");
-		// assertEquals(user.getFirstAtomicValueWithNameInData("email"),
-		// "johan.andersson@ub.uu.se");
 	}
 
 	@Test
 	public void testUser() {
 		rowFromDb.put("id", 54);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 		assertTrue(dataReader.executePreparedStatementWasCalled);
 		assertTrue(dataReader.valuesSentToReader.contains(54));
 	}
 
 	@Test
-	public void testUserRoles() {
+	public void testUserRolesWhenAdmin() {
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
 		DataGroup user = converter.fromMap(rowFromDb);
@@ -146,7 +144,7 @@ public class AlvinDbToCoraUserConverterTest {
 
 	@Test
 	public void testNoUserRoles() {
-		rowFromDb.put("id", 54);
+		rowFromDb.put("id", 150);
 		DataReader dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
 		DataGroup user = converter.fromMap(rowFromDb);
@@ -229,23 +227,108 @@ public class AlvinDbToCoraUserConverterTest {
 				"2017-10-01 00:00:00.000");
 	}
 
-	// @Test
-	// public void testMapContainsValueReturnsDataGroupWithCorrectChildren() {
-	// rowFromDb.put("defaultname", "Sverige");
-	// rowFromDb.put("alpha3code", "SWE");
-	// rowFromDb.put("numericalcode", "752");
-	// rowFromDb.put("marccode", "sw");
-	// DataGroup country = converter.fromMap(rowFromDb);
-	//
-	// assertEquals(country.getFirstAtomicValueWithNameInData("iso31661Alpha2"), "someAlpha2Code");
-	// DataGroup text = country.getFirstGroupWithNameInData("textId");
-	// assertEquals(text.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraText");
-	// assertEquals(text.getFirstAtomicValueWithNameInData("linkedRecordId"),
-	// "countrysomeAlpha2CodeText");
-	// assertEquals(country.getFirstAtomicValueWithNameInData("iso31661Alpha3"), "SWE");
-	// assertEquals(country.getFirstAtomicValueWithNameInData("iso31661Numeric"), "752");
-	// assertEquals(country.getFirstAtomicValueWithNameInData("marcCountryCode"), "sw");
-	//
-	// }
+	@Test
+	public void testUserRoleUserAdmin() {
+		rowFromDb.put("id", 100);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(100));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 1);
+
+		assertCorrectRole(userRoles, 0, "userAdminRole");
+	}
+
+	@Test
+	public void testUserRolePersonAdmin() {
+		rowFromDb.put("id", 101);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(101));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 1);
+
+		assertCorrectRole(userRoles, 0, "personAdminRole");
+	}
+
+	@Test
+	public void testUserRoleOrganisationAdmin() {
+		rowFromDb.put("id", 102);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(102));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 1);
+
+		assertCorrectRole(userRoles, 0, "organisationAdminRole");
+	}
+
+	@Test
+	public void testUserRolePlaceAdmin() {
+		rowFromDb.put("id", 103);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(103));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 1);
+
+		assertCorrectRole(userRoles, 0, "placeAdminRole");
+	}
+
+	@Test
+	public void testUserRoleAllAdminRoles() {
+		rowFromDb.put("id", 110);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(110));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 4);
+
+		assertCorrectRole(userRoles, 0, "userAdminRole");
+		assertCorrectRole(userRoles, 1, "personAdminRole");
+		assertCorrectRole(userRoles, 2, "organisationAdminRole");
+		assertCorrectRole(userRoles, 3, "placeAdminRole");
+	}
+
+	@Test
+	public void testUserRoleNonExistingRole() {
+		rowFromDb.put("id", 1000);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+
+		assertEquals(dataReaderRoles.sqlSentToReader,
+				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
+		assertTrue(dataReaderRoles.valuesSentToReader.contains(1000));
+
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 0);
+
+	}
 
 }
