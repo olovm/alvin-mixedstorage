@@ -115,12 +115,6 @@ public class AlvinMixedUserStorageTest {
 		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotFound@some.domain.org");
 	}
 
-	@Test(expectedExceptions = RecordNotFoundException.class, expectedExceptionsMessageRegExp = ""
-			+ "User is not admin: userIdNotAdmin@some.domain.org")
-	public void testUserWithoutAdminGroup() {
-		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotAdmin@some.domain.org");
-	}
-
 	@Test(expectedExceptions = UserException.class, expectedExceptionsMessageRegExp = ""
 			+ "Unrecognized format of userIdFromLogin: userId@somedomainorg")
 	public void testUnexpectedFormatOfUserIdFromLogin() {
