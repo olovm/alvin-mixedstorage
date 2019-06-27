@@ -50,7 +50,8 @@ public class DataReaderSpy implements DataReader {
 			}
 
 			if ("userIdNotAdmin".equals(userId)) {
-				listOfRows.add(createDbRowUsingGroupId(22));
+				// 52 is a valid role that is matched in UserRoleConverterHelper
+				listOfRows.add(createDbRowUsingGroupId(52));
 			}
 
 			if ("someId".equals(userId) || "otherId".equals(userId)) {
