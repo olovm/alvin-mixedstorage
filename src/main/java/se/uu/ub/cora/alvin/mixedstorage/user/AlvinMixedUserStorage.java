@@ -58,7 +58,6 @@ public class AlvinMixedUserStorage implements UserStorage {
 
 		List<Map<String, Object>> dbResult = queryDbForUserUsingIdFromLogin(idFromLogin);
 		throwExceptionIfUserInfoNotFoundInDb(idFromLogin, dbResult);
-		throwExceptionIfUserHasNoAdminGroup(idFromLogin, dbResult);
 
 		return createDataGroupWithUserInfo(idFromLogin, dbResult);
 	}
@@ -108,17 +107,6 @@ public class AlvinMixedUserStorage implements UserStorage {
 		if (dbResult.isEmpty()) {
 			throw new RecordNotFoundException("No user found for login: " + idFromLogin);
 		}
-	}
-
-	private void throwExceptionIfUserHasNoAdminGroup(String idFromLogin,
-			List<Map<String, Object>> dbResult) {
-		if (userHasNoAdminGroupRight(dbResult)) {
-			throw new RecordNotFoundException("User is not admin: " + idFromLogin);
-		}
-	}
-
-	private boolean userHasNoAdminGroupRight(List<Map<String, Object>> dbResult) {
-		return !UserRoleConverterHelper.userHasAdminGroupRight(dbResult);
 	}
 
 	private DataGroup createDataGroupWithUserInfo(String idFromLogin,
