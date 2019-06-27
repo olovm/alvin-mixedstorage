@@ -145,6 +145,7 @@ public class AlvinMixedUserStorage implements UserStorage {
 	}
 
 	private void addUserRoles(DataGroup userGroup) {
+		userGroup.getAllGroupsWithNameInData("userRole");
 		createUserRoleWithRoleIdAndAddToUserGroup("metadataAdmin", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("systemConfigurator", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("binaryUserRole", userGroup);

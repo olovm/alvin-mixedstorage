@@ -160,7 +160,7 @@ public class AlvinMixedUserStorageTest {
 	}
 
 	@Test
-	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfo() {
+	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForAdminUser() {
 		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
 		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 5);
 
@@ -183,6 +183,34 @@ public class AlvinMixedUserStorageTest {
 		DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
 		assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
 				"system.*");
+
+	}
+
+	@Test
+	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForNOTAdminUser() {
+		DataGroup userDataGroup = alvinMixedUserStorage
+				.getUserByIdFromLogin("userIdNotAdmin@ab.sld.tld");
+		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 1);
+
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataAdmin", "0",
+		// "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(1), "systemConfigurator",
+		// "1", "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "binaryUserRole", "2",
+		// "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(3), "userAdminRole", "3",
+		// "system.*");
+		//
+		// DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
+		// assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
+		// "system.*");
 
 	}
 
