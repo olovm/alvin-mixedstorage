@@ -119,7 +119,7 @@ public class AlvinMixedUserStorage implements UserStorage {
 		possiblyAddFirstName(userGroup, firstRowFromDb);
 		possiblyAddLastName(userGroup, firstRowFromDb);
 
-		addUserRoles(userGroup);
+		addUserRoles(userGroup, dbResult);
 		return userGroup;
 	}
 
@@ -144,14 +144,22 @@ public class AlvinMixedUserStorage implements UserStorage {
 		}
 	}
 
-	private void addUserRoles(DataGroup userGroup) {
-		userGroup.getAllGroupsWithNameInData("userRole");
+	private void addUserRoles(DataGroup userGroup, List<Map<String, Object>> dbResult) {
+		boolean userHasAdminGroupRight = UserRoleConverterHelper.userHasAdminGroupRight(dbResult);
+		if (userHasAdminGroupRight) {
+			addRolesForAdminUser(userGroup);
+		} else {
+			possiblyAddMatchingRolesForNonAdminUser(userGroup, dbResult);
+		}
+		addRepeatIdToAllUserRoles(userGroup);
+	}
+
+	private void addRolesForAdminUser(DataGroup userGroup) {
 		createUserRoleWithRoleIdAndAddToUserGroup("metadataAdmin", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("systemConfigurator", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("binaryUserRole", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("userAdminRole", userGroup);
 		createUserRoleWithRoleIdAndAddToUserGroup("systemOneSystemUserRole", userGroup);
-		addRepeatIdToAllUserRoles(userGroup);
 	}
 
 	private DataGroup createUserRoleWithRoleIdAndAddToUserGroup(String roleId,
@@ -161,6 +169,22 @@ public class AlvinMixedUserStorage implements UserStorage {
 		userGroup.addChild(userRole);
 
 		return userRole;
+	}
+
+	private void possiblyAddMatchingRolesForNonAdminUser(DataGroup userGroup,
+			List<Map<String, Object>> dbResult) {
+		for (Map<String, Object> role : dbResult) {
+			Object id = role.get("group_id");
+			possiblyAddMatchingRoleForNonAdminUser(userGroup, id);
+		}
+	}
+
+	private void possiblyAddMatchingRoleForNonAdminUser(DataGroup userGroup, Object id) {
+		String matchingCoraRole = UserRoleConverterHelper.getMatchingCoraRole((int) id);
+		if (!matchingCoraRole.isBlank()) {
+			userGroup.addChild(UserRoleConverterHelper
+					.createUserRoleWithAllSystemsPermissionUsingRoleId(matchingCoraRole));
+		}
 	}
 
 	private void addRepeatIdToAllUserRoles(DataGroup userGroup) {
