@@ -166,6 +166,7 @@ public class AlvinDbToCoraUserConverterTest {
 		String linkedRecordIdBinaryUserRole = extractRoleIdUsingRole(role);
 
 		assertEquals(linkedRecordIdBinaryUserRole, roleId);
+		assertEquals(role.getRepeatId(), String.valueOf(index));
 	}
 
 	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,

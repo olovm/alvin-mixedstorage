@@ -125,6 +125,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		} else {
 			addUserRoles(user, readUserRoles);
 		}
+		setRepeatIdForAllRoles(user);
 	}
 
 	private void addUserRolesForAdminUser(DataGroup user) {
@@ -153,6 +154,15 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		if (!matchingCoraRole.isBlank()) {
 			user.addChild(UserRoleConverterHelper
 					.createUserRoleWithAllSystemsPermissionUsingRoleId(matchingCoraRole));
+		}
+	}
+
+	private void setRepeatIdForAllRoles(DataGroup user) {
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		int repeatId = 0;
+		for (DataGroup role : userRoles) {
+			role.setRepeatId(String.valueOf(repeatId));
+			repeatId++;
 		}
 	}
 

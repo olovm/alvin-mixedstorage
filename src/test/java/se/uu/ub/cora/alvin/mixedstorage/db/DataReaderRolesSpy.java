@@ -16,7 +16,6 @@ public class DataReaderRolesSpy implements DataReader {
 	@Override
 	public List<Map<String, Object>> executePreparedStatementQueryUsingSqlAndValues(String sql,
 			List<Object> values) {
-		// TODO Auto-generated method stub
 		sqlSentToReader = sql;
 		listOfRows = new ArrayList<>();
 		valuesSentToReader = values;
