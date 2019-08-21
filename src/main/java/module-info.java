@@ -6,6 +6,7 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	requires se.uu.ub.cora.gatekeeper;
 	requires se.uu.ub.cora.logger;
 	requires se.uu.ub.cora.basicstorage;
+	requires transitive se.uu.ub.cora.storage;
 
 	exports se.uu.ub.cora.alvin.mixedstorage.db;
 	exports se.uu.ub.cora.alvin.mixedstorage.fedora;
@@ -14,6 +15,8 @@ module se.uu.ub.cora.alvin.mixedstorage {
 
 	provides se.uu.ub.cora.gatekeeper.user.UserStorageProvider
 			with se.uu.ub.cora.alvin.mixedstorage.user.FromAlvinClassicUserStorageProvider;
+	provides se.uu.ub.cora.storage.RecordIdGeneratorProvider
+			with se.uu.ub.cora.alvin.mixedstorage.id.AlvinIdGeneratorProvider;
 
 	opens place;
 }

@@ -22,13 +22,13 @@ import java.util.Map;
 
 import javax.naming.InitialContext;
 
+import se.uu.ub.cora.basicstorage.UserStorageImp;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
-import se.uu.ub.cora.storage.UserStorageImp;
 
 public class FromAlvinClassicUserStorageProvider implements UserStorageProvider {
 

@@ -39,12 +39,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
+import se.uu.ub.cora.basicstorage.UserStorageImp;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
-import se.uu.ub.cora.storage.UserStorageImp;
 import se.uu.ub.cora.storage.testdata.TestDataAppTokenStorage;
 
 public class FromAlvinClassicUserStorageProviderTest {
