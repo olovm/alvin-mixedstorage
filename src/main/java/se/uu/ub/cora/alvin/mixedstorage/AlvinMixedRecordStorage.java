@@ -21,9 +21,9 @@ package se.uu.ub.cora.alvin.mixedstorage;
 import java.util.Collection;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public final class AlvinMixedRecordStorage implements RecordStorage {
 
@@ -150,6 +150,16 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 
 	private boolean recordExistsInBasicStorage(String type, String id) {
 		return basicStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type, id);
+	}
+
+	RecordStorage getBasicStorage() {
+		// needed for test
+		return basicStorage;
+	}
+
+	public RecordStorage getFedoraStorage() {
+		// needed for test
+		return alvinFedoraToCoraStorage;
 	}
 
 }
