@@ -413,4 +413,14 @@ public final class FedoraRecordStorage implements RecordStorage {
 		return baseURL;
 	}
 
+	public String getFedoraUsername() {
+		// needed for test
+		return fedoraUsername;
+	}
+
+	public String getFedoraPassword() {
+		// needed for test
+		return fedoraPassword;
+	}
+
 }

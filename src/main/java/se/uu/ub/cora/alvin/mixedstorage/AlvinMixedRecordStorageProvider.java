@@ -20,6 +20,11 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Map;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraConverterFactoryImp;
+import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraConverterFactory;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
@@ -27,10 +32,13 @@ import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.bookkeeper.storage.MetadataStorage;
+import se.uu.ub.cora.connection.ContextConnectionProviderImp;
+import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
 import se.uu.ub.cora.storage.RecordStorageProvider;
@@ -71,19 +79,40 @@ public class AlvinMixedRecordStorageProvider
 		RecordStorageInMemoryReadFromDisk basicStorage = RecordStorageInMemoryReadFromDisk
 				.createRecordStorageOnDiskWithBasePath(basePath);
 		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
+
 		String fedoraURL = tryToGetInitParameter("fedoraURL");
 		AlvinFedoraConverterFactory converterFactory = AlvinFedoraToCoraConverterFactoryImp
 				.usingFedoraURL(fedoraURL);
 
-		String baseURL = fedoraURL;
-		String fedoraUsername = null;
-		String fedoraPassword = null;
+		String fedoraUsername = tryToGetInitParameter("fedoraUsername");
+		String fedoraPassword = tryToGetInitParameter("fedoraPassword");
 		FedoraRecordStorage fedoraStorage = FedoraRecordStorage
 				.usingHttpHandlerFactoryAndConverterFactoryAndFedoraBaseURLAndFedoraUsernameAndFedoraPassword(
-						httpHandlerFactory, converterFactory, baseURL, fedoraUsername,
+						httpHandlerFactory, converterFactory, fedoraURL, fedoraUsername,
 						fedoraPassword);
+
+		SqlConnectionProvider sqlConnectionProvider = null;
+		try {
+			sqlConnectionProvider = createConnectionProvider();
+		} catch (NamingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		DataReaderImp dataReader = DataReaderImp
+				.usingSqlConnectionProvider(sqlConnectionProvider);
+		AlvinDbToCoraConverterFactoryImp converterFactoryImp = AlvinDbToCoraConverterFactoryImp
+				.usingDataReader(dataReader);
+		AlvinDbToCoraRecordStorage dbStorage = AlvinDbToCoraRecordStorage
+				.usingDataReaderAndConverterFactory(dataReader, converterFactoryImp);
+
 		setStaticInstance(AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(basicStorage,
-				fedoraStorage, null));
+				fedoraStorage, dbStorage));
+	}
+
+	private SqlConnectionProvider createConnectionProvider() throws NamingException {
+		InitialContext context = new InitialContext();
+		return ContextConnectionProviderImp.usingInitialContextAndName(context,
+				tryToGetInitParameter("databaseLookupName"));
 	}
 
 	private void useExistingRecordStorage() {

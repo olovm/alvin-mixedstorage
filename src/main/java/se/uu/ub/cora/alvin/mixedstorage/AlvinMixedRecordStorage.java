@@ -162,4 +162,9 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 		return alvinFedoraToCoraStorage;
 	}
 
+	public RecordStorage getDbStorage() {
+		// needed for test
+		return alvinDbToCoraStorage;
+	}
+
 }

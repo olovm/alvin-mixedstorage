@@ -31,9 +31,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.naming.InitialContext;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraConverterFactoryImp;
+import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraConverterFactory;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
@@ -42,8 +46,10 @@ import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.bookkeeper.storage.MetadataStorage;
+import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.sqldatabase.DataReaderImp;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
 
@@ -67,6 +73,7 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new AlvinMixedRecordStorageProvider();
+		RecordStorageInstance.instance = null;
 	}
 
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
@@ -132,23 +139,47 @@ public class AlvinMixedRecordStorageProviderTest {
 		AlvinFedoraConverterFactory alvinFedoraConverterFactory = fedoraToCoraStorage
 				.getAlvinFedoraConverterFactory();
 		assertTrue(alvinFedoraConverterFactory instanceof AlvinFedoraToCoraConverterFactoryImp);
-		String fedoraURL = ((AlvinFedoraToCoraConverterFactoryImp) alvinFedoraConverterFactory)
+		String fedoraURLInConverter = ((AlvinFedoraToCoraConverterFactoryImp) alvinFedoraConverterFactory)
 				.getFedoraURL();
-		assertEquals(fedoraURL, initInfo.get("fedoraURL"));
-		// TODO: check for error and logs if not found fedora url in initinfo
+		assertEquals(fedoraURLInConverter, initInfo.get("fedoraURL"));
 
-		String baseURL = fedoraToCoraStorage.getBaseURL();
-		assertEquals(baseURL, initInfo.get("fedoraURL"));
+		String baseURLInFedoraToCoraStorage = fedoraToCoraStorage.getBaseURL();
+		assertEquals(baseURLInFedoraToCoraStorage, initInfo.get("fedoraURL"));
 
-		// AlvinFedoraToCoraConverterFactoryImp converterFactory =
-		// (AlvinFedoraToCoraConverterFactoryImp) fedoraToCoraStorage.converterFactory;
-		// assertTrue(converterFactory instanceof AlvinFedoraToCoraConverterFactoryImp);
-		// assertEquals(converterFactory.getFedoraURL(), initInfo.get("fedoraURL"));
-		// assertEquals(fedoraToCoraStorage.baseURL, initInfo.get("fedoraURL"));
-		// assertEquals(fedoraToCoraStorage.fedoraUsername, initInfo.get("fedoraUsername"));
-		// assertEquals(fedoraToCoraStorage.fedoraPassword, initInfo.get("fedoraPassword"));
+		String fedoraUsername = fedoraToCoraStorage.getFedoraUsername();
+		assertEquals(fedoraUsername, initInfo.get("fedoraUsername"));
+
+		String fedoraPassword = fedoraToCoraStorage.getFedoraPassword();
+		assertEquals(fedoraPassword, initInfo.get("fedoraPassword"));
 	}
 
+	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectDbStorage() {
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		RecordStorage dbStorageInRecordStorage = recordStorage.getDbStorage();
+		assertTrue(dbStorageInRecordStorage instanceof AlvinDbToCoraRecordStorage);
+
+		AlvinDbToCoraRecordStorage dbStorage = (AlvinDbToCoraRecordStorage) dbStorageInRecordStorage;
+		DataReaderImp dataReader = (DataReaderImp) dbStorage.getDataReader();
+
+		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) dataReader
+				.getSqlConnectionProvider();
+		assertTrue(connectionProvider instanceof ContextConnectionProviderImp);
+
+		assertEquals(connectionProvider.getName(), initInfo.get("databaseLookupName"));
+		assertTrue(connectionProvider.getContext() instanceof InitialContext);
+
+		assertTrue(dbStorage.getConverterFactory() instanceof AlvinDbToCoraConverterFactoryImp);
+
+		AlvinDbToCoraConverterFactoryImp dbToCoraConverter = (AlvinDbToCoraConverterFactoryImp) dbStorage
+				.getConverterFactory();
+		assertSame(dbToCoraConverter.getDataReader(), dataReader);
+
+	}
+
+	//
 	@Test
 	public void testNormalStartupReturnsTheSameRecordStorageForMultipleCalls() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
