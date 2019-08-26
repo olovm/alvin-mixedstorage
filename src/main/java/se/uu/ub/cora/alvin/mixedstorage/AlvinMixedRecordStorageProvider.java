@@ -21,7 +21,6 @@ package se.uu.ub.cora.alvin.mixedstorage;
 import java.util.Map;
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
@@ -31,6 +30,7 @@ import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
 import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
+import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.bookkeeper.storage.MetadataStorage;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
@@ -75,44 +75,64 @@ public class AlvinMixedRecordStorageProvider
 	}
 
 	private void startNewRecordStorageOnDiskInstance() {
-		String basePath = tryToGetInitParameter("storageOnDiskBasePath");
-		RecordStorageInMemoryReadFromDisk basicStorage = RecordStorageInMemoryReadFromDisk
-				.createRecordStorageOnDiskWithBasePath(basePath);
+		RecordStorage basicStorage = createBasicStorage();
+		FedoraRecordStorage fedoraStorage = createFedoraStorage();
+		AlvinDbToCoraRecordStorage dbStorage = createDbStorage();
+		RecordStorage alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorage(basicStorage, fedoraStorage, dbStorage);
+		setStaticInstance(alvinMixedRecordStorage);
+	}
+
+	private RecordStorage createBasicStorage() {
+		String basePath = tryToGetInitParameterLogIfFound("storageOnDiskBasePath");
+		String type = tryToGetInitParameterLogIfFound("storageType");
+		if ("memory".equals(type)) {
+			return RecordStorageInMemoryReadFromDisk
+					.createRecordStorageOnDiskWithBasePath(basePath);
+		}
+		return RecordStorageOnDisk.createRecordStorageOnDiskWithBasePath(basePath);
+	}
+
+	private String tryToGetInitParameterLogIfFound(String parameterName) {
+		String basePath = tryToGetInitParameter(parameterName);
+		log.logInfoUsingMessage("Found " + basePath + " as " + parameterName);
+		return basePath;
+	}
+
+	private FedoraRecordStorage createFedoraStorage() {
+		String fedoraURL = tryToGetInitParameterLogIfFound("fedoraURL");
+		String fedoraUsername = tryToGetInitParameter("fedoraUsername");
+		String fedoraPassword = tryToGetInitParameter("fedoraPassword");
+
 		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
 
-		String fedoraURL = tryToGetInitParameter("fedoraURL");
 		AlvinFedoraConverterFactory converterFactory = AlvinFedoraToCoraConverterFactoryImp
 				.usingFedoraURL(fedoraURL);
 
-		String fedoraUsername = tryToGetInitParameter("fedoraUsername");
-		String fedoraPassword = tryToGetInitParameter("fedoraPassword");
-		FedoraRecordStorage fedoraStorage = FedoraRecordStorage
+		return FedoraRecordStorage
 				.usingHttpHandlerFactoryAndConverterFactoryAndFedoraBaseURLAndFedoraUsernameAndFedoraPassword(
 						httpHandlerFactory, converterFactory, fedoraURL, fedoraUsername,
 						fedoraPassword);
-
-		SqlConnectionProvider sqlConnectionProvider = null;
-		try {
-			sqlConnectionProvider = createConnectionProvider();
-		} catch (NamingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		DataReaderImp dataReader = DataReaderImp
-				.usingSqlConnectionProvider(sqlConnectionProvider);
-		AlvinDbToCoraConverterFactoryImp converterFactoryImp = AlvinDbToCoraConverterFactoryImp
-				.usingDataReader(dataReader);
-		AlvinDbToCoraRecordStorage dbStorage = AlvinDbToCoraRecordStorage
-				.usingDataReaderAndConverterFactory(dataReader, converterFactoryImp);
-
-		setStaticInstance(AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(basicStorage,
-				fedoraStorage, dbStorage));
 	}
 
-	private SqlConnectionProvider createConnectionProvider() throws NamingException {
-		InitialContext context = new InitialContext();
-		return ContextConnectionProviderImp.usingInitialContextAndName(context,
-				tryToGetInitParameter("databaseLookupName"));
+	private AlvinDbToCoraRecordStorage createDbStorage() {
+		SqlConnectionProvider sqlConnectionProvider = tryToCreateConnectionProvider();
+		DataReaderImp dataReader = DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
+		AlvinDbToCoraConverterFactoryImp converterFactoryImp = AlvinDbToCoraConverterFactoryImp
+				.usingDataReader(dataReader);
+		return AlvinDbToCoraRecordStorage.usingDataReaderAndConverterFactory(dataReader,
+				converterFactoryImp);
+	}
+
+	private SqlConnectionProvider tryToCreateConnectionProvider() {
+		try {
+			InitialContext context = new InitialContext();
+			String databaseLookupName = tryToGetInitParameterLogIfFound("databaseLookupName");
+			return ContextConnectionProviderImp.usingInitialContextAndName(context,
+					databaseLookupName);
+		} catch (Exception e) {
+			throw DataStorageException.withMessage(e.getMessage());
+		}
 	}
 
 	private void useExistingRecordStorage() {
@@ -125,9 +145,7 @@ public class AlvinMixedRecordStorageProvider
 
 	private String tryToGetInitParameter(String parameterName) {
 		throwErrorIfKeyIsMissingFromInitInfo(parameterName);
-		String parameter = initInfo.get(parameterName);
-		log.logInfoUsingMessage("Found " + parameter + " as " + parameterName);
-		return parameter;
+		return initInfo.get(parameterName);
 	}
 
 	private void throwErrorIfKeyIsMissingFromInitInfo(String key) {
@@ -145,7 +163,8 @@ public class AlvinMixedRecordStorageProvider
 
 	@Override
 	public MetadataStorage getMetadataStorage() {
-		return (MetadataStorage) RecordStorageInstance.instance;
+		AlvinMixedRecordStorage mixedStorage = (AlvinMixedRecordStorage) RecordStorageInstance.instance;
+		return (MetadataStorage) mixedStorage.getBasicStorage();
 	}
 
 }

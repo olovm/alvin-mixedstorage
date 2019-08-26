@@ -17,6 +17,8 @@ module se.uu.ub.cora.alvin.mixedstorage {
 			with se.uu.ub.cora.alvin.mixedstorage.user.FromAlvinClassicUserStorageProvider;
 	provides se.uu.ub.cora.storage.RecordIdGeneratorProvider
 			with se.uu.ub.cora.alvin.mixedstorage.id.AlvinIdGeneratorProvider;
+	provides se.uu.ub.cora.storage.RecordStorageProvider
+			with se.uu.ub.cora.alvin.mixedstorage.AlvinMixedRecordStorageProvider;
 
 	opens place;
 }

@@ -22,6 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
@@ -422,5 +423,21 @@ public class AlvinMixedRecordStorageTest {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
+	}
+
+	@Test
+	public void testGetSearchTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((AlvinMixedRecordStorage) alvinMixedRecordStorage)
+				.getSearchTerm("someSearchTermId");
+		assertEquals(basicStorage.searchTermId, "someSearchTermId");
+		assertSame(searchTerm, basicStorage.returnedSearchTerm);
+	}
+
+	@Test
+	public void testGetCollectIndexTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((AlvinMixedRecordStorage) alvinMixedRecordStorage)
+				.getCollectIndexTerm("someIndexTermId");
+		assertEquals(basicStorage.indexTermId, "someIndexTermId");
+		assertSame(searchTerm, basicStorage.returnedIndexTerm);
 	}
 }

@@ -19,6 +19,7 @@
 package se.uu.ub.cora.alvin.mixedstorage;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -45,6 +46,7 @@ import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
+import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.bookkeeper.storage.MetadataStorage;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
@@ -65,6 +67,7 @@ public class AlvinMixedRecordStorageProviderTest {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		initInfo = new HashMap<>();
+		initInfo.put("storageType", "memory");
 		initInfo.put("storageOnDiskBasePath", basePath);
 		initInfo.put("fedoraURL", "http://alvin-cora-fedora:8088/fedora/");
 		initInfo.put("fedoraUsername", "fedoraUser");
@@ -115,13 +118,26 @@ public class AlvinMixedRecordStorageProviderTest {
 	}
 
 	@Test
-	public void testAlvinMixedRecordStorageContainsCorrectBasicStorage() {
+	public void testAlvinMixedRecordStorageContainsCorrectBasicStorageInMemory() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
 				.getRecordStorage();
 		RecordStorage basicStorage = recordStorage.getBasicStorage();
 		assertTrue(basicStorage instanceof RecordStorageInMemoryReadFromDisk);
 		assertEquals(((RecordStorageInMemoryReadFromDisk) basicStorage).getBasePath(),
+				initInfo.get("storageOnDiskBasePath"));
+	}
+
+	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectBasicStorageOnDisk() {
+		initInfo.put("storageType", "disk");
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		RecordStorage basicStorage = recordStorage.getBasicStorage();
+		assertTrue(basicStorage instanceof RecordStorageOnDisk);
+		assertFalse(basicStorage instanceof RecordStorageInMemoryReadFromDisk);
+		assertEquals(((RecordStorageOnDisk) basicStorage).getBasePath(),
 				initInfo.get("storageOnDiskBasePath"));
 	}
 
@@ -179,7 +195,6 @@ public class AlvinMixedRecordStorageProviderTest {
 
 	}
 
-	//
 	@Test
 	public void testNormalStartupReturnsTheSameRecordStorageForMultipleCalls() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
@@ -199,6 +214,8 @@ public class AlvinMixedRecordStorageProviderTest {
 
 	@Test
 	public void testLoggingRecordStorageStartedByOtherProvider() {
+		RecordStorageSpy recordStorageSpy = new RecordStorageSpy();
+		RecordStorageInstance.instance = recordStorageSpy;
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"AlvinMixedRecordStorageProvider starting AlvinMixedRecordStorage...");
@@ -220,9 +237,10 @@ public class AlvinMixedRecordStorageProviderTest {
 	public void testMetadataStorageIsRecordStorage() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		MetadataStorageProvider metadataStorageProvider = recordStorageOnDiskProvider;
-		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
 		MetadataStorage metadataStorage = metadataStorageProvider.getMetadataStorage();
-		assertSame(metadataStorage, recordStorage);
+		assertSame(metadataStorage, recordStorage.getBasicStorage());
 	}
 
 	@Test
@@ -233,12 +251,18 @@ public class AlvinMixedRecordStorageProviderTest {
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
 				"Found /tmp/recordStorageOnDiskTempBasicStorageProvider/ as storageOnDiskBasePath");
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 2),
+				"Found memory as storageType");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 3),
+				"Found http://alvin-cora-fedora:8088/fedora/ as fedoraURL");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 4),
+				"Found java:/comp/env/jdbc/postgres as databaseLookupName");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 5),
 				"AlvinMixedRecordStorageProvider started AlvinMixedRecordStorage");
-		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 3);
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 6);
 	}
 
 	@Test
-	public void testLoggingAndErrorIfMissingStartParameters() {
+	public void testLoggingAndErrorIfMissingStartParameterStorageOnDiskBasePath() {
 		initInfo.remove("storageOnDiskBasePath");
 		try {
 			recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
@@ -246,18 +270,51 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		}
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
-				"AlvinMixedRecordStorageProvider starting RecordStorageInMemoryReadFromDisk...");
+				"AlvinMixedRecordStorageProvider starting AlvinMixedRecordStorage...");
 		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName), 1);
 		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"InitInfo must contain storageOnDiskBasePath");
 		assertEquals(loggerFactorySpy.getNoOfFatalLogMessagesUsingClassName(testedClassName), 1);
 	}
 
-	@Test(expectedExceptions = DataStorageException.class, expectedExceptionsMessageRegExp = ""
-			+ "InitInfo must contain storageOnDiskBasePath")
-	public void testErrorIfMissingStartParameters() {
-		initInfo.remove("storageOnDiskBasePath");
-		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+	@Test
+	public void testLoggingAndErrorIfMissingStartParameterFedoraURL() {
+		assertCorrectErrorAndLogOnMissingParameter("fedoraURL", 3);
+	}
+
+	private void assertCorrectErrorAndLogOnMissingParameter(String parameter,
+			int noOfInfoMessages) {
+		initInfo.remove(parameter);
+		String errorMessage = "InitInfo must contain " + parameter;
+		try {
+			recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		} catch (Exception e) {
+			assertTrue(e instanceof DataStorageException);
+			assertEquals(e.getMessage(), errorMessage);
+
+		}
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"AlvinMixedRecordStorageProvider starting AlvinMixedRecordStorage...");
+		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName),
+				noOfInfoMessages);
+		assertEquals(loggerFactorySpy.getFatalLogMessageUsingClassNameAndNo(testedClassName, 0),
+				errorMessage);
+		assertEquals(loggerFactorySpy.getNoOfFatalLogMessagesUsingClassName(testedClassName), 1);
+	}
+
+	@Test
+	public void testLoggingAndErrorIfMissingStartParameterFedoraUsername() {
+		assertCorrectErrorAndLogOnMissingParameter("fedoraUsername", 4);
+	}
+
+	@Test
+	public void testLoggingAndErrorIfMissingStartParameterFedoraPassword() {
+		assertCorrectErrorAndLogOnMissingParameter("fedoraPassword", 4);
+	}
+
+	@Test
+	public void testLoggingAndErrorIfMissingStartParameterDatabaseLookupName() {
+		assertCorrectErrorAndLogOnMissingParameter("databaseLookupName", 4);
 	}
 
 }
