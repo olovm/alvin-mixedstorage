@@ -26,11 +26,11 @@ import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
 import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
@@ -185,6 +185,16 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 		} catch (RecordNotFoundException e) {
 			return false;
 		}
+	}
+
+	public DataReader getDataReader() {
+		// needed for test
+		return dataReader;
+	}
+
+	public AlvinDbToCoraConverterFactory getConverterFactory() {
+		// needed for test
+		return converterFactory;
 	}
 
 }

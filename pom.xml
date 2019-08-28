@@ -30,13 +30,14 @@
 	<packaging>jar</packaging>
 
 	<name>Alvin Mixed Storage</name>
-
+	
 	<properties>
 		<logger.version>1.0.0</logger.version>
-		<gatekeeper.version>1.1.0</gatekeeper.version>
+		<storage.version>1.1.0</storage.version>
+		<gatekeeper.version>1.2.0</gatekeeper.version>
 		<httphandler.version>1.0.0</httphandler.version>
-		<spider.version>1.2.0</spider.version>
-		<basicstorage.version>1.2.0</basicstorage.version>
+		<spider.version>1.4.0</spider.version>
+		<basicstorage.version>1.6.0</basicstorage.version>
 		<sqldatabase.version>1.1.1</sqldatabase.version>
 	</properties>
 
@@ -52,6 +53,12 @@
 			<groupId>se.uu.ub.cora</groupId>
 			<artifactId>logger</artifactId>
 			<version>${logger.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>se.uu.ub.cora</groupId>
+			<artifactId>storage</artifactId>
+			<version>${storage.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
