@@ -140,6 +140,9 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 		user.addChild(UserRoleConverterHelper
 				.createUserRoleWithAllSystemsPermissionUsingRoleId("systemOneSystemUserRole"));
+
+		user.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("userAdminRole"));
 	}
 
 	private void addUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {

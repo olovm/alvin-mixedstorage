@@ -134,12 +134,13 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(52));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 4);
+		assertEquals(userRoles.size(), 5);
 
 		assertCorrectRole(userRoles, 0, "metadataAdmin");
 		assertCorrectRole(userRoles, 1, "binaryUserRole");
 		assertCorrectRole(userRoles, 2, "systemConfigurator");
 		assertCorrectRole(userRoles, 3, "systemOneSystemUserRole");
+		assertCorrectRole(userRoles, 4, "userAdminRole");
 	}
 
 	@Test
