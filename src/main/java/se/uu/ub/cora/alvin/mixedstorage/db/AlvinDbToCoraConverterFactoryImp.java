@@ -41,4 +41,9 @@ public class AlvinDbToCoraConverterFactoryImp implements AlvinDbToCoraConverterF
 		throw NotImplementedException.withMessage("No converter implemented for: " + type);
 	}
 
+	public DataReader getDataReader() {
+		// needed for test
+		return dataReader;
+	}
+
 }

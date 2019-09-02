@@ -23,7 +23,7 @@ import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
-import se.uu.ub.cora.spider.record.storage.RecordIdGenerator;
+import se.uu.ub.cora.storage.RecordIdGenerator;
 
 public class AlvinIdGenerator implements RecordIdGenerator {
 

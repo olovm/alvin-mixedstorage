@@ -3,9 +3,9 @@ package se.uu.ub.cora.alvin.mixedstorage;
 import java.util.Collection;
 
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public class AlvinDbToCoraStorageNotFoundSpy implements RecordStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();

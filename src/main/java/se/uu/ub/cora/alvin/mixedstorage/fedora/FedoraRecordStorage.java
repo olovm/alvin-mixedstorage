@@ -33,9 +33,9 @@ import se.uu.ub.cora.alvin.mixedstorage.util.URLEncoder;
 import se.uu.ub.cora.bookkeeper.data.DataGroup;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
 import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.SpiderReadResult;
 
 public final class FedoraRecordStorage implements RecordStorage {
 
@@ -396,6 +396,31 @@ public final class FedoraRecordStorage implements RecordStorage {
 			String id) {
 		throw NotImplementedException.withMessage(
 				"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+	}
+
+	public HttpHandlerFactory getHttpHandlerFactory() {
+		// needed for test
+		return httpHandlerFactory;
+	}
+
+	public AlvinFedoraConverterFactory getAlvinFedoraConverterFactory() {
+		// needed for test
+		return converterFactory;
+	}
+
+	public String getBaseURL() {
+		// needed for test
+		return baseURL;
+	}
+
+	public String getFedoraUsername() {
+		// needed for test
+		return fedoraUsername;
+	}
+
+	public String getFedoraPassword() {
+		// needed for test
+		return fedoraPassword;
 	}
 
 }
