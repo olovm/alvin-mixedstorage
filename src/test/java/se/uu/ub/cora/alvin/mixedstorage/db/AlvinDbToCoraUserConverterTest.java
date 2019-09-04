@@ -14,8 +14,8 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
-import se.uu.ub.cora.bookkeeper.data.DataAtomic;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraUserConverterTest {

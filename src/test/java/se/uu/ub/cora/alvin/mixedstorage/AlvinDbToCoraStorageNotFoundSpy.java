@@ -2,10 +2,10 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class AlvinDbToCoraStorageNotFoundSpy implements RecordStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();
@@ -44,13 +44,13 @@ public class AlvinDbToCoraStorageNotFoundSpy implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		// TODO Auto-generated method stub
 		return null;
 	}

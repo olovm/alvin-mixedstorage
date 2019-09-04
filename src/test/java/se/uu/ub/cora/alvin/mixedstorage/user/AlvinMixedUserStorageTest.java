@@ -28,10 +28,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
-import se.uu.ub.cora.bookkeeper.data.DataAtomic;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.logger.LoggerProvider;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
+import se.uu.ub.cora.storage.RecordNotFoundException;
 
 public class AlvinMixedUserStorageTest {
 	private DataReaderSpy dataReaderForUsers;

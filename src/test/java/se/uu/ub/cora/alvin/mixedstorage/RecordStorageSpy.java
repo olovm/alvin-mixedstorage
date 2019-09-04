@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.searchstorage.SearchStorage;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SearchStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public class RecordStorageSpy implements RecordStorage, SearchStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();
@@ -69,7 +69,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readList";
@@ -77,13 +77,13 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) readList;
+		return storageReadResult;
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readAbstractList";
@@ -91,9 +91,9 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) readList;
+		return storageReadResult;
 	}
 
 	@Override

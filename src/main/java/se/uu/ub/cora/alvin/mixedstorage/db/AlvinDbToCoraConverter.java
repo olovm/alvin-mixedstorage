@@ -20,7 +20,7 @@ package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import java.util.Map;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 
 public interface AlvinDbToCoraConverter {
 

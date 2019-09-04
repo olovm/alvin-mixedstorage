@@ -30,12 +30,12 @@ import org.w3c.dom.NodeList;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
 import se.uu.ub.cora.alvin.mixedstorage.util.URLEncoder;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
+import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class FedoraRecordStorage implements RecordStorage {
 
@@ -311,26 +311,26 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
 			return readAndConvertPlaceListFromFedora();
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
-	private SpiderReadResult readAndConvertPlaceListFromFedora() {
+	private StorageReadResult readAndConvertPlaceListFromFedora() {
 		try {
-			return tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora();
+			return tryCreateStorageReadResultFromReadingAndConvertingPlaceListInFedora();
 		} catch (Exception e) {
 			throw FedoraException
 					.withMessageAndException("Unable to read list of places: " + e.getMessage(), e);
 		}
 	}
 
-	private SpiderReadResult tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora() {
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPlaceListFromFedora();
-		return spiderReadResult;
+	private StorageReadResult tryCreateStorageReadResultFromReadingAndConvertingPlaceListInFedora() {
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPlaceListFromFedora();
+		return storageReadResult;
 	}
 
 	private Collection<DataGroup> tryReadAndConvertPlaceListFromFedora() {
@@ -371,7 +371,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		throw NotImplementedException.withMessage("readAbstractList is not implemented");
 	}
 

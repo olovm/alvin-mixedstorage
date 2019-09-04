@@ -20,11 +20,11 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.searchstorage.SearchStorage;
+import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SearchStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class AlvinMixedRecordStorage implements RecordStorage, SearchStorage {
 
@@ -100,7 +100,7 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.readList(type, filter);
 		}
@@ -108,7 +108,7 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		if ("user".equals(type)) {
 			return alvinDbToCoraStorage.readAbstractList(type, filter);
 		}

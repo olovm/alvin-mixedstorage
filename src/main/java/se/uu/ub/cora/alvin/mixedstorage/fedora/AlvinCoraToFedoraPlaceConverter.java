@@ -23,8 +23,8 @@ import java.util.Collection;
 
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
 import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
-import se.uu.ub.cora.bookkeeper.data.DataAttribute;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
 

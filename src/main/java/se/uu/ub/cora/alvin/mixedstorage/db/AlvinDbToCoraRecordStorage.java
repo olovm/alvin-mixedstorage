@@ -25,12 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.record.storage.RecordNotFoundException;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.sqldatabase.DataReader;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
+import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
-import se.uu.ub.cora.storage.SpiderReadResult;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
@@ -110,12 +110,12 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		if ("user".contentEquals(type)) {
 			return readAllUsersFromDbAndConvertToDataGroup(type);
 		}
@@ -123,11 +123,11 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 				.withMessage("readAbstractList is not implemented for type " + type);
 	}
 
-	private SpiderReadResult readAllUsersFromDbAndConvertToDataGroup(String type) {
+	private StorageReadResult readAllUsersFromDbAndConvertToDataGroup(String type) {
 		List<Map<String, Object>> readAllFromTable = readAllUsersFromDb();
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = convertDataAndAddToList(type, readAllFromTable);
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = convertDataAndAddToList(type, readAllFromTable);
+		return storageReadResult;
 	}
 
 	private List<DataGroup> convertDataAndAddToList(String type,

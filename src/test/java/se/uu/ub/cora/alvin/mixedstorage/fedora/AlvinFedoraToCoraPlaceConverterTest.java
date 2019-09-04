@@ -27,8 +27,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
-import se.uu.ub.cora.bookkeeper.data.DataAttribute;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataGroup;
 
 public class AlvinFedoraToCoraPlaceConverterTest {
 
