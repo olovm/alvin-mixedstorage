@@ -25,15 +25,20 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
+import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraConverterFactoryTest {
 	private AlvinDbToCoraConverterFactory alvinDbToCoraConverterFactoryImp;
 	private DataReader dataReader;
+	private LoggerFactorySpy loggerFactorySpy;
 
 	@BeforeMethod
 	public void beforeMethod() {
+		loggerFactorySpy = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		dataReader = new DataReaderSpy();
 		alvinDbToCoraConverterFactoryImp = AlvinDbToCoraConverterFactoryImp
 				.usingDataReader(dataReader);

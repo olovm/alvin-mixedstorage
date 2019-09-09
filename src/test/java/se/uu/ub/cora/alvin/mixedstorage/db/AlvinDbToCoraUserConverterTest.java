@@ -13,9 +13,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
+import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraUserConverterTest {
@@ -23,9 +25,13 @@ public class AlvinDbToCoraUserConverterTest {
 	private AlvinDbToCoraUserConverter converter;
 	private Map<String, Object> rowFromDb;
 	private DataReaderSpy dataReader;
+	private LoggerFactorySpy loggerFactorySpy;
+	private String testedClassName = "AlvinDbToCoraUserConverter";
 
 	@BeforeMethod
 	public void beforeMethod() {
+		loggerFactorySpy = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("id", 52);
 		rowFromDb.put("domain", "uu");
@@ -247,6 +253,20 @@ public class AlvinDbToCoraUserConverterTest {
 	}
 
 	@Test
+	public void testLogUserRolesUserAdmin() {
+		rowFromDb.put("id", 100);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		converter.fromMap(rowFromDb);
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Lookup for group_id 50");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+				"Found matching role userAdminRole as coraRole");
+
+	}
+
+	@Test
 	public void testUserRolePersonAdmin() {
 		rowFromDb.put("id", 101);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
@@ -261,6 +281,20 @@ public class AlvinDbToCoraUserConverterTest {
 		assertEquals(userRoles.size(), 1);
 
 		assertCorrectRole(userRoles, 0, "personAdminRole");
+	}
+
+	@Test
+	public void testLogUserRolesPersonAdmin() {
+		rowFromDb.put("id", 101);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		converter.fromMap(rowFromDb);
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Lookup for group_id 51");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+				"Found matching role personAdminRole as coraRole");
+
 	}
 
 	@Test
@@ -281,6 +315,20 @@ public class AlvinDbToCoraUserConverterTest {
 	}
 
 	@Test
+	public void testLogUserRolesOrganisationAdmin() {
+		rowFromDb.put("id", 102);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		converter.fromMap(rowFromDb);
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Lookup for group_id 52");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+				"Found matching role organisationAdminRole as coraRole");
+
+	}
+
+	@Test
 	public void testUserRolePlaceAdmin() {
 		rowFromDb.put("id", 103);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
@@ -295,6 +343,20 @@ public class AlvinDbToCoraUserConverterTest {
 		assertEquals(userRoles.size(), 1);
 
 		assertCorrectRole(userRoles, 0, "placeAdminRole");
+	}
+
+	@Test
+	public void testLogUserRolesPlaceAdmin() {
+		rowFromDb.put("id", 103);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		converter.fromMap(rowFromDb);
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Lookup for group_id 53");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+				"Found matching role placeAdminRole as coraRole");
+
 	}
 
 	@Test
@@ -315,6 +377,34 @@ public class AlvinDbToCoraUserConverterTest {
 		assertCorrectRole(userRoles, 1, "personAdminRole");
 		assertCorrectRole(userRoles, 2, "organisationAdminRole");
 		assertCorrectRole(userRoles, 3, "placeAdminRole");
+	}
+
+	@Test
+	public void testLogUserRoleAllAdminRoles() {
+		rowFromDb.put("id", 110);
+		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		converter.fromMap(rowFromDb);
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Lookup for group_id 50");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 1),
+				"Found matching role userAdminRole as coraRole");
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 2),
+				"Lookup for group_id 51");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 3),
+				"Found matching role personAdminRole as coraRole");
+
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 4),
+				"Lookup for group_id 52");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 5),
+				"Found matching role organisationAdminRole as coraRole");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 6),
+				"Lookup for group_id 53");
+		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 7),
+				"Found matching role placeAdminRole as coraRole");
+
 	}
 
 	@Test

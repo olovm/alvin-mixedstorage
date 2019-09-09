@@ -9,9 +9,13 @@ import se.uu.ub.cora.alvin.mixedstorage.user.UserConverterHelper;
 import se.uu.ub.cora.alvin.mixedstorage.user.UserRoleConverterHelper;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
+
+	private Logger log = LoggerProvider.getLoggerForClass(AlvinDbToCoraUserConverter.class);
 
 	public static AlvinDbToCoraUserConverter usingDataReader(DataReader dataReader) {
 		return new AlvinDbToCoraUserConverter(dataReader);
@@ -148,6 +152,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	private void addUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {
 		for (Map<String, Object> role : readUserRoles) {
 			Object id = role.get("group_id");
+			log.logInfoUsingMessage("Lookup for group_id " + id);
 			String matchingCoraRole = UserRoleConverterHelper.getMatchingCoraRole((int) id);
 			addRoleIfFoundMatchingInCora(user, matchingCoraRole);
 		}
@@ -155,6 +160,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 	private void addRoleIfFoundMatchingInCora(DataGroup user, String matchingCoraRole) {
 		if (!matchingCoraRole.isBlank()) {
+			log.logInfoUsingMessage("Found matching role " + matchingCoraRole + " as coraRole");
 			user.addChild(UserRoleConverterHelper
 					.createUserRoleWithAllSystemsPermissionUsingRoleId(matchingCoraRole));
 		}
