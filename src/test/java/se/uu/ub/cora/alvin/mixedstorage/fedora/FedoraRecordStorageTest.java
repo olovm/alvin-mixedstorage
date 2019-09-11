@@ -365,6 +365,8 @@ public class FedoraRecordStorageTest {
 		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 1);
 		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
 		assertEquals(httpHandler.requestMethod, "PUT");
+
+		// "/objects/demo:29?state=D&logMessage=Deleted";
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
