@@ -223,7 +223,10 @@ public final class FedoraRecordStorage implements RecordStorage {
 
 	@Override
 	public void deleteByTypeAndId(String type, String id) {
-		throw NotImplementedException.withMessage("deleteByTypeAndId is not implemented");
+		if (!PLACE.equals(type)) {
+			throw NotImplementedException.withMessage("deleteByTypeAndId is not implemented");
+		}
+		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod("", "PUT");
 	}
 
 	@Override

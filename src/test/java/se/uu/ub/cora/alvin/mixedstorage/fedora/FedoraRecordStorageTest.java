@@ -356,6 +356,17 @@ public class FedoraRecordStorageTest {
 		alvinToCoraRecordStorage.deleteByTypeAndId(null, null);
 	}
 
+	@Test
+	public void deleteByTypeAndIdPlaceSetStateToDeleted() {
+		httpHandlerFactory.responseCodes.add(200);
+		httpHandlerFactory.responseTexts.add("Dummy response text");
+
+		alvinToCoraRecordStorage.deleteByTypeAndId("place", "");
+		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 1);
+		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
+		assertEquals(httpHandler.requestMethod, "PUT");
+	}
+
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "linksExistForRecord is not implemented")
 	public void linksExistForRecordThrowsNotImplementedException() throws Exception {
