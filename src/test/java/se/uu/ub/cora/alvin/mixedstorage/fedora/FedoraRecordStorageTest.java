@@ -375,17 +375,12 @@ public class FedoraRecordStorageTest {
 	}
 
 	@Test(expectedExceptions = FedoraException.class, expectedExceptionsMessageRegExp = ""
-			+ "update to fedora failed for record: alvin-place:22")
+			+ "delete in fedora failed for record: alvin-place:22, with response code: 500")
 	public void deleteByTypeAndIdIfNotOkFromFedoraThrowException() throws Exception {
 		httpHandlerFactory.responseTexts.add("Dummy response text");
 		httpHandlerFactory.responseCodes.add(500);
 
-		DataGroup record = DataGroup.withNameInData("authority");
-		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
-
 		alvinToCoraRecordStorage.deleteByTypeAndId("place", "alvin-place:22");
-		// alvinToCoraRecordStorage.update("place", "alvin-place:22", record, collectedTerms, null,
-		// null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""

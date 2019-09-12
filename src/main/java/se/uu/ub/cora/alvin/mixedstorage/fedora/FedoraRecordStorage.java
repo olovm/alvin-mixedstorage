@@ -229,7 +229,15 @@ public final class FedoraRecordStorage implements RecordStorage {
 		String url = baseURL + OBJECTS_PART_OF_URL + id + "?state=D";
 
 		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod(url, "PUT");
+		int responseCode = httpHandler.getResponseCode();
+		throwErrorIfUnableToUpdateStateToDeleted(id, responseCode);
+	}
 
+	private void throwErrorIfUnableToUpdateStateToDeleted(String id, int responseCode) {
+		if (200 != responseCode) {
+			throw FedoraException.withMessage("delete in fedora failed for record: " + id
+					+ WITH_RESPONSE_CODE_MESSAGE_PART + responseCode);
+		}
 	}
 
 	@Override
