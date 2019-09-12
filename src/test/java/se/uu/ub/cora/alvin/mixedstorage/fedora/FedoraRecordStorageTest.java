@@ -361,12 +361,31 @@ public class FedoraRecordStorageTest {
 		httpHandlerFactory.responseCodes.add(200);
 		httpHandlerFactory.responseTexts.add("Dummy response text");
 
-		alvinToCoraRecordStorage.deleteByTypeAndId("place", "");
+		alvinToCoraRecordStorage.deleteByTypeAndId("place", "alvin-place:22");
 		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 1);
 		HttpHandlerSpy httpHandler = httpHandlerFactory.factoredHttpHandlers.get(0);
 		assertEquals(httpHandler.requestMethod, "PUT");
 
-		// "/objects/demo:29?state=D&logMessage=Deleted";
+		String encoded = Base64.getEncoder().encodeToString(
+				(fedoraUsername + ":" + fedoraPassword).getBytes(StandardCharsets.UTF_8));
+		assertEquals(httpHandler.requestProperties.get("Authorization"), "Basic " + encoded);
+		assertEquals(converterFactory.factoredToFedoraConverters.size(), 0);
+
+		assertEquals(httpHandlerFactory.urls.get(0), baseURL + "objects/alvin-place:22?state=D");
+	}
+
+	@Test(expectedExceptions = FedoraException.class, expectedExceptionsMessageRegExp = ""
+			+ "update to fedora failed for record: alvin-place:22")
+	public void deleteByTypeAndIdIfNotOkFromFedoraThrowException() throws Exception {
+		httpHandlerFactory.responseTexts.add("Dummy response text");
+		httpHandlerFactory.responseCodes.add(500);
+
+		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
+
+		alvinToCoraRecordStorage.deleteByTypeAndId("place", "alvin-place:22");
+		// alvinToCoraRecordStorage.update("place", "alvin-place:22", record, collectedTerms, null,
+		// null);
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
