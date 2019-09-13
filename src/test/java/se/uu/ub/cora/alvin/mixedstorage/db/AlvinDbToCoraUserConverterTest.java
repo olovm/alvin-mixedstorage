@@ -149,15 +149,6 @@ public class AlvinDbToCoraUserConverterTest {
 		assertCorrectRole(userRoles, 4, "userAdminRole");
 	}
 
-	@Test
-	public void testNoUserRoles() {
-		rowFromDb.put("id", 150);
-		DataReader dataReaderRoles = new DataReaderRolesSpy();
-		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
-		assertFalse(user.containsChildWithNameInData("userRole"));
-	}
-
 	private void assertCorrectRole(List<DataGroup> userRoles, int index, String roleId) {
 		DataGroup role = userRoles.get(index);
 
@@ -236,6 +227,16 @@ public class AlvinDbToCoraUserConverterTest {
 	}
 
 	@Test
+	public void testNoUserRolesInDbStillGivesMetadataUserRole() {
+		rowFromDb.put("id", 150);
+		DataReader dataReaderRoles = new DataReaderRolesSpy();
+		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
+		DataGroup user = converter.fromMap(rowFromDb);
+		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
+		assertEquals(userRoles.size(), 1);
+	}
+
+	@Test
 	public void testUserRoleUserAdmin() {
 		rowFromDb.put("id", 100);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
@@ -247,9 +248,10 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(100));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
+		assertEquals(userRoles.size(), 2);
 
 		assertCorrectRole(userRoles, 0, "userAdminRole");
+		assertCorrectRole(userRoles, 1, "metadataUserRole");
 	}
 
 	@Test
@@ -278,9 +280,10 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(101));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
+		assertEquals(userRoles.size(), 2);
 
 		assertCorrectRole(userRoles, 0, "personAdminRole");
+		assertCorrectRole(userRoles, 1, "metadataUserRole");
 	}
 
 	@Test
@@ -309,9 +312,10 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(102));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
+		assertEquals(userRoles.size(), 2);
 
 		assertCorrectRole(userRoles, 0, "organisationAdminRole");
+		assertCorrectRole(userRoles, 1, "metadataUserRole");
 	}
 
 	@Test
@@ -340,9 +344,10 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(103));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
+		assertEquals(userRoles.size(), 2);
 
 		assertCorrectRole(userRoles, 0, "placeAdminRole");
+		assertCorrectRole(userRoles, 1, "metadataUserRole");
 	}
 
 	@Test
@@ -371,12 +376,13 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(110));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 4);
+		assertEquals(userRoles.size(), 5);
 
 		assertCorrectRole(userRoles, 0, "userAdminRole");
 		assertCorrectRole(userRoles, 1, "personAdminRole");
 		assertCorrectRole(userRoles, 2, "organisationAdminRole");
 		assertCorrectRole(userRoles, 3, "placeAdminRole");
+		assertCorrectRole(userRoles, 4, "metadataUserRole");
 	}
 
 	@Test
@@ -419,7 +425,8 @@ public class AlvinDbToCoraUserConverterTest {
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(1000));
 
 		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 0);
+		assertEquals(userRoles.size(), 1);
+		assertCorrectRole(userRoles, 0, "metadataUserRole");
 
 	}
 

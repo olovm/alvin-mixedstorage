@@ -127,7 +127,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		if (UserRoleConverterHelper.userHasAdminGroupRight(readUserRoles)) {
 			addUserRolesForAdminUser(user);
 		} else {
-			addUserRoles(user, readUserRoles);
+			addRolesForNonAdminUser(user, readUserRoles);
 		}
 		setRepeatIdForAllRoles(user);
 	}
@@ -147,6 +147,14 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 
 		user.addChild(UserRoleConverterHelper
 				.createUserRoleWithAllSystemsPermissionUsingRoleId("userAdminRole"));
+	}
+
+	private void addRolesForNonAdminUser(DataGroup userGroup,
+			List<Map<String, Object>> readUserRoles) {
+		addUserRoles(userGroup, readUserRoles);
+		userGroup.addChild(UserRoleConverterHelper
+				.createUserRoleWithAllSystemsPermissionUsingRoleId("metadataUserRole"));
+
 	}
 
 	private void addUserRoles(DataGroup user, List<Map<String, Object>> readUserRoles) {

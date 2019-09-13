@@ -149,9 +149,15 @@ public class AlvinMixedUserStorage implements UserStorage {
 		if (userHasAdminGroupRight) {
 			addRolesForAdminUser(userGroup);
 		} else {
-			possiblyAddMatchingRolesForNonAdminUser(userGroup, dbResult);
+			addRolesForNonAdminUser(userGroup, dbResult);
+
 		}
 		addRepeatIdToAllUserRoles(userGroup);
+	}
+
+	private void addRolesForNonAdminUser(DataGroup userGroup, List<Map<String, Object>> dbResult) {
+		possiblyAddMatchingRolesForNonAdminUser(userGroup, dbResult);
+		createUserRoleWithRoleIdAndAddToUserGroup("metadataUserRole", userGroup);
 	}
 
 	private void addRolesForAdminUser(DataGroup userGroup) {
