@@ -26,7 +26,7 @@
 	</parent>
 
 	<artifactId>alvinmixedstorage</artifactId>
-	<version>1.10-SNAPSHOT</version>
+	<version>1.11-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<build>
 		<finalName>cora-${artifactId}-${version}</finalName>
