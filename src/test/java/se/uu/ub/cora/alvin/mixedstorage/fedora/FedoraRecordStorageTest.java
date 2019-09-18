@@ -595,4 +595,5 @@ public class FedoraRecordStorageTest {
 	public void testSpikeSendMessageToFedoraRabbit() throws Exception {
 		alvinToCoraRecordStorage.spikeSendMessageToFedoraRabbit();
 	}
+
 }

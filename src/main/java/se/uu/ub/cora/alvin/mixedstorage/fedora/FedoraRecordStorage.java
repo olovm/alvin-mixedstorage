@@ -353,6 +353,9 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	void spikeSendMessageToFedoraRabbit() {
+		// to access messaging.alvin-portal.org from development..access.
+		// docker network connect --alias messaging.alvin-portal.org eclipseForCoraNet
+		// dev-alvin-qpid
 		String EXCHANGE_NAME = "index";
 		try {
 			com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
@@ -371,6 +374,8 @@ public final class FedoraRecordStorage implements RecordStorage {
 			headers.put("__TypeId__", "epc.messaging.amqp.EPCFedoraMessage");
 			headers.put("ACTION", "UPDATE");
 			headers.put("PID", "alvin-place:1");
+			headers.put("messageSentFrom", "Cora");
+
 			BasicProperties props = new AMQP.BasicProperties.Builder()
 					.contentType("application/json").headers(headers).build();
 			channel.basicPublish(EXCHANGE_NAME, "alvin.updates.place", props, message.getBytes());
