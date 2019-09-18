@@ -209,6 +209,19 @@ public class AlvinMixedRecordStorageTest {
 	}
 
 	@Test
+	public void deleteByTypeAndIdPlaceGoesToBasicStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "place";
+		expectedData.id = "somePlaceId";
+		alvinMixedRecordStorage.deleteByTypeAndId(expectedData.type, expectedData.id);
+
+		expectedData.calledMethod = "deleteByTypeAndId";
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinDbToCoraStorage);
+		assertExpectedDataSameAsInStorageSpy(alvinFedoraToCoraStorage, expectedData);
+	}
+
+	@Test
 	public void linksExistForRecordGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";

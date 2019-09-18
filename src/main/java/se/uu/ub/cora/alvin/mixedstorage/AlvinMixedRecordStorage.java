@@ -80,7 +80,11 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 
 	@Override
 	public void deleteByTypeAndId(String type, String id) {
-		basicStorage.deleteByTypeAndId(type, id);
+		if (PLACE.equals(type)) {
+			alvinFedoraToCoraStorage.deleteByTypeAndId(type, id);
+		} else {
+			basicStorage.deleteByTypeAndId(type, id);
+		}
 	}
 
 	@Override
