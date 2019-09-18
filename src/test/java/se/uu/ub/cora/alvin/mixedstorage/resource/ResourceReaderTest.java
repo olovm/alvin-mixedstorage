@@ -27,8 +27,6 @@ import java.lang.reflect.Modifier;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
-
 public class ResourceReaderTest {
 
 	@Test

@@ -22,8 +22,6 @@ import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
-
 public class ParseExceptionTest {
 	@Test
 	public void testInit() {

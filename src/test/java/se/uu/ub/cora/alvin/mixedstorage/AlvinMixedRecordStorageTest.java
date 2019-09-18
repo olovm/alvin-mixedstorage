@@ -19,29 +19,31 @@
 package se.uu.ub.cora.alvin.mixedstorage;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.storage.RecordStorage;
 
 public class AlvinMixedRecordStorageTest {
 	private RecordStorageSpy basicStorage;
-	private RecordStorageSpy alvinFeodraToCoraStorage;
+	private RecordStorageSpy alvinFedoraToCoraStorage;
 	private RecordStorageSpy alvinDbToCoraStorage;
 	private RecordStorage alvinMixedRecordStorage;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		basicStorage = new RecordStorageSpy();
-		alvinFeodraToCoraStorage = new RecordStorageSpy();
+		alvinFedoraToCoraStorage = new RecordStorageSpy();
 		alvinDbToCoraStorage = new RecordStorageSpy();
 		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFeodraToCoraStorage, alvinDbToCoraStorage);
+				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorage);
 	}
 
 	@Test
@@ -57,7 +59,7 @@ public class AlvinMixedRecordStorageTest {
 	@Test
 	public void readGoesToBasicStorage() throws Exception {
 		assertNoInteractionWithStorage(basicStorage);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
@@ -67,7 +69,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "read";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 
 	}
@@ -81,9 +83,7 @@ public class AlvinMixedRecordStorageTest {
 	private void assertExpectedDataSameAsInStorageSpy(RecordStorageSpy recordStorageSpy,
 			RecordStorageSpyData data) {
 		RecordStorageSpyData spyData = recordStorageSpy.data;
-		assertEquals(spyData.type, data.type);
-		assertEquals(spyData.id, data.id);
-		assertEquals(spyData.calledMethod, data.calledMethod);
+		assertCorrectSpyData(data, spyData);
 		assertEquals(spyData.filter, data.filter);
 		assertEquals(spyData.record, data.record);
 		assertEquals(spyData.collectedTerms, data.collectedTerms);
@@ -103,7 +103,37 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.calledMethod = "read";
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
-		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+		assertExpectedDataSameAsInStorageSpy(alvinFedoraToCoraStorage, expectedData);
+	}
+
+	@Test
+	public void readUserNotGuestGoesToAlvinToCoraStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.id = "someUserId";
+		expectedData.answer = alvinMixedRecordStorage.read(expectedData.type, expectedData.id);
+
+		expectedData.calledMethod = "read";
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
+	}
+
+	@Test
+	public void readUserGUESTGoesToBasicStorage() throws Exception {
+		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
+		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.id = "coraUser:5368244264733286";
+		expectedData.answer = alvinMixedRecordStorage.read(expectedData.type, expectedData.id);
+
+		expectedData.calledMethod = "read";
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+		assertTrue(alvinDbToCoraStorageSpy.readWasCalled);
+		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
 	}
 
 	@Test
@@ -116,7 +146,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "readList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -131,7 +161,7 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.calledMethod = "readList";
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
-		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+		assertExpectedDataSameAsInStorageSpy(alvinFedoraToCoraStorage, expectedData);
 	}
 
 	@Test
@@ -148,7 +178,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "create";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -162,7 +192,7 @@ public class AlvinMixedRecordStorageTest {
 		expectedData.calledMethod = "create";
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
-		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+		assertExpectedDataSameAsInStorageSpy(alvinFedoraToCoraStorage, expectedData);
 	}
 
 	@Test
@@ -174,7 +204,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "deleteByTypeAndId";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -188,7 +218,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "linksExistForRecord";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -206,7 +236,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "update";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -223,7 +253,7 @@ public class AlvinMixedRecordStorageTest {
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
 
 		expectedData.calledMethod = "update";
-		assertExpectedDataSameAsInStorageSpy(alvinFeodraToCoraStorage, expectedData);
+		assertExpectedDataSameAsInStorageSpy(alvinFedoraToCoraStorage, expectedData);
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 
@@ -239,7 +269,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "readAbstractList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -253,7 +283,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "readLinkList";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -267,7 +297,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "generateLinkCollectionPointingToRecord";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -279,7 +309,7 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "recordsExistForRecordType";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 	}
 
@@ -295,7 +325,119 @@ public class AlvinMixedRecordStorageTest {
 
 		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
 		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
-		assertNoInteractionWithStorage(alvinFeodraToCoraStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUserGoesToDbStorage()
+			throws Exception {
+		AlvinDbToCoraStorageSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageSpy();
+		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.id = "someId";
+		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+		boolean recordExists = alvinMixedRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(expectedData.type,
+						expectedData.id);
+
+		assertTrue(recordExists);
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+
+		RecordStorageSpyData spyData = alvinDbToCoraStorageSpy.data;
+		assertCorrectSpyData(expectedData, spyData);
+	}
+
+	private void assertCorrectSpyData(RecordStorageSpyData expectedData,
+			RecordStorageSpyData spyData) {
+		assertEquals(spyData.type, expectedData.type);
+		assertEquals(spyData.id, expectedData.id);
+		assertEquals(spyData.calledMethod, expectedData.calledMethod);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingForUserGoesToBasicStorageWhenNotFoundInDb()
+			throws Exception {
+		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
+		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.id = "coraUser:5368244264733286";
+		expectedData.answer = true;
+		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+
+		boolean recordExists = alvinMixedRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(expectedData.type,
+						expectedData.id);
+
+		assertTrue(recordExists);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+
+		RecordStorageSpyData spyData = alvinDbToCoraStorageSpy.data;
+		assertCorrectSpyData(expectedData, spyData);
+
+		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
+	}
+
+	@Test
+	public void recordExistsForAbstractOrImplementingReturnFalseWhenNotFoundInEitherStorage()
+			throws Exception {
+		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
+		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
+				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.id = "notAUser";
+		expectedData.answer = false;
+		expectedData.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
+
+		boolean recordExists = alvinMixedRecordStorage
+				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(expectedData.type,
+						expectedData.id);
+
+		assertFalse(recordExists);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+
+		RecordStorageSpyData spyData = alvinDbToCoraStorageSpy.data;
+		assertCorrectSpyData(expectedData, spyData);
+
+		assertExpectedDataSameAsInStorageSpy(basicStorage, expectedData);
+	}
+
+	@Test
+	public void readAbstractListForUserGoesToAlvinDBToCoraStorage() throws Exception {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "user";
+		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.answer = alvinMixedRecordStorage.readAbstractList(expectedData.type,
+				expectedData.filter).listOfDataGroups;
+
+		expectedData.calledMethod = "readAbstractList";
+		assertNoInteractionWithStorage(basicStorage);
+		assertNoInteractionWithStorage(alvinFedoraToCoraStorage);
+		assertExpectedDataSameAsInStorageSpy(alvinDbToCoraStorage, expectedData);
+	}
+
+	@Test
+	public void testGetSearchTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((AlvinMixedRecordStorage) alvinMixedRecordStorage)
+				.getSearchTerm("someSearchTermId");
+		assertEquals(basicStorage.searchTermId, "someSearchTermId");
+		assertSame(searchTerm, basicStorage.returnedSearchTerm);
+	}
+
+	@Test
+	public void testGetCollectIndexTermGoesToBasicStorage() throws Exception {
+		DataGroup searchTerm = ((AlvinMixedRecordStorage) alvinMixedRecordStorage)
+				.getCollectIndexTerm("someIndexTermId");
+		assertEquals(basicStorage.indexTermId, "someIndexTermId");
+		assertSame(searchTerm, basicStorage.returnedIndexTerm);
 	}
 }

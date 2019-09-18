@@ -4,12 +4,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.searchstorage.SearchStorage;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
-public class RecordStorageSpy implements RecordStorage {
+public class RecordStorageSpy implements RecordStorage, SearchStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();
+	public String searchTermId;
+	public DataGroup returnedSearchTerm = DataGroup.withNameInData("searchTerm");
+	public String indexTermId;
+	public DataGroup returnedIndexTerm = DataGroup.withNameInData("indexTerm");
 
 	@Override
 	public DataGroup read(String type, String id) {
@@ -64,7 +69,7 @@ public class RecordStorageSpy implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readList";
@@ -72,13 +77,13 @@ public class RecordStorageSpy implements RecordStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) readList;
+		return storageReadResult;
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		data.type = type;
 		data.filter = filter;
 		data.calledMethod = "readAbstractList";
@@ -86,9 +91,9 @@ public class RecordStorageSpy implements RecordStorage {
 		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) readList;
-		return spiderReadResult;
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) readList;
+		return storageReadResult;
 	}
 
 	@Override
@@ -129,7 +134,22 @@ public class RecordStorageSpy implements RecordStorage {
 		data.id = id;
 		data.calledMethod = "recordExistsForAbstractOrImplementingRecordTypeAndRecordId";
 		data.answer = false;
-		return false;
+		if ("coraUser:5368244264733286".equals(id)) {
+			data.answer = true;
+		}
+		return (boolean) data.answer;
+	}
+
+	@Override
+	public DataGroup getSearchTerm(String searchTermId) {
+		this.searchTermId = searchTermId;
+		return returnedSearchTerm;
+	}
+
+	@Override
+	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
+		indexTermId = collectIndexTermId;
+		return returnedIndexTerm;
 	}
 
 }

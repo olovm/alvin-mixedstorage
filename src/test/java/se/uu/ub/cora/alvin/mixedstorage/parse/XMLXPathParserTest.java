@@ -20,9 +20,6 @@ package se.uu.ub.cora.alvin.mixedstorage.parse;
 
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
-import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
-
 public class XMLXPathParserTest {
 
 	@Test(expectedExceptions = ParseException.class, expectedExceptionsMessageRegExp = ""

@@ -18,7 +18,7 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 
 public interface AlvinFedoraToCoraConverter {
 

@@ -20,17 +20,18 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Collection;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.searchstorage.SearchStorage;
+import se.uu.ub.cora.storage.RecordNotFoundException;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
-public final class AlvinMixedRecordStorage implements RecordStorage {
+public final class AlvinMixedRecordStorage implements RecordStorage, SearchStorage {
 
 	private static final String PLACE = "place";
 	private RecordStorage basicStorage;
 	private RecordStorage alvinFedoraToCoraStorage;
 
-	// Left here since it is probably going to be needed again
 	private RecordStorage alvinDbToCoraStorage;
 
 	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
@@ -50,6 +51,18 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	public DataGroup read(String type, String id) {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.read(type, id);
+		}
+		if ("user".equals(type)) {
+			return handleUser(type, id);
+		}
+		return basicStorage.read(type, id);
+	}
+
+	private DataGroup handleUser(String type, String id) {
+		try {
+			return alvinDbToCoraStorage.read(type, id);
+		} catch (RecordNotFoundException e) {
+			// do nothing, we keep looking in basicstorage
 		}
 		return basicStorage.read(type, id);
 	}
@@ -87,7 +100,7 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
 			return alvinFedoraToCoraStorage.readList(type, filter);
 		}
@@ -95,7 +108,10 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
+		if ("user".equals(type)) {
+			return alvinDbToCoraStorage.readAbstractList(type, filter);
+		}
 		return basicStorage.readAbstractList(type, filter);
 	}
 
@@ -117,7 +133,49 @@ public final class AlvinMixedRecordStorage implements RecordStorage {
 	@Override
 	public boolean recordExistsForAbstractOrImplementingRecordTypeAndRecordId(String type,
 			String id) {
+		if ("user".equals(type)) {
+			return handleRecordExistsForAbstractOrImplementingForUser(type, id);
+		}
+		return recordExistsInBasicStorage(type, id);
+	}
+
+	private boolean handleRecordExistsForAbstractOrImplementingForUser(String type, String id) {
+		boolean recordExistsInDb = recordExistsInDb(type, id);
+		return recordExistsInDb ? recordExistsInDb : recordExistsInBasicStorage(type, id);
+	}
+
+	private boolean recordExistsInDb(String type, String id) {
+		return alvinDbToCoraStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type,
+				id);
+	}
+
+	private boolean recordExistsInBasicStorage(String type, String id) {
 		return basicStorage.recordExistsForAbstractOrImplementingRecordTypeAndRecordId(type, id);
+	}
+
+	RecordStorage getBasicStorage() {
+		// needed for test
+		return basicStorage;
+	}
+
+	public RecordStorage getFedoraStorage() {
+		// needed for test
+		return alvinFedoraToCoraStorage;
+	}
+
+	public RecordStorage getDbStorage() {
+		// needed for test
+		return alvinDbToCoraStorage;
+	}
+
+	@Override
+	public DataGroup getSearchTerm(String searchTermId) {
+		return ((SearchStorage) basicStorage).getSearchTerm(searchTermId);
+	}
+
+	@Override
+	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
+		return ((SearchStorage) basicStorage).getCollectIndexTerm(collectIndexTermId);
 	}
 
 }

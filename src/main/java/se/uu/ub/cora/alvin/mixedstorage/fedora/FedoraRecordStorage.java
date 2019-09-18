@@ -3,23 +3,19 @@
  *
  * This file is part of Cora.
  *
- *     Cora is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * Cora is free software: you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
+ * Cora is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+ * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
  *
- *     You should have received a copy of the GNU General Public License
- *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along with Cora. If not, see
+ * <http://www.gnu.org/licenses/>.
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -54,15 +50,16 @@ import com.rabbitmq.client.Channel;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.alvin.mixedstorage.util.URLEncoder;
+import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
-import se.uu.ub.cora.spider.data.SpiderReadResult;
-import se.uu.ub.cora.spider.record.storage.RecordStorage;
+import se.uu.ub.cora.storage.RecordNotFoundException;
+import se.uu.ub.cora.storage.RecordStorage;
+import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class FedoraRecordStorage implements RecordStorage {
 
-	private static final String UTF_8 = "UTF-8";
 	private static final String WITH_RESPONSE_CODE_MESSAGE_PART = ", with response code: ";
 	private static final String OBJECTS_PART_OF_URL = "objects/";
 	private static final String PLACE = "place";
@@ -92,6 +89,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	@Override
 	public DataGroup read(String type, String id) {
 		if (PLACE.equals(type)) {
+			ensurePlaceIsNotDeleted(id);
 			return readAndConvertPlaceFromFedora(id);
 		}
 		throw NotImplementedException.withMessage("read is not implemented for type: " + type);
@@ -99,8 +97,26 @@ public final class FedoraRecordStorage implements RecordStorage {
 
 	private DataGroup readAndConvertPlaceFromFedora(String id) {
 		HttpHandler httpHandler = createHttpHandlerForReadingPlace(id);
+		int responseCode = httpHandler.getResponseCode();
+		throwErrorIfRecordNotFound(id, responseCode);
 		AlvinFedoraToCoraConverter toCoraConverter = converterFactory.factorToCoraConverter(PLACE);
-		return toCoraConverter.fromXML(httpHandler.getResponseText());
+		String responseText = httpHandler.getResponseText();
+		return toCoraConverter.fromXML(responseText);
+	}
+
+	private void throwErrorIfRecordNotFound(String id, int responseCode) {
+		if (404 == responseCode) {
+			throw new RecordNotFoundException("Record not found for type: place and id: " + id);
+		}
+	}
+
+	private void ensurePlaceIsNotDeleted(String id) {
+		String query = "state=A pid=" + id;
+		String placeListXML = getRecordListXMLFromFedora(query);
+		NodeList list = extractNodeListWithPidsFromXML(placeListXML);
+		if (0 == list.getLength()) {
+			throw new RecordNotFoundException("Record not found for type: place and id: " + id);
+		}
 	}
 
 	private HttpHandler createHttpHandlerForReadingPlace(String id) {
@@ -131,7 +147,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void tryToConvertAndCreatePlaceInFedora(String type, String id, DataGroup record,
-			DataGroup collectedTerms) throws UnsupportedEncodingException {
+			DataGroup collectedTerms) {
 		String recordLabel = getRecordLabelValueFromStorageTerms(collectedTerms);
 		createObjectForPlace(id, recordLabel);
 		createRelationToModelForPlace(id);
@@ -139,8 +155,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 		createDatastreamForPlace(id, recordLabel, newXML);
 	}
 
-	private void createObjectForPlace(String nextPidFromFedora, String recordLabel)
-			throws UnsupportedEncodingException {
+	private void createObjectForPlace(String nextPidFromFedora, String recordLabel) {
 		String url = createUrlForCreatingObjectInFedora(nextPidFromFedora, recordLabel);
 		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod(url, "POST");
 		int responseCode = httpHandler.getResponseCode();
@@ -155,18 +170,17 @@ public final class FedoraRecordStorage implements RecordStorage {
 		return httpHandler;
 	}
 
-	private String createUrlForCreatingObjectInFedora(String pid, String recordLabel)
-			throws UnsupportedEncodingException {
+	private String createUrlForCreatingObjectInFedora(String pid, String recordLabel) {
 		String encodedDatastreamLabel = encodeLabel(recordLabel);
 		return baseURL + OBJECTS_PART_OF_URL + pid + "?namespace=alvin-place"
 				+ "&logMessage=coraWritten&label=" + encodedDatastreamLabel;
 	}
 
-	private String encodeLabel(String objectLabel) throws UnsupportedEncodingException {
-		return URLEncoder.encode(objectLabel, UTF_8);
+	private String encodeLabel(String objectLabel) {
+		return URLEncoder.encode(objectLabel);
 	}
 
-	private void createRelationToModelForPlace(String pid) throws UnsupportedEncodingException {
+	private void createRelationToModelForPlace(String pid) {
 		String url = createUrlForCreatingRelationInFedora(pid);
 		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod(url, "POST");
 		int responseCode = httpHandler.getResponseCode();
@@ -180,16 +194,15 @@ public final class FedoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	private String createUrlForCreatingRelationInFedora(String pid)
-			throws UnsupportedEncodingException {
+	private String createUrlForCreatingRelationInFedora(String pid) {
 		StringBuilder url = new StringBuilder(baseURL);
 		url.append(OBJECTS_PART_OF_URL);
 		url.append(pid);
 		url.append("/relationships/new?");
 		url.append("object=");
-		url.append(URLEncoder.encode("info:fedora/alvin-model:place", UTF_8));
+		url.append(URLEncoder.encode("info:fedora/alvin-model:place"));
 		url.append("&predicate=");
-		url.append(URLEncoder.encode("info:fedora/fedora-system:def/model#hasModel", UTF_8));
+		url.append(URLEncoder.encode("info:fedora/fedora-system:def/model#hasModel"));
 		return url.toString();
 	}
 
@@ -212,7 +225,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void createDatastreamForPlace(String nextPidFromFedora, String recordLabel,
-			String newXML) throws UnsupportedEncodingException {
+			String newXML) {
 		String url = createUrlForCreatingDatastreamInFedora(nextPidFromFedora, recordLabel);
 		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod(url, "POST");
 
@@ -222,7 +235,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private String createUrlForCreatingDatastreamInFedora(String nextPidFromFedora,
-			String recordLabel) throws UnsupportedEncodingException {
+			String recordLabel) {
 		String encodedDatastreamLabel = encodeLabel(recordLabel);
 		return baseURL + OBJECTS_PART_OF_URL + nextPidFromFedora
 				+ "/datastreams/METADATA?controlGroup=M" + "&logMessage=coraWritten&dsLabel="
@@ -261,7 +274,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void tryToConvertAndWritePlaceToFedora(String type, String id, DataGroup record,
-			DataGroup collectedTerms) throws UnsupportedEncodingException {
+			DataGroup collectedTerms) {
 		String url = createUrlForWritingMetadataStreamToFedora(id, collectedTerms);
 		HttpHandler httpHandler = createHttpHandlerForWritingUsingUrlAndRequestMethod(url, "PUT");
 
@@ -387,8 +400,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	private String createUrlForWritingMetadataStreamToFedora(String id, DataGroup collectedTerms)
-			throws UnsupportedEncodingException {
+	private String createUrlForWritingMetadataStreamToFedora(String id, DataGroup collectedTerms) {
 		String datastreamLabel = getRecordLabelValueFromStorageTerms(collectedTerms);
 		String encodedDatastreamLabel = encodeLabel(datastreamLabel);
 		return baseURL + OBJECTS_PART_OF_URL + id
@@ -429,42 +441,44 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readList(String type, DataGroup filter) {
+	public StorageReadResult readList(String type, DataGroup filter) {
 		if (PLACE.equals(type)) {
 			return readAndConvertPlaceListFromFedora();
 		}
 		throw NotImplementedException.withMessage("readList is not implemented for type: " + type);
 	}
 
-	private SpiderReadResult readAndConvertPlaceListFromFedora() {
+	private StorageReadResult readAndConvertPlaceListFromFedora() {
 		try {
-			return tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora();
+			return tryCreateStorageReadResultFromReadingAndConvertingPlaceListInFedora();
 		} catch (Exception e) {
 			throw FedoraException
 					.withMessageAndException("Unable to read list of places: " + e.getMessage(), e);
 		}
 	}
 
-	private SpiderReadResult tryCreateSpiderReadResultFromReadingAndConvertingPlaceListInFedora() {
-		SpiderReadResult spiderReadResult = new SpiderReadResult();
-		spiderReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPlaceListFromFedora();
-		return spiderReadResult;
+	private StorageReadResult tryCreateStorageReadResultFromReadingAndConvertingPlaceListInFedora() {
+		StorageReadResult storageReadResult = new StorageReadResult();
+		storageReadResult.listOfDataGroups = (List<DataGroup>) tryReadAndConvertPlaceListFromFedora();
+		return storageReadResult;
 	}
 
 	private Collection<DataGroup> tryReadAndConvertPlaceListFromFedora() {
-		String placeListXML = getPlaceListXMLFromFedora();
+		String query = "state=A pid~alvin-place:*";
+		String placeListXML = getRecordListXMLFromFedora(query);
 		NodeList list = extractNodeListWithPidsFromXML(placeListXML);
 		return constructCollectionOfPlacesFromFedora(list);
 	}
 
-	private String getPlaceListXMLFromFedora() {
-		HttpHandler httpHandler = createHttpHandlerForPlaceList();
+	private String getRecordListXMLFromFedora(String query) {
+		HttpHandler httpHandler = createHttpHandlerForRecordList(query);
 		return httpHandler.getResponseText();
 	}
 
-	private HttpHandler createHttpHandlerForPlaceList() {
-		String url = baseURL
-				+ "objects?pid=true&maxResults=100&resultFormat=xml&query=pid%7Ealvin-place:*";
+	private HttpHandler createHttpHandlerForRecordList(String query) {
+		String urlEncodedQuery = URLEncoder.encode(query);
+		String url = baseURL + "objects?pid=true&maxResults=10000&resultFormat=xml&query="
+				+ urlEncodedQuery;
 		HttpHandler httpHandler = httpHandlerFactory.factor(url);
 		httpHandler.setRequestMethod("GET");
 		return httpHandler;
@@ -487,7 +501,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	@Override
-	public SpiderReadResult readAbstractList(String type, DataGroup filter) {
+	public StorageReadResult readAbstractList(String type, DataGroup filter) {
 		throw NotImplementedException.withMessage("readAbstractList is not implemented");
 	}
 
@@ -512,6 +526,31 @@ public final class FedoraRecordStorage implements RecordStorage {
 			String id) {
 		throw NotImplementedException.withMessage(
 				"recordExistsForAbstractOrImplementingRecordTypeAndRecordId is not implemented");
+	}
+
+	public HttpHandlerFactory getHttpHandlerFactory() {
+		// needed for test
+		return httpHandlerFactory;
+	}
+
+	public AlvinFedoraConverterFactory getAlvinFedoraConverterFactory() {
+		// needed for test
+		return converterFactory;
+	}
+
+	public String getBaseURL() {
+		// needed for test
+		return baseURL;
+	}
+
+	public String getFedoraUsername() {
+		// needed for test
+		return fedoraUsername;
+	}
+
+	public String getFedoraPassword() {
+		// needed for test
+		return fedoraPassword;
 	}
 
 }

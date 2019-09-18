@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -25,9 +25,11 @@ public class AlvinDbToCoraConverterFactorySpy implements AlvinDbToCoraConverterF
 
 	List<AlvinDbToCoraConverter> factoredConverters = new ArrayList<>();
 	List<String> factoredTypes = new ArrayList<>();
+	public boolean factorWasCalled = false;
 
 	@Override
 	public AlvinDbToCoraConverter factor(String type) {
+		factorWasCalled = true;
 		factoredTypes.add(type);
 		AlvinDbToCoraConverter converter = new AlvinDbToCoraConverterSpy();
 		factoredConverters.add(converter);

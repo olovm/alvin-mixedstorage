@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Uppsala University Library
+ * Copyright 2018, 2019 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -19,15 +19,31 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
+import se.uu.ub.cora.sqldatabase.DataReader;
 
 public class AlvinDbToCoraConverterFactoryImp implements AlvinDbToCoraConverterFactory {
 
+	public static AlvinDbToCoraConverterFactoryImp usingDataReader(DataReader dataReader) {
+		return new AlvinDbToCoraConverterFactoryImp(dataReader);
+	}
+
+	private DataReader dataReader;
+
+	private AlvinDbToCoraConverterFactoryImp(DataReader dataReader) {
+		this.dataReader = dataReader;
+	}
+
 	@Override
 	public AlvinDbToCoraConverter factor(String type) {
-		if ("country".equals(type)) {
-			return new AlvinDbToCoraCountryConverter();
+		if ("user".equals(type)) {
+			return AlvinDbToCoraUserConverter.usingDataReader(dataReader);
 		}
 		throw NotImplementedException.withMessage("No converter implemented for: " + type);
+	}
+
+	public DataReader getDataReader() {
+		// needed for test
+		return dataReader;
 	}
 
 }

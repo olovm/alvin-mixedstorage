@@ -1,6 +1,6 @@
 package se.uu.ub.cora.alvin.mixedstorage;
 
-import se.uu.ub.cora.bookkeeper.data.DataGroup;
+import se.uu.ub.cora.data.DataGroup;
 
 public class RecordStorageSpyData {
 	public String type;
