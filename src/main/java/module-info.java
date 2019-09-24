@@ -9,10 +9,11 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	requires se.uu.ub.cora.searchstorage;
 	// requires com.rabbitmq.client;
 	// requires qpid.jms.client;
-	// requires jms;
-	// requires javax.jms.api;
+	// requires javax.jms;
+	requires javax.jms.api;
 	// requires com.rabbitmq.jms;
-	requires com.rabbitmq.client;
+	// requires com.rabbitmq.client;
+	requires activemq.client;
 	// requires fedora.client.messaging;
 	// requires fedora.client.messaging;
 	// requires org
