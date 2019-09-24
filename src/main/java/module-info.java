@@ -14,6 +14,7 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	// requires com.rabbitmq.jms;
 	// requires com.rabbitmq.client;
 	requires activemq.client;
+	requires com.rabbitmq.client;
 	// requires fedora.client.messaging;
 	// requires fedora.client.messaging;
 	// requires org

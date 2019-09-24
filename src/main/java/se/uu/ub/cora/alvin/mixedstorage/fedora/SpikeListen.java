@@ -38,4 +38,38 @@ public class SpikeListen {
 			System.out.println(e.getCause());
 		}
 	}
+
+	// public static void main(String[] args) {
+	// // docker network connect --alias dev-diva-archive eclipseForCoraNet dev-diva-archive
+	// // docker network connect --alias dev-diva-drafts eclipseForCoraNet dev-diva-drafts
+	// try {
+	// ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+	//
+	// connectionFactory.setBrokerURL("tcp://messaging.alvin-portal.org:5672/alvin");
+	// // connectionFactory.
+	// // connectionFactory.setUserName("admin");
+	// // connectionFactory.setPassword("admin");
+	// Connection connection = connectionFactory.createConnection();
+	// Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+	// Destination destination = session.createQueue("*");
+	// // Destination destination = session.createTopic("*");
+	// MessageConsumer consumer = session.createConsumer(destination);
+	// connection.start();
+	// while (true) {
+	// Message message = consumer.receive();
+	//
+	// if (message instanceof TextMessage) {
+	// TextMessage text = (TextMessage) message;
+	// System.out.println("Message is : " + text.getText());
+	// }
+	// }
+	// // connection.close();
+	// } catch (Exception e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// System.out.println(e.getCause());
+	// System.out.print(e);
+	// }
+	//
+	// }
 }
