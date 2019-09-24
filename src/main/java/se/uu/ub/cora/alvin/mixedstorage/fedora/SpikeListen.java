@@ -23,7 +23,7 @@ public class SpikeListen {
 			String queueName = channel.queueDeclare().getQueue();
 			// channel.queueBind(queueName, EXCHANGE_NAME, "");
 			// channel.queueBind(queueName, EXCHANGE_NAME, "alvin.search.query.PlaceAQLQuery");
-			channel.queueBind(queueName, EXCHANGE_NAME, "alvin.updates.place");
+			channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
 			System.out.println(" [*] Waiting for messages. To exit press CTRL+C 2");
 
