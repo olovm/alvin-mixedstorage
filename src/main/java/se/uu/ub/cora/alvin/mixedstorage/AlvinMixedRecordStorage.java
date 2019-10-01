@@ -20,6 +20,7 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Collection;
 
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.searchstorage.SearchStorage;
 import se.uu.ub.cora.storage.RecordNotFoundException;
@@ -33,18 +34,22 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	private RecordStorage alvinFedoraToCoraStorage;
 
 	private RecordStorage alvinDbToCoraStorage;
+	private IndexMessageInfo indexMessageInfo;
 
-	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
-			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
+	public static RecordStorage usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(
+			RecordStorage basicStorage, RecordStorage alvinFedoraToCoraStorage,
+			RecordStorage alvinDbToCoraStorage, IndexMessageInfo indexMessageInfo) {
 		return new AlvinMixedRecordStorage(basicStorage, alvinFedoraToCoraStorage,
-				alvinDbToCoraStorage);
+				alvinDbToCoraStorage, indexMessageInfo);
 	}
 
 	private AlvinMixedRecordStorage(RecordStorage basicStorage,
-			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
+			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage,
+			IndexMessageInfo indexMessageInfo) {
 		this.basicStorage = basicStorage;
 		this.alvinFedoraToCoraStorage = alvinFedoraToCoraStorage;
 		this.alvinDbToCoraStorage = alvinDbToCoraStorage;
+		this.indexMessageInfo = indexMessageInfo;
 	}
 
 	@Override

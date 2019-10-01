@@ -73,6 +73,8 @@ public class AlvinMixedRecordStorageProviderTest {
 		initInfo.put("fedoraUsername", "fedoraUser");
 		initInfo.put("fedoraPassword", "fedoraPass");
 		initInfo.put("databaseLookupName", "java:/comp/env/jdbc/postgres");
+		initInfo.put("messageServerHostname", "messaging.alvin-portal.org");
+		initInfo.put("messageServerPort", "5672");
 
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new AlvinMixedRecordStorageProvider();
@@ -167,6 +169,7 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		String fedoraPassword = fedoraToCoraStorage.getFedoraPassword();
 		assertEquals(fedoraPassword, initInfo.get("fedoraPassword"));
+
 	}
 
 	@Test

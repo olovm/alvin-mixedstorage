@@ -28,6 +28,7 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.storage.RecordStorage;
 
@@ -36,14 +37,17 @@ public class AlvinMixedRecordStorageTest {
 	private RecordStorageSpy alvinFedoraToCoraStorage;
 	private RecordStorageSpy alvinDbToCoraStorage;
 	private RecordStorage alvinMixedRecordStorage;
+	private IndexMessageInfo indexMessageinfo;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		basicStorage = new RecordStorageSpy();
 		alvinFedoraToCoraStorage = new RecordStorageSpy();
 		alvinDbToCoraStorage = new RecordStorageSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorage);
+		indexMessageinfo = new IndexMessageInfo("", "");
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
+						alvinFedoraToCoraStorage, alvinDbToCoraStorage, indexMessageinfo);
 	}
 
 	@Test
@@ -122,8 +126,9 @@ public class AlvinMixedRecordStorageTest {
 	@Test
 	public void readUserGUESTGoesToBasicStorage() throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -346,8 +351,9 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUserGoesToDbStorage()
 			throws Exception {
 		AlvinDbToCoraStorageSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -376,8 +382,9 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingForUserGoesToBasicStorageWhenNotFoundInDb()
 			throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -402,8 +409,9 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingReturnFalseWhenNotFoundInEitherStorage()
 			throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
