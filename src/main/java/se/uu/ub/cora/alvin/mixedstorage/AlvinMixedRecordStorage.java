@@ -103,6 +103,8 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 		if (PLACE.equals(type)) {
 			alvinFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList,
 					dataDivider);
+			// AlvinRecordIndexer indexer = new AlvinRecordIndexer(null);
+			// indexer.index(type, id);
 		} else {
 			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
 		}
@@ -185,6 +187,11 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	@Override
 	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
 		return ((SearchStorage) basicStorage).getCollectIndexTerm(collectIndexTermId);
+	}
+
+	public IndexMessageInfo getIndexMessageInfo() {
+		// needed for test
+		return indexMessageInfo;
 	}
 
 }

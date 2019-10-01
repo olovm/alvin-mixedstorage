@@ -37,17 +37,17 @@ public class AlvinMixedRecordStorageTest {
 	private RecordStorageSpy alvinFedoraToCoraStorage;
 	private RecordStorageSpy alvinDbToCoraStorage;
 	private RecordStorage alvinMixedRecordStorage;
-	private IndexMessageInfo indexMessageinfo;
+	private IndexMessageInfo indexMessageInfo;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		basicStorage = new RecordStorageSpy();
 		alvinFedoraToCoraStorage = new RecordStorageSpy();
 		alvinDbToCoraStorage = new RecordStorageSpy();
-		indexMessageinfo = new IndexMessageInfo("", "");
+		indexMessageInfo = new IndexMessageInfo("", "");
 		alvinMixedRecordStorage = AlvinMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
-						alvinFedoraToCoraStorage, alvinDbToCoraStorage, indexMessageinfo);
+						alvinFedoraToCoraStorage, alvinDbToCoraStorage, indexMessageInfo);
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class AlvinMixedRecordStorageTest {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
 		alvinMixedRecordStorage = AlvinMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
-						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -353,7 +353,7 @@ public class AlvinMixedRecordStorageTest {
 		AlvinDbToCoraStorageSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageSpy();
 		alvinMixedRecordStorage = AlvinMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
-						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -384,7 +384,7 @@ public class AlvinMixedRecordStorageTest {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
 		alvinMixedRecordStorage = AlvinMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
-						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -411,7 +411,7 @@ public class AlvinMixedRecordStorageTest {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
 		alvinMixedRecordStorage = AlvinMixedRecordStorage
 				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage,
-						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageinfo);
+						alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";

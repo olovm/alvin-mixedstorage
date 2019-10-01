@@ -42,6 +42,7 @@ import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraConverterFactory;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
@@ -196,6 +197,16 @@ public class AlvinMixedRecordStorageProviderTest {
 				.getConverterFactory();
 		assertSame(dbToCoraConverter.getDataReader(), dataReader);
 
+	}
+
+	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectIndexMessageInfo() {
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		IndexMessageInfo indexMessageInfo = recordStorage.getIndexMessageInfo();
+		assertEquals(indexMessageInfo.messageServerHostname, initInfo.get("messageServerHostname"));
+		assertEquals(indexMessageInfo.messageServerPort, initInfo.get("messageServerPort"));
 	}
 
 	@Test
