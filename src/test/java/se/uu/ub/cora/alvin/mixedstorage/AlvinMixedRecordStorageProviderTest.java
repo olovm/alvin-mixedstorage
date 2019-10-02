@@ -210,6 +210,15 @@ public class AlvinMixedRecordStorageProviderTest {
 	}
 
 	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectRecordIndexerFactory() {
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		RecordIndexerFactory recordIndexerFactory = recordStorage.getRecordIndexFactory();
+		assertTrue(recordIndexerFactory instanceof AlvinRecordIndexerFactory);
+	}
+
+	@Test
 	public void testNormalStartupReturnsTheSameRecordStorageForMultipleCalls() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();

@@ -208,4 +208,9 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 		return indexMessageInfo;
 	}
 
+	public RecordIndexerFactory getRecordIndexFactory() {
+		// needed for test
+		return recordIndexFactory;
+	}
+
 }
