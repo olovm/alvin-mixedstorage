@@ -22,7 +22,10 @@ import java.util.Collection;
 
 import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.messaging.MessageRoutingInfo;
+import se.uu.ub.cora.messaging.MessagingInitializationException;
 import se.uu.ub.cora.searchstorage.SearchStorage;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -40,6 +43,8 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	private RecordStorage alvinDbToCoraStorage;
 	private IndexMessageInfo indexMessageInfo;
 	private RecordIndexerFactory recordIndexFactory;
+
+	private Logger log = LoggerProvider.getLoggerForClass(AlvinMixedRecordStorage.class);
 
 	public static RecordStorage usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
 			RecordStorage basicStorage, RecordStorage alvinFedoraToCoraStorage,
@@ -110,9 +115,18 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 		if (PLACE.equals(type)) {
 			alvinFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList,
 					dataDivider);
-			sendIndexMessage(type, id);
+			tryToSendIndexMessageToClassic(type, id);
 		} else {
 			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
+		}
+	}
+
+	private void tryToSendIndexMessageToClassic(String type, String id) {
+		try {
+			sendIndexMessage(type, id);
+		} catch (MessagingInitializationException e) {
+			log.logErrorUsingMessage("Error sending index message to classic for recordType:"
+					+ type + " and id:" + id);
 		}
 	}
 
