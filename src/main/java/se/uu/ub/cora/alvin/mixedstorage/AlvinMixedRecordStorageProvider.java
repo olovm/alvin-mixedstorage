@@ -82,8 +82,8 @@ public class AlvinMixedRecordStorageProvider
 		AlvinDbToCoraRecordStorage dbStorage = createDbStorage();
 		IndexMessageInfo indexMessageInfo = createIndexMessageInfo();
 		RecordStorage alvinMixedRecordStorage = AlvinMixedRecordStorage
-				.usingBasicAndFedoraAndDbStorageAndIndexMessageInfo(basicStorage, fedoraStorage,
-						dbStorage, indexMessageInfo);
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(basicStorage, fedoraStorage,
+						dbStorage, null, indexMessageInfo);
 		setStaticInstance(alvinMixedRecordStorage);
 	}
 

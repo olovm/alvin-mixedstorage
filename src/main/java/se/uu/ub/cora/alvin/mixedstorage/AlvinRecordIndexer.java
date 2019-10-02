@@ -25,14 +25,14 @@ import se.uu.ub.cora.messaging.MessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessageSender;
 import se.uu.ub.cora.messaging.MessagingProvider;
 
-public class AlvinRecordIndexer {
+public class AlvinRecordIndexer implements RecordIndexer {
 
-	private MessageRoutingInfo channelInfo;
+	private MessageRoutingInfo messageRoutingInfo;
 	private String type;
 	private String pid;
 
-	public AlvinRecordIndexer(MessageRoutingInfo channelInfo) {
-		this.channelInfo = channelInfo;
+	public AlvinRecordIndexer(MessageRoutingInfo messageRoutingInfo) {
+		this.messageRoutingInfo = messageRoutingInfo;
 	}
 
 	public void index(String type, String pid) {
@@ -41,7 +41,7 @@ public class AlvinRecordIndexer {
 		Map<String, Object> headers = createHeaders();
 		String message = createMessage();
 
-		MessageSender messageSender = MessagingProvider.getTopicMessageSender(channelInfo);
+		MessageSender messageSender = MessagingProvider.getTopicMessageSender(messageRoutingInfo);
 		messageSender.sendMessage(headers, message);
 	}
 
@@ -61,7 +61,7 @@ public class AlvinRecordIndexer {
 
 	MessageRoutingInfo getMessageRoutingInfo() {
 		// needed for test
-		return channelInfo;
+		return messageRoutingInfo;
 	}
 
 }
