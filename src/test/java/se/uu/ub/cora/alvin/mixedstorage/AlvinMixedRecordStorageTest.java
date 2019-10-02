@@ -33,6 +33,7 @@ import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.messaging.MessageRoutingInfo;
+import se.uu.ub.cora.messaging.MessagingInitializationException;
 import se.uu.ub.cora.storage.RecordStorage;
 
 public class AlvinMixedRecordStorageTest {
@@ -314,6 +315,11 @@ public class AlvinMixedRecordStorageTest {
 		assertEquals(loggerFactorySpy.getNoOfErrorLogMessagesUsingClassName(testedClassName), 1);
 		assertEquals(loggerFactorySpy.getErrorLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"Error sending index message to classic for recordType:place and id:someId");
+		Exception loggedException = loggerFactorySpy
+				.getErrorLogExceptionsUsingClassNameAndNo(testedClassName, 0);
+		assertTrue(loggedException instanceof MessagingInitializationException);
+		assertEquals(loggedException.getMessage(),
+				"MessagingInitialization error from RecordIndexerSpy");
 	}
 
 	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""

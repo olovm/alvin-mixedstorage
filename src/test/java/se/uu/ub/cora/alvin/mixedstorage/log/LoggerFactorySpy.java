@@ -52,6 +52,11 @@ public class LoggerFactorySpy implements LoggerFactory {
 		return errorMessages.get(messageNo);
 	}
 
+	public Exception getErrorLogExceptionsUsingClassNameAndNo(String className, int messageNo) {
+		List<Exception> errorExceptions = (createdLoggers.get(className)).errorExceptions;
+		return errorExceptions.get(messageNo);
+	}
+
 	public int getNoOfErrorLogMessagesUsingClassName(String testedClassName) {
 		return ((createdLoggers.get(testedClassName)).errorMessages).size();
 	}

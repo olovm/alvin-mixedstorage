@@ -125,8 +125,10 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 		try {
 			sendIndexMessage(type, id);
 		} catch (MessagingInitializationException e) {
-			log.logErrorUsingMessage("Error sending index message to classic for recordType:"
-					+ type + " and id:" + id);
+			log.logErrorUsingMessageAndException(
+					"Error sending index message to classic for recordType:" + type + " and id:"
+							+ id,
+					e);
 		}
 	}
 
