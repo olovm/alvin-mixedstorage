@@ -49,10 +49,10 @@ public class FedoraRecordStorageTest {
 	public void BeforeMethod() {
 		httpHandlerFactory = new HttpHandlerFactorySpy();
 		converterFactory = new AlvinFedoraToCoraConverterFactorySpy();
+		FedoraConfig fedoraConfig = new FedoraConfig(fedoraUsername, fedoraPassword, baseURL);
 		alvinToCoraRecordStorage = FedoraRecordStorage
-				.usingHttpHandlerFactoryAndConverterFactoryAndFedoraBaseURLAndFedoraUsernameAndFedoraPassword(
-						httpHandlerFactory, converterFactory, baseURL, fedoraUsername,
-						fedoraPassword);
+				.usingHttpHandlerFactoryAndConverterFactoryAndFedoraConfig(httpHandlerFactory,
+						converterFactory, fedoraConfig);
 	}
 
 	@Test

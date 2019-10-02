@@ -42,6 +42,7 @@ import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraConverterFactory;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
@@ -73,6 +74,8 @@ public class AlvinMixedRecordStorageProviderTest {
 		initInfo.put("fedoraUsername", "fedoraUser");
 		initInfo.put("fedoraPassword", "fedoraPass");
 		initInfo.put("databaseLookupName", "java:/comp/env/jdbc/postgres");
+		initInfo.put("messageServerHostname", "messaging.alvin-portal.org");
+		initInfo.put("messageServerPort", "5672");
 
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new AlvinMixedRecordStorageProvider();
@@ -167,6 +170,7 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		String fedoraPassword = fedoraToCoraStorage.getFedoraPassword();
 		assertEquals(fedoraPassword, initInfo.get("fedoraPassword"));
+
 	}
 
 	@Test
@@ -193,6 +197,25 @@ public class AlvinMixedRecordStorageProviderTest {
 				.getConverterFactory();
 		assertSame(dbToCoraConverter.getDataReader(), dataReader);
 
+	}
+
+	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectIndexMessageInfo() {
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		IndexMessageInfo indexMessageInfo = recordStorage.getIndexMessageInfo();
+		assertEquals(indexMessageInfo.messageServerHostname, initInfo.get("messageServerHostname"));
+		assertEquals(indexMessageInfo.messageServerPort, initInfo.get("messageServerPort"));
+	}
+
+	@Test
+	public void testAlvinMixedRecordStorageContainsCorrectRecordIndexerFactory() {
+		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		AlvinMixedRecordStorage recordStorage = (AlvinMixedRecordStorage) recordStorageOnDiskProvider
+				.getRecordStorage();
+		RecordIndexerFactory recordIndexerFactory = recordStorage.getRecordIndexFactory();
+		assertTrue(recordIndexerFactory instanceof AlvinRecordIndexerFactory);
 	}
 
 	@Test

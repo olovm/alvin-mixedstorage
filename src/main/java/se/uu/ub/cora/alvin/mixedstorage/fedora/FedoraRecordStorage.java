@@ -49,20 +49,18 @@ public final class FedoraRecordStorage implements RecordStorage {
 	private String fedoraPassword;
 
 	private FedoraRecordStorage(HttpHandlerFactory httpHandlerFactory,
-			AlvinFedoraConverterFactory converterFactory, String baseURL, String fedoraUsername,
-			String fedoraPassword) {
+			AlvinFedoraConverterFactory converterFactory, FedoraConfig fedoraConfig) {
 		this.httpHandlerFactory = httpHandlerFactory;
 		this.converterFactory = converterFactory;
-		this.baseURL = baseURL;
-		this.fedoraUsername = fedoraUsername;
-		this.fedoraPassword = fedoraPassword;
+		this.baseURL = fedoraConfig.baseUrl;
+		this.fedoraUsername = fedoraConfig.userName;
+		this.fedoraPassword = fedoraConfig.password;
 	}
 
-	public static FedoraRecordStorage usingHttpHandlerFactoryAndConverterFactoryAndFedoraBaseURLAndFedoraUsernameAndFedoraPassword(
+	public static FedoraRecordStorage usingHttpHandlerFactoryAndConverterFactoryAndFedoraConfig(
 			HttpHandlerFactory httpHandlerFactory, AlvinFedoraConverterFactory converterFactory,
-			String baseURL, String fedoraUsername, String fedoraPassword) {
-		return new FedoraRecordStorage(httpHandlerFactory, converterFactory, baseURL,
-				fedoraUsername, fedoraPassword);
+			FedoraConfig fedoraConfig) {
+		return new FedoraRecordStorage(httpHandlerFactory, converterFactory, fedoraConfig);
 	}
 
 	@Override

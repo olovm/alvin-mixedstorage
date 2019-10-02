@@ -28,7 +28,11 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
+import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.messaging.MessageRoutingInfo;
 import se.uu.ub.cora.storage.RecordStorage;
 
 public class AlvinMixedRecordStorageTest {
@@ -36,14 +40,24 @@ public class AlvinMixedRecordStorageTest {
 	private RecordStorageSpy alvinFedoraToCoraStorage;
 	private RecordStorageSpy alvinDbToCoraStorage;
 	private RecordStorage alvinMixedRecordStorage;
+	private IndexMessageInfo indexMessageInfo;
+	private RecordIndexerFactorySpy recordIndexerFactory;
+	private LoggerFactorySpy loggerFactorySpy;
+	private String testedClassName = "AlvinMixedRecordStorage";
 
 	@BeforeMethod
 	public void beforeMethod() {
+		loggerFactorySpy = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		basicStorage = new RecordStorageSpy();
 		alvinFedoraToCoraStorage = new RecordStorageSpy();
 		alvinDbToCoraStorage = new RecordStorageSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorage);
+		recordIndexerFactory = new RecordIndexerFactorySpy();
+		indexMessageInfo = new IndexMessageInfo("someHostName", "somePort");
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorage,
+						recordIndexerFactory, indexMessageInfo);
 	}
 
 	@Test
@@ -122,8 +136,10 @@ public class AlvinMixedRecordStorageTest {
 	@Test
 	public void readUserGUESTGoesToBasicStorage() throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, null,
+						indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -255,13 +271,7 @@ public class AlvinMixedRecordStorageTest {
 
 	@Test
 	public void updatePlaceGoesToFedoraStorage() throws Exception {
-		RecordStorageSpyData expectedData = new RecordStorageSpyData();
-		expectedData.type = "place";
-		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
-		expectedData.dataDivider = "someDataDivider";
+		RecordStorageSpyData expectedData = setUpExpectedData();
 		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
 
@@ -270,6 +280,61 @@ public class AlvinMixedRecordStorageTest {
 		assertNoInteractionWithStorage(basicStorage);
 		assertNoInteractionWithStorage(alvinDbToCoraStorage);
 
+	}
+
+	@Test
+	public void updatePlacesesIndexFactoryAndCallsIndexer() throws Exception {
+		RecordStorageSpyData expectedData = setUpExpectedData();
+		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		RecordIndexerSpy recordIndexerSpy = recordIndexerFactory.factoredRecordIndexer;
+		MessageRoutingInfo messageRoutingInfo = recordIndexerFactory.messageRoutingInfo;
+		assertEquals(messageRoutingInfo.hostname, indexMessageInfo.messageServerHostname);
+		assertEquals(messageRoutingInfo.port, indexMessageInfo.messageServerPort);
+		assertEquals(messageRoutingInfo.virtualHost, "alvin");
+		assertEquals(messageRoutingInfo.exchange, "index");
+		assertEquals(messageRoutingInfo.routingKey, "alvin.updates.place");
+
+		assertEquals(recordIndexerSpy.type, expectedData.type);
+		assertEquals(recordIndexerSpy.pid, expectedData.id);
+		assertSame(recordIndexerSpy.messageRoutingInfo, messageRoutingInfo);
+	}
+
+	@Test
+	public void testErrorWhenSendingIndexMessageToMessageServer() throws Exception {
+		recordIndexerFactory.throwMessageInitializationErrorOnIndex = true;
+		RecordStorageSpyData expectedData = setUpExpectedData();
+
+		assertEquals(loggerFactorySpy.getNoOfErrorLogMessagesUsingClassName(testedClassName), 0);
+
+		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+
+		assertEquals(loggerFactorySpy.getNoOfErrorLogMessagesUsingClassName(testedClassName), 1);
+		assertEquals(loggerFactorySpy.getErrorLogMessageUsingClassNameAndNo(testedClassName, 0),
+				"Error sending index message to classic for recordType:place and id:someId");
+	}
+
+	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""
+			+ "Runtime error from RecordIndexerSpy")
+	public void testUnexpectedErrorWhenSendingIndexMessageToMessageServer() throws Exception {
+		recordIndexerFactory.throwRuntimeErrorOnIndex = true;
+		RecordStorageSpyData expectedData = setUpExpectedData();
+
+		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
+				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
+	}
+
+	private RecordStorageSpyData setUpExpectedData() {
+		RecordStorageSpyData expectedData = new RecordStorageSpyData();
+		expectedData.type = "place";
+		expectedData.id = "someId";
+		expectedData.record = DataGroup.withNameInData("dummyRecord");
+		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
+		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.dataDivider = "someDataDivider";
+		return expectedData;
 	}
 
 	@Test
@@ -346,8 +411,10 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUserGoesToDbStorage()
 			throws Exception {
 		AlvinDbToCoraStorageSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, null,
+						indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -376,8 +443,10 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingForUserGoesToBasicStorageWhenNotFoundInDb()
 			throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, null,
+						indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
@@ -402,8 +471,10 @@ public class AlvinMixedRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingReturnFalseWhenNotFoundInEitherStorage()
 			throws Exception {
 		AlvinDbToCoraStorageNotFoundSpy alvinDbToCoraStorageSpy = new AlvinDbToCoraStorageNotFoundSpy();
-		alvinMixedRecordStorage = AlvinMixedRecordStorage.usingBasicAndFedoraAndDbStorage(
-				basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy);
+		alvinMixedRecordStorage = AlvinMixedRecordStorage
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, alvinFedoraToCoraStorage, alvinDbToCoraStorageSpy, null,
+						indexMessageInfo);
 
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";

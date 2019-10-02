@@ -20,7 +20,12 @@ package se.uu.ub.cora.alvin.mixedstorage;
 
 import java.util.Collection;
 
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.logger.Logger;
+import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.messaging.MessageRoutingInfo;
+import se.uu.ub.cora.messaging.MessagingInitializationException;
 import se.uu.ub.cora.searchstorage.SearchStorage;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -28,23 +33,35 @@ import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class AlvinMixedRecordStorage implements RecordStorage, SearchStorage {
 
+	private static final String ROUTING_KEY_PREFIX = "alvin.updates.";
+	private static final String EXCHANGE = "index";
+	private static final String VIRTUAL_HOST = "alvin";
 	private static final String PLACE = "place";
 	private RecordStorage basicStorage;
 	private RecordStorage alvinFedoraToCoraStorage;
 
 	private RecordStorage alvinDbToCoraStorage;
+	private IndexMessageInfo indexMessageInfo;
+	private RecordIndexerFactory recordIndexFactory;
 
-	public static RecordStorage usingBasicAndFedoraAndDbStorage(RecordStorage basicStorage,
-			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
+	private Logger log = LoggerProvider.getLoggerForClass(AlvinMixedRecordStorage.class);
+
+	public static RecordStorage usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+			RecordStorage basicStorage, RecordStorage alvinFedoraToCoraStorage,
+			RecordStorage alvinDbToCoraStorage, RecordIndexerFactory recordIndexFactory,
+			IndexMessageInfo indexMessageInfo) {
 		return new AlvinMixedRecordStorage(basicStorage, alvinFedoraToCoraStorage,
-				alvinDbToCoraStorage);
+				alvinDbToCoraStorage, recordIndexFactory, indexMessageInfo);
 	}
 
 	private AlvinMixedRecordStorage(RecordStorage basicStorage,
-			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage) {
+			RecordStorage alvinFedoraToCoraStorage, RecordStorage alvinDbToCoraStorage,
+			RecordIndexerFactory recordIndexFactory, IndexMessageInfo indexMessageInfo) {
 		this.basicStorage = basicStorage;
 		this.alvinFedoraToCoraStorage = alvinFedoraToCoraStorage;
 		this.alvinDbToCoraStorage = alvinDbToCoraStorage;
+		this.recordIndexFactory = recordIndexFactory;
+		this.indexMessageInfo = indexMessageInfo;
 	}
 
 	@Override
@@ -98,9 +115,27 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 		if (PLACE.equals(type)) {
 			alvinFedoraToCoraStorage.update(type, id, record, collectedTerms, linkList,
 					dataDivider);
+			tryToSendIndexMessageToClassic(type, id);
 		} else {
 			basicStorage.update(type, id, record, collectedTerms, linkList, dataDivider);
 		}
+	}
+
+	private void tryToSendIndexMessageToClassic(String type, String id) {
+		try {
+			sendIndexMessage(type, id);
+		} catch (MessagingInitializationException e) {
+			log.logErrorUsingMessage("Error sending index message to classic for recordType:"
+					+ type + " and id:" + id);
+		}
+	}
+
+	private void sendIndexMessage(String type, String id) {
+		MessageRoutingInfo messageRoutingInfo = new MessageRoutingInfo(
+				indexMessageInfo.messageServerHostname, indexMessageInfo.messageServerPort,
+				VIRTUAL_HOST, EXCHANGE, ROUTING_KEY_PREFIX + type);
+		RecordIndexer indexer = recordIndexFactory.factor(messageRoutingInfo);
+		indexer.index(type, id);
 	}
 
 	@Override
@@ -180,6 +215,16 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	@Override
 	public DataGroup getCollectIndexTerm(String collectIndexTermId) {
 		return ((SearchStorage) basicStorage).getCollectIndexTerm(collectIndexTermId);
+	}
+
+	public IndexMessageInfo getIndexMessageInfo() {
+		// needed for test
+		return indexMessageInfo;
+	}
+
+	public RecordIndexerFactory getRecordIndexFactory() {
+		// needed for test
+		return recordIndexFactory;
 	}
 
 }

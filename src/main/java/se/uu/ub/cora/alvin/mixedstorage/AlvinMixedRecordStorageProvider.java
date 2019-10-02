@@ -26,7 +26,9 @@ import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraConverterFactoryImp;
 import se.uu.ub.cora.alvin.mixedstorage.db.AlvinDbToCoraRecordStorage;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraConverterFactory;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.AlvinFedoraToCoraConverterFactoryImp;
+import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraConfig;
 import se.uu.ub.cora.alvin.mixedstorage.fedora.FedoraRecordStorage;
+import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.basicstorage.DataStorageException;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
@@ -78,8 +80,11 @@ public class AlvinMixedRecordStorageProvider
 		RecordStorage basicStorage = createBasicStorage();
 		FedoraRecordStorage fedoraStorage = createFedoraStorage();
 		AlvinDbToCoraRecordStorage dbStorage = createDbStorage();
+		IndexMessageInfo indexMessageInfo = createIndexMessageInfo();
+		AlvinRecordIndexerFactory indexerFactory = new AlvinRecordIndexerFactory();
 		RecordStorage alvinMixedRecordStorage = AlvinMixedRecordStorage
-				.usingBasicAndFedoraAndDbStorage(basicStorage, fedoraStorage, dbStorage);
+				.usingBasicAndFedoraAndDbStorageAndRecordIndexerFactoryAndIndexMessageInfo(
+						basicStorage, fedoraStorage, dbStorage, indexerFactory, indexMessageInfo);
 		setStaticInstance(alvinMixedRecordStorage);
 	}
 
@@ -100,19 +105,26 @@ public class AlvinMixedRecordStorageProvider
 	}
 
 	private FedoraRecordStorage createFedoraStorage() {
+		FedoraConfig fedoraConfig = createFedoraConfig();
+		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
+		AlvinFedoraConverterFactory converterFactory = AlvinFedoraToCoraConverterFactoryImp
+				.usingFedoraURL(fedoraConfig.baseUrl);
+
+		return FedoraRecordStorage.usingHttpHandlerFactoryAndConverterFactoryAndFedoraConfig(
+				httpHandlerFactory, converterFactory, fedoraConfig);
+	}
+
+	private FedoraConfig createFedoraConfig() {
 		String fedoraURL = tryToGetInitParameterLogIfFound("fedoraURL");
 		String fedoraUsername = tryToGetInitParameter("fedoraUsername");
 		String fedoraPassword = tryToGetInitParameter("fedoraPassword");
+		return new FedoraConfig(fedoraUsername, fedoraPassword, fedoraURL);
+	}
 
-		HttpHandlerFactory httpHandlerFactory = new HttpHandlerFactoryImp();
-
-		AlvinFedoraConverterFactory converterFactory = AlvinFedoraToCoraConverterFactoryImp
-				.usingFedoraURL(fedoraURL);
-
-		return FedoraRecordStorage
-				.usingHttpHandlerFactoryAndConverterFactoryAndFedoraBaseURLAndFedoraUsernameAndFedoraPassword(
-						httpHandlerFactory, converterFactory, fedoraURL, fedoraUsername,
-						fedoraPassword);
+	private IndexMessageInfo createIndexMessageInfo() {
+		String messageServerHostname = tryToGetInitParameter("messageServerHostname");
+		String messageServerPort = tryToGetInitParameter("messageServerPort");
+		return new IndexMessageInfo(messageServerHostname, messageServerPort);
 	}
 
 	private AlvinDbToCoraRecordStorage createDbStorage() {
