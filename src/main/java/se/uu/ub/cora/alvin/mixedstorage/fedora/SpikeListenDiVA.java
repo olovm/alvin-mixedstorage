@@ -1,5 +1,7 @@
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
+import java.util.Enumeration;
+
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -122,8 +124,8 @@ public class SpikeListenDiVA {
 		try {
 			ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
 
-			// connectionFactory.setBrokerURL("tcp://dev-diva-archive:61616");
-			connectionFactory.setBrokerURL("tcp://dev-diva-drafts:61617");
+			connectionFactory.setBrokerURL("tcp://dev-diva-archive:61616");
+			// connectionFactory.setBrokerURL("tcp://dev-diva-drafts:61617");
 			connectionFactory.setUserName("admin");
 			connectionFactory.setPassword("admin");
 			Connection connection = connectionFactory.createConnection();
@@ -138,6 +140,12 @@ public class SpikeListenDiVA {
 				if (message instanceof TextMessage) {
 					TextMessage text = (TextMessage) message;
 					System.out.println("Message is : " + text.getText());
+					Enumeration<String> propertyNames = text.getPropertyNames();
+					while (propertyNames.hasMoreElements()) {
+						String nextElement = propertyNames.nextElement();
+						System.out.println("property: " + nextElement + ":"
+								+ text.getStringProperty(nextElement));
+					}
 				}
 			}
 			// connection.close();
