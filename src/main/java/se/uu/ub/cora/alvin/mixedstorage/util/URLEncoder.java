@@ -33,7 +33,7 @@ public final class URLEncoder {
 		try {
 			return java.net.URLEncoder.encode(stringToEncode, encoding);
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("Encoding failed for string: " + stringToEncode);
+			throw new RuntimeException("Encoding failed for string: " + stringToEncode, e);
 		}
 	}
 

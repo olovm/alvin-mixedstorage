@@ -131,9 +131,10 @@ public class AlvinMixedUserStorage implements UserStorage {
 	}
 
 	private void possiblyAddFirstName(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
-		if (firstRowFromDb.containsKey("firstname")) {
+		Object firstname = firstRowFromDb.get("firstname");
+		if (firstname != null) {
 			userGroup.addChild(DataAtomic.withNameInDataAndValue("userFirstName",
-					(String) firstRowFromDb.get("firstname")));
+					(String) firstname));
 		}
 	}
 

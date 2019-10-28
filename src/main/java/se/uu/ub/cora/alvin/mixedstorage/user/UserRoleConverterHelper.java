@@ -26,6 +26,10 @@ import se.uu.ub.cora.data.DataGroup;
 
 public class UserRoleConverterHelper {
 
+	private static final int PLACE_ADMIN_ROLE = 53;
+	private static final int ORGANISATION_ADMIN_ROLE = 52;
+	private static final int PERSON_ADMIN_ROLE = 51;
+	private static final int USER_ADMIN_ROLE = 50;
 	private static final String USER_ROLE = "userRole";
 
 	private UserRoleConverterHelper() {
@@ -88,13 +92,13 @@ public class UserRoleConverterHelper {
 	}
 
 	public static String getMatchingCoraRole(int roleId) {
-		if (50 == roleId) {
+		if (USER_ADMIN_ROLE == roleId) {
 			return "userAdminRole";
-		} else if (51 == roleId) {
+		} else if (PERSON_ADMIN_ROLE == roleId) {
 			return "personAdminRole";
-		} else if (52 == roleId) {
+		} else if (ORGANISATION_ADMIN_ROLE == roleId) {
 			return "organisationAdminRole";
-		} else if (53 == roleId) {
+		} else if (PLACE_ADMIN_ROLE == roleId) {
 			return "placeAdminRole";
 		}
 		return "";

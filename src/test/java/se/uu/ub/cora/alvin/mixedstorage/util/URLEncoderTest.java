@@ -19,6 +19,7 @@ package se.uu.ub.cora.alvin.mixedstorage.util;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -51,5 +52,14 @@ public class URLEncoderTest {
 			+ "Encoding failed for string: abc...åäö")
 	public void testToEnsureCorrectErrorIsThrown() throws Exception {
 		URLEncoder.encodeUsingStringToEncodeAndEncoding("abc...åäö", "someEncodingNotExising");
+	}
+
+	@Test
+	public void testToEnsureCorrectErrorIsThrownSendsAlongIntitalException() throws Exception {
+		try {
+			URLEncoder.encodeUsingStringToEncodeAndEncoding("abc...åäö", "someEncodingNotExising");
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof UnsupportedEncodingException);
+		}
 	}
 }
