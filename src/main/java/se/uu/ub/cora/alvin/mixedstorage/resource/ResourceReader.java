@@ -49,7 +49,7 @@ public class ResourceReader {
 
 	private static StringBuilder readAllLinesWithLinebreaks(Stream<String> lines) {
 		StringBuilder data = new StringBuilder();
-		lines.forEach(line -> data.append(line).append("\n"));
+		lines.forEach(line -> data.append(line).append('\n'));
 		return data;
 	}
 

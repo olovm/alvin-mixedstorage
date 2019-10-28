@@ -26,6 +26,7 @@ import se.uu.ub.cora.data.DataGroup;
 
 public class UserRoleConverterHelper {
 
+	private static final int ADMIN_ROLE = 54;
 	private static final int PLACE_ADMIN_ROLE = 53;
 	private static final int ORGANISATION_ADMIN_ROLE = 52;
 	private static final int PERSON_ADMIN_ROLE = 51;
@@ -50,7 +51,7 @@ public class UserRoleConverterHelper {
 	}
 
 	private static boolean userHasAdminGroup(Map<String, Object> dbRow) {
-		return dbRow.get("group_id").equals(54);
+		return dbRow.get("group_id").equals(ADMIN_ROLE);
 	}
 
 	private static DataGroup createUserRoleWithRoleId(String roleId) {
