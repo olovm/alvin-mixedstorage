@@ -23,6 +23,7 @@ import static org.testng.Assert.assertSame;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.messaging.AmqpMessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessageRoutingInfo;
 
 public class RecordIndexerFactoryTest {
@@ -31,8 +32,8 @@ public class RecordIndexerFactoryTest {
 
 	@BeforeMethod
 	public void setUp() {
-		messageRoutingInfo = new MessageRoutingInfo("someHostName", "somePort", "someVirtualHost",
-				"someExchange", "someRoutingKey");
+		messageRoutingInfo = new AmqpMessageRoutingInfo("someHostName", "somePort",
+				"someVirtualHost", "someExchange", "someRoutingKey");
 
 	}
 

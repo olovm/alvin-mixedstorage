@@ -32,7 +32,7 @@ import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.logger.LoggerProvider;
-import se.uu.ub.cora.messaging.MessageRoutingInfo;
+import se.uu.ub.cora.messaging.AmqpMessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessagingInitializationException;
 import se.uu.ub.cora.storage.RecordStorage;
 
@@ -290,7 +290,7 @@ public class AlvinMixedRecordStorageTest {
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
 
 		RecordIndexerSpy recordIndexerSpy = recordIndexerFactory.factoredRecordIndexer;
-		MessageRoutingInfo messageRoutingInfo = recordIndexerFactory.messageRoutingInfo;
+		AmqpMessageRoutingInfo messageRoutingInfo = (AmqpMessageRoutingInfo) recordIndexerFactory.messageRoutingInfo;
 		assertEquals(messageRoutingInfo.hostname, indexMessageInfo.messageServerHostname);
 		assertEquals(messageRoutingInfo.port, indexMessageInfo.messageServerPort);
 		assertEquals(messageRoutingInfo.virtualHost, "alvin");

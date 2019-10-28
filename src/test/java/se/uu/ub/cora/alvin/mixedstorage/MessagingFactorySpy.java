@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage;
 
+import se.uu.ub.cora.messaging.MessageListener;
 import se.uu.ub.cora.messaging.MessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessageSender;
 import se.uu.ub.cora.messaging.MessagingFactory;
@@ -34,6 +35,12 @@ public class MessagingFactorySpy implements MessagingFactory {
 		factorMessageSenderWasCalled = true;
 		messageSenderSpy = new MessageSenderSpy();
 		return messageSenderSpy;
+	}
+
+	@Override
+	public MessageListener factorTopicMessageListener(MessageRoutingInfo arg0) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

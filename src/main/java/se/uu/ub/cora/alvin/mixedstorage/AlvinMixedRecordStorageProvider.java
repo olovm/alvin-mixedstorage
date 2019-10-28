@@ -73,7 +73,7 @@ public class AlvinMixedRecordStorageProvider
 	}
 
 	private boolean noRunningRecordStorageExists() {
-		return RecordStorageInstance.instance == null;
+		return RecordStorageInstance.getInstance() == null;
 	}
 
 	private void startNewRecordStorageOnDiskInstance() {
@@ -152,7 +152,7 @@ public class AlvinMixedRecordStorageProvider
 	}
 
 	static void setStaticInstance(RecordStorage recordStorage) {
-		RecordStorageInstance.instance = recordStorage;
+		RecordStorageInstance.setInstance(recordStorage);
 	}
 
 	private String tryToGetInitParameter(String parameterName) {
@@ -170,12 +170,13 @@ public class AlvinMixedRecordStorageProvider
 
 	@Override
 	public RecordStorage getRecordStorage() {
-		return RecordStorageInstance.instance;
+		return RecordStorageInstance.getInstance();
 	}
 
 	@Override
 	public MetadataStorage getMetadataStorage() {
-		AlvinMixedRecordStorage mixedStorage = (AlvinMixedRecordStorage) RecordStorageInstance.instance;
+		AlvinMixedRecordStorage mixedStorage = (AlvinMixedRecordStorage) RecordStorageInstance
+				.getInstance();
 		return (MetadataStorage) mixedStorage.getBasicStorage();
 	}
 

@@ -24,6 +24,7 @@ import se.uu.ub.cora.alvin.mixedstorage.fedora.IndexMessageInfo;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
+import se.uu.ub.cora.messaging.AmqpMessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessagingInitializationException;
 import se.uu.ub.cora.searchstorage.SearchStorage;
@@ -133,7 +134,7 @@ public final class AlvinMixedRecordStorage implements RecordStorage, SearchStora
 	}
 
 	private void sendIndexMessage(String type, String id) {
-		MessageRoutingInfo messageRoutingInfo = new MessageRoutingInfo(
+		MessageRoutingInfo messageRoutingInfo = new AmqpMessageRoutingInfo(
 				indexMessageInfo.messageServerHostname, indexMessageInfo.messageServerPort,
 				VIRTUAL_HOST, EXCHANGE, ROUTING_KEY_PREFIX + type);
 		RecordIndexer indexer = recordIndexFactory.factor(messageRoutingInfo);

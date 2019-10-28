@@ -79,7 +79,7 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		makeSureBasePathExistsAndIsEmpty();
 		recordStorageOnDiskProvider = new AlvinMixedRecordStorageProvider();
-		RecordStorageInstance.instance = null;
+		RecordStorageInstance.setInstance(null);
 	}
 
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
@@ -229,7 +229,7 @@ public class AlvinMixedRecordStorageProviderTest {
 	@Test
 	public void testRecordStorageStartedByOtherProviderIsReturned() {
 		RecordStorageSpy recordStorageSpy = new RecordStorageSpy();
-		RecordStorageInstance.instance = recordStorageSpy;
+		RecordStorageInstance.setInstance(recordStorageSpy);
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
 		assertSame(recordStorage, recordStorageSpy);
@@ -238,7 +238,7 @@ public class AlvinMixedRecordStorageProviderTest {
 	@Test
 	public void testLoggingRecordStorageStartedByOtherProvider() {
 		RecordStorageSpy recordStorageSpy = new RecordStorageSpy();
-		RecordStorageInstance.instance = recordStorageSpy;
+		RecordStorageInstance.setInstance(recordStorageSpy);
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"AlvinMixedRecordStorageProvider starting AlvinMixedRecordStorage...");
@@ -253,7 +253,7 @@ public class AlvinMixedRecordStorageProviderTest {
 	public void testRecordStorageIsAccessibleToOthers() {
 		recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
 		RecordStorage recordStorage = recordStorageOnDiskProvider.getRecordStorage();
-		assertSame(recordStorage, RecordStorageInstance.instance);
+		assertSame(recordStorage, RecordStorageInstance.getInstance());
 	}
 
 	@Test

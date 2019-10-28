@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.logger.LoggerProvider;
-import se.uu.ub.cora.messaging.MessageRoutingInfo;
+import se.uu.ub.cora.messaging.AmqpMessageRoutingInfo;
 import se.uu.ub.cora.messaging.MessagingProvider;
 
 public class AlvinRecordIndexerTest {
@@ -36,7 +36,7 @@ public class AlvinRecordIndexerTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private MessagingFactorySpy messagingFactory;
 	private AlvinRecordIndexer indexer;
-	private MessageRoutingInfo messageRoutingInfo;
+	private AmqpMessageRoutingInfo messageRoutingInfo;
 	private String messageForCreateForSomeRecordType = "{\"headers\":{\"ACTION\":\"UPDATE\","
 			+ "\"PID\":\"alvin-place:1\"},\"action\":\"UPDATE\",\"pid\":\"alvin-place:1\","
 			+ "\"routingKey\":\"alvin.updates.someRecordType\"}";
@@ -57,8 +57,8 @@ public class AlvinRecordIndexerTest {
 		messagingFactory = new MessagingFactorySpy();
 		MessagingProvider.setMessagingFactory(messagingFactory);
 
-		messageRoutingInfo = new MessageRoutingInfo("someHostname", "somePort", "someVirtualHost",
-				"index", "alvin.updates.place");
+		messageRoutingInfo = new AmqpMessageRoutingInfo("someHostname", "somePort",
+				"someVirtualHost", "index", "alvin.updates.place");
 		indexer = new AlvinRecordIndexer(messageRoutingInfo);
 	}
 
@@ -88,12 +88,12 @@ public class AlvinRecordIndexerTest {
 
 		MessageSenderSpy messageSenderSpy = messagingFactory.messageSenderSpy;
 
-		assertEquals(messagingFactory.messageRoutingInfo.hostname, messageRoutingInfo.hostname);
-		assertEquals(messagingFactory.messageRoutingInfo.port, messageRoutingInfo.port);
-		assertEquals(messagingFactory.messageRoutingInfo.virtualHost,
-				messageRoutingInfo.virtualHost);
-		assertEquals(messagingFactory.messageRoutingInfo.exchange, messageRoutingInfo.exchange);
-		assertEquals(messagingFactory.messageRoutingInfo.routingKey, messageRoutingInfo.routingKey);
+		AmqpMessageRoutingInfo messageRoutingInfoSentToFactory = (AmqpMessageRoutingInfo) messagingFactory.messageRoutingInfo;
+		assertEquals(messageRoutingInfoSentToFactory.hostname, messageRoutingInfo.hostname);
+		assertEquals(messageRoutingInfoSentToFactory.port, messageRoutingInfo.port);
+		assertEquals(messageRoutingInfoSentToFactory.virtualHost, messageRoutingInfo.virtualHost);
+		assertEquals(messageRoutingInfoSentToFactory.exchange, messageRoutingInfo.exchange);
+		assertEquals(messageRoutingInfoSentToFactory.routingKey, messageRoutingInfo.routingKey);
 
 		String sentMessage = messageSenderSpy.messageSentToSpy;
 		assertEquals(sentMessage, messageForCreateForSomeRecordType);
@@ -116,7 +116,8 @@ public class AlvinRecordIndexerTest {
 
 	@Test
 	public void testGetMessageRoutingInfo() {
-		MessageRoutingInfo requestedMessageRoutingInfo = indexer.getMessageRoutingInfo();
+		AmqpMessageRoutingInfo requestedMessageRoutingInfo = (AmqpMessageRoutingInfo) indexer
+				.getMessageRoutingInfo();
 		assertEquals(requestedMessageRoutingInfo.hostname, messageRoutingInfo.hostname);
 		assertEquals(requestedMessageRoutingInfo.port, messageRoutingInfo.port);
 		assertEquals(requestedMessageRoutingInfo.exchange, messageRoutingInfo.exchange);
