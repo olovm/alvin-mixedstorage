@@ -132,7 +132,7 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	private List<DataGroup> convertDataAndAddToList(String type,
 			List<Map<String, Object>> readAllFromTable) {
-		List<DataGroup> convertedList = new ArrayList<>();
+		List<DataGroup> convertedList = new ArrayList<>(readAllFromTable.size());
 		for (Map<String, Object> map : readAllFromTable) {
 			DataGroup convertedUser = convertOneMapFromDbToDataGroup(type, map);
 			convertedList.add(convertedUser);

@@ -316,6 +316,10 @@ public class AlvinMixedRecordStorageProviderTest {
 			assertEquals(e.getMessage(), errorMessage);
 
 		}
+		assertCorrectLoggingOnMissingParameter(noOfInfoMessages, errorMessage);
+	}
+
+	private void assertCorrectLoggingOnMissingParameter(int noOfInfoMessages, String errorMessage) {
 		assertEquals(loggerFactorySpy.getInfoLogMessageUsingClassNameAndNo(testedClassName, 0),
 				"AlvinMixedRecordStorageProvider starting AlvinMixedRecordStorage...");
 		assertEquals(loggerFactorySpy.getNoOfInfoLogMessagesUsingClassName(testedClassName),
@@ -337,7 +341,17 @@ public class AlvinMixedRecordStorageProviderTest {
 
 	@Test
 	public void testLoggingAndErrorIfMissingStartParameterDatabaseLookupName() {
-		assertCorrectErrorAndLogOnMissingParameter("databaseLookupName", 4);
+		initInfo.remove("databaseLookupName");
+		String errorMessage = "InitInfo must contain databaseLookupName";
+		try {
+			recordStorageOnDiskProvider.startUsingInitInfo(initInfo);
+		} catch (Exception e) {
+			assertTrue(e.getCause() instanceof DataStorageException);
+			assertTrue(e instanceof DataStorageException);
+			assertEquals(e.getMessage(), errorMessage);
+
+		}
+		assertCorrectLoggingOnMissingParameter(4, errorMessage);
 	}
 
 }

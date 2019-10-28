@@ -27,6 +27,7 @@ import se.uu.ub.cora.storage.RecordIdGenerator;
 
 public class AlvinIdGenerator implements RecordIdGenerator {
 
+	private static final int OK = 200;
 	private static final String WITH_RESPONSE_CODE_MESSAGE_PART = ", with response code: ";
 	private HttpHandlerFactory httpHandlerFactory;
 	private IdGeneratorConnectionInfo connectionInfo;
@@ -68,7 +69,7 @@ public class AlvinIdGenerator implements RecordIdGenerator {
 	}
 
 	private void throwErrorIfPidCouldNotBeFetched(HttpHandler httpHandlerForPid) {
-		if (httpHandlerForPid.getResponseCode() != 200) {
+		if (httpHandlerForPid.getResponseCode() != OK) {
 			throw FedoraException.withMessage("getting next pid from fedora failed"
 					+ WITH_RESPONSE_CODE_MESSAGE_PART + httpHandlerForPid.getResponseCode());
 		}

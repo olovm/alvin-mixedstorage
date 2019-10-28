@@ -39,6 +39,9 @@ import se.uu.ub.cora.storage.StorageReadResult;
 
 public final class FedoraRecordStorage implements RecordStorage {
 
+	private static final int CREATED = 201;
+	private static final int OK = 200;
+	private static final int NOT_FOUND = 404;
 	private static final String WITH_RESPONSE_CODE_MESSAGE_PART = ", with response code: ";
 	private static final String OBJECTS_PART_OF_URL = "objects/";
 	private static final String PLACE = "place";
@@ -82,7 +85,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void throwErrorIfRecordNotFound(String id, int responseCode) {
-		if (404 == responseCode) {
+		if (NOT_FOUND == responseCode) {
 			throw new RecordNotFoundException("Record not found for type: place and id: " + id);
 		}
 	}
@@ -165,7 +168,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void throwErrorIfUnableToCreateRelation(int responseCode) {
-		if (200 != responseCode) {
+		if (OK != responseCode) {
 			throw FedoraException.withMessage(
 					"creating relation in fedora failed, with response code: " + responseCode);
 		}
@@ -190,7 +193,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void throwErrorIfUnableToCreate(int responseCode, String messagePart) {
-		if (responseCode != 201) {
+		if (responseCode != CREATED) {
 			throw FedoraException
 					.withMessage(messagePart + WITH_RESPONSE_CODE_MESSAGE_PART + responseCode);
 		}
@@ -235,7 +238,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void throwErrorIfUnableToUpdateStateToDeleted(String id, int responseCode) {
-		if (200 != responseCode) {
+		if (OK != responseCode) {
 			throw FedoraException.withMessage("delete in fedora failed for record: " + id
 					+ WITH_RESPONSE_CODE_MESSAGE_PART + responseCode);
 		}
@@ -279,7 +282,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private void throwErrorIfNotOkFromFedora(String id, int responseCode) {
-		if (200 != responseCode) {
+		if (OK != responseCode) {
 			throw FedoraException.withMessage("update to fedora failed for record: " + id
 					+ WITH_RESPONSE_CODE_MESSAGE_PART + responseCode);
 		}
@@ -317,7 +320,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 
 	private boolean collectedDataTermIsRecordLabel(DataGroup collectedDataTerm) {
 		String collectTermId = collectedDataTerm.getFirstAtomicValueWithNameInData("collectTermId");
-		return collectTermId.equals("recordLabelStorageTerm");
+		return "recordLabelStorageTerm".equals(collectTermId);
 	}
 
 	private String convertRecordToFedoraXML(String type, DataGroup record) {
@@ -376,7 +379,7 @@ public final class FedoraRecordStorage implements RecordStorage {
 	}
 
 	private Collection<DataGroup> constructCollectionOfPlacesFromFedora(NodeList list) {
-		Collection<DataGroup> placeList = new ArrayList<>();
+		Collection<DataGroup> placeList = new ArrayList<>(list.getLength());
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
 			String pid = node.getTextContent();

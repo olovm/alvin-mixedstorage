@@ -48,8 +48,7 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	}
 
 	private boolean valueIsEmpty(String valueToGet) {
-		return !map.containsKey(valueToGet) || "".equals(map.get(valueToGet))
-				|| map.get(valueToGet) == null;
+		return map.get(valueToGet) == null || "".equals(map.get(valueToGet));
 	}
 
 	private DataGroup createUserDataGroup() {

@@ -18,6 +18,7 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage;
 
+import se.uu.ub.cora.json.builder.JsonObjectBuilder;
 import se.uu.ub.cora.json.builder.org.OrgJsonObjectBuilderAdapter;
 
 public class IndexMessageCreator {
@@ -49,7 +50,7 @@ public class IndexMessageCreator {
 		return builderAdapter;
 	}
 
-	private void addHeaders(String action, OrgJsonObjectBuilderAdapter builderAdapter) {
+	private void addHeaders(String action, JsonObjectBuilder builderAdapter) {
 		OrgJsonObjectBuilderAdapter builderAdapterHeaders = createJsonBuilderAdapterForHeaders(
 				action);
 		builderAdapter.addKeyJsonObjectBuilder("headers", builderAdapterHeaders);
