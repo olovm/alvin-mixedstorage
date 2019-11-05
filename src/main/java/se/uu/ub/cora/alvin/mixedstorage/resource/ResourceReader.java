@@ -18,9 +18,9 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.resource;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class ResourceReader {
@@ -30,10 +30,10 @@ public class ResourceReader {
 	}
 
 	public static String readResourceAsString(String resourceFile) {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		try (Stream<String> lines = new BufferedReader(new InputStreamReader(
-				contextClassLoader.getResourceAsStream(resourceFile), StandardCharsets.UTF_8))
-						.lines();) {
+		try (Stream<String> lines = Files.lines(Paths.get(
+				Thread.currentThread().getContextClassLoader().getResource(resourceFile).toURI()),
+				StandardCharsets.UTF_8);) {
+
 			return tryToReadResourceLines(lines);
 		} catch (Exception e) {
 			throw new RuntimeException(
