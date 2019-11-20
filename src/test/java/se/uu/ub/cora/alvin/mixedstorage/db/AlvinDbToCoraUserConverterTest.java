@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
@@ -13,10 +31,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicFactory;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReader;
 
@@ -27,11 +50,17 @@ public class AlvinDbToCoraUserConverterTest {
 	private DataReaderSpy dataReader;
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "AlvinDbToCoraUserConverter";
+	private DataGroupFactorySpy dataGroupFactory;
+	private DataAtomicFactory dataAtomicFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		rowFromDb = new HashMap<>();
 		rowFromDb.put("id", 52);
 		rowFromDb.put("domain", "uu");

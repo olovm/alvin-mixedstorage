@@ -19,6 +19,7 @@
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -30,11 +31,19 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class UserConverterHelperTest {
 	Map<String, Object> rowFromDb = new HashMap<>();
+	private DataGroupFactorySpy dataGroupFactory;
+	private DataAtomicFactorySpy dataAtomicFactory;
 
 	@BeforeMethod
 	public void setUp() {
@@ -45,6 +54,11 @@ public class UserConverterHelperTest {
 		rowFromDb.put("lastname", "SomeLastName");
 		rowFromDb.put("userid", "user52");
 		rowFromDb.put("group_id", "");
+
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 	}
 
 	@Test
@@ -66,44 +80,85 @@ public class UserConverterHelperTest {
 	@Test
 	public void testCreateBasicActiveUser() {
 		DataGroup user = UserConverterHelper.createBasicActiveUser();
-		assertEquals(user.getNameInData(), "user");
-		assertEquals(user.getAttribute("type"), "coraUser");
-		assertEquals(user.getFirstAtomicValueWithNameInData("activeStatus"), "active");
+		DataGroupSpy factoredDataGroup = dataGroupFactory.factoredDataGroup;
+		assertEquals(factoredDataGroup.nameInData, "user");
+		assertEquals(factoredDataGroup.addedAttributes.get("type"), "coraUser");
+		assertSame(factoredDataGroup, user);
+
+		DataAtomicSpy factoredDataAtomic = dataAtomicFactory.factoredDataAtomic;
+		assertEquals(factoredDataAtomic.getNameInData(), "activeStatus");
+		assertEquals(factoredDataAtomic.getValue(), "active");
 	}
 
 	@Test
 	public void testCreateType() {
 		DataGroup type = UserConverterHelper.createType();
-		assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordType"), "recordType");
-		assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordId"), "coraUser");
+		DataGroupSpy factoredDataGroup = dataGroupFactory.factoredDataGroup;
+		assertEquals(factoredDataGroup.nameInData, "type");
+		assertEquals(factoredDataGroup.recordType, "recordType");
+		assertEquals(factoredDataGroup.recordId, "coraUser");
+		assertSame(factoredDataGroup, type);
 
 	}
 
 	@Test
 	public void testCreateDataDivider() {
 		DataGroup dataDivider = UserConverterHelper.createDataDivider();
-		assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordType"), "system");
-		assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordId"), "alvin");
+		DataGroupSpy factoredDataGroup = dataGroupFactory.factoredDataGroup;
+		assertEquals(factoredDataGroup.nameInData, "dataDivider");
+		assertEquals(factoredDataGroup.recordType, "system");
+		assertEquals(factoredDataGroup.recordId, "alvin");
+		assertSame(factoredDataGroup, dataDivider);
+
 	}
 
 	@Test
 	public void testCreateUpdatedInfoUsingUserId() {
 		DataGroup updated = UserConverterHelper.createUpdatedInfoUsingUserId("someUserId");
+		DataGroupSpy factoredDataGroupUpdated = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(factoredDataGroupUpdated.nameInData, "updated");
+		assertEquals(factoredDataGroupUpdated.getRepeatId(), "0");
+		assertSame(factoredDataGroupUpdated, updated);
 
-		DataGroup updatedBy = updated.getFirstGroupWithNameInData("updatedBy");
-		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "someUserId");
-		assertEquals(updated.getRepeatId(), "0");
+		DataGroupSpy factoredDataGroupUpdatedBy = assertCorrectUpdatedByGroup();
+		DataAtomicSpy factoredDataAtomic = assertCorrectTsUpdated();
 
-		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"),
-				"2017-10-01 00:00:00.000");
+		assertFactoredElementsAreAddedAsChildren(factoredDataGroupUpdated,
+				factoredDataGroupUpdatedBy, factoredDataAtomic);
+
+	}
+
+	private DataAtomicSpy assertCorrectTsUpdated() {
+		DataAtomicSpy factoredDataAtomic = dataAtomicFactory.factoredDataAtomic;
+		assertEquals(factoredDataAtomic.getNameInData(), "tsUpdated");
+		assertEquals(factoredDataAtomic.getValue(), "2017-10-01 00:00:00.000");
+		return factoredDataAtomic;
+	}
+
+	private DataGroupSpy assertCorrectUpdatedByGroup() {
+		DataGroupSpy factoredDataGroupUpdatedBy = dataGroupFactory.factoredDataGroups.get(1);
+		assertEquals(factoredDataGroupUpdatedBy.nameInData, "updatedBy");
+		assertEquals(factoredDataGroupUpdatedBy.recordType, "coraUser");
+		assertEquals(factoredDataGroupUpdatedBy.recordId, "someUserId");
+		return factoredDataGroupUpdatedBy;
+	}
+
+	private void assertFactoredElementsAreAddedAsChildren(DataGroupSpy factoredDataGroupUpdated,
+			DataGroupSpy factoredDataGroupUpdatedBy, DataAtomicSpy factoredDataAtomic) {
+		assertSame(factoredDataGroupUpdated.getFirstChildWithNameInData("updatedBy"),
+				factoredDataGroupUpdatedBy);
+		assertSame(factoredDataGroupUpdated.getFirstChildWithNameInData("tsUpdated"),
+				factoredDataAtomic);
 	}
 
 	@Test
 	public void testCreateCreatedByUsingUserId() {
 		DataGroup createdBy = UserConverterHelper.createCreatedByUsingUserId("someUserId");
-		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "someUserId");
+		DataGroupSpy factoredDataGroup = dataGroupFactory.factoredDataGroup;
+		assertEquals(factoredDataGroup.nameInData, "createdBy");
+		assertEquals(factoredDataGroup.recordType, "coraUser");
+		assertEquals(factoredDataGroup.recordId, "someUserId");
+		assertSame(factoredDataGroup, createdBy);
 	}
 
 	@Test
@@ -111,98 +166,5 @@ public class UserConverterHelperTest {
 		DataAtomic tsCreated = UserConverterHelper.createTsCreated();
 		assertEquals(tsCreated.getValue(), "2017-10-01 00:00:00.000");
 	}
-
-	// @Test
-	// public void testConvertingRecordInfo() {
-	// DataGroup userDataGroup = UserConverterHelper.convertFromRow(rowFromDb);
-	//
-	// assertEquals(userDataGroup.getNameInData(), "user");
-	// assertEquals(userDataGroup.getAttribute("type"), "coraUser");
-	//
-	// assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userId"),
-	// "user52@user.uu.se");
-	// DataGroup recordInfo = userDataGroup.getFirstGroupWithNameInData("recordInfo");
-	// assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), "52");
-	//
-	// DataGroup type = recordInfo.getFirstGroupWithNameInData("type");
-	// assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordType"), "recordType");
-	// assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordId"), "coraUser");
-	//
-	// DataGroup dataDivider = recordInfo.getFirstGroupWithNameInData("dataDivider");
-	// assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordType"), "system");
-	// assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordId"), "alvin");
-	// assertCorrectCreatedInfo(recordInfo);
-	// assertCorrectUpdatedInfo(recordInfo);
-	// }
-	//
-	// private void assertCorrectCreatedInfo(DataGroup recordInfo) {
-	// String tsCreated = recordInfo.getFirstAtomicValueWithNameInData("tsCreated");
-	// assertEquals(tsCreated, "2017-10-01 00:00:00.000");
-	// DataGroup createdBy = recordInfo.getFirstGroupWithNameInData("createdBy");
-	// assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-	// assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
-	// "coraUser:4412566252284358");
-	// }
-	//
-	// private void assertCorrectUpdatedInfo(DataGroup recordInfo) {
-	// DataGroup updated = recordInfo.getFirstGroupWithNameInData("updated");
-	// DataGroup updatedBy = updated.getFirstGroupWithNameInData("updatedBy");
-	// assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-	// assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
-	// "coraUser:4412566252284358");
-	// assertEquals(updated.getRepeatId(), "0");
-	//
-	// assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"),
-	// "2017-10-01 00:00:00.000");
-	// }
-	//
-	// @Test
-	// public void testConvertingUser() {
-	// DataGroup userDataGroup = UserConverterHelper.convertFromRow(rowFromDb);
-	// assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("activeStatus"), "active");
-	// assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userFirstName"),
-	// "SomeFirstName");
-	// assertEquals(userDataGroup.getFirstAtomicValueWithNameInData("userLastName"),
-	// "SomeLastName");
-	// }
-	//
-	// private void assertCorrectUserRoleWithSystemPermissionTerm(DataGroup userRole, String roleId,
-	// String repeatId, String rulePartValue) {
-	// assertEquals(userRole.getRepeatId(), repeatId);
-	//
-	// assertDataGroupContainsRoleWithId(userRole, roleId);
-	//
-	// DataGroup permissionTermRulePart = userRole
-	// .getFirstGroupWithNameInData("permissionTermRulePart");
-	// assertEquals(permissionTermRulePart.getRepeatId(), "0");
-	//
-	// assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
-	// "systemPermissionTerm");
-	//
-	// assertRulePartContainsCorrectValue(permissionTermRulePart, rulePartValue);
-	// }
-	//
-	// private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
-	// String rulePartValue) {
-	// DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
-	// assertEquals(value.getValue(), rulePartValue);
-	// assertEquals(value.getRepeatId(), "0");
-	// }
-	//
-	// private void assertDataGroupContainsRoleWithId(DataGroup userRole, String roleId) {
-	// DataGroup linkedUserRole = userRole.getFirstGroupWithNameInData("userRole");
-	// assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
-	// "permissionRole");
-	// assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleId);
-	// }
-	//
-	// private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
-	// String linkedPermissionTerm) {
-	// DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
-	// assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-	// "collectPermissionTerm");
-	// assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-	// linkedPermissionTerm);
-	// }
 
 }
