@@ -93,6 +93,11 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 		user.addChild(recordInfo);
 	}
 
+	private void createAndAddType(DataGroup recordInfo) {
+		DataGroup type = UserConverterHelper.createType();
+		recordInfo.addChild(type);
+	}
+
 	private void addUpdatedInfoToRecordInfo(DataGroup recordInfo) {
 		DataGroup updated = UserConverterHelper
 				.createUpdatedInfoUsingUserId("coraUser:4412566252284358");
@@ -102,11 +107,6 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	private void createAndAddDataDivider(DataGroup recordInfo) {
 		DataGroup dataDivider = UserConverterHelper.createDataDivider();
 		recordInfo.addChild(dataDivider);
-	}
-
-	private void createAndAddType(DataGroup recordInfo) {
-		DataGroup type = UserConverterHelper.createType();
-		recordInfo.addChild(type);
 	}
 
 	private void addCreatedInfoToRecordInfo(DataGroup recordInfo) {

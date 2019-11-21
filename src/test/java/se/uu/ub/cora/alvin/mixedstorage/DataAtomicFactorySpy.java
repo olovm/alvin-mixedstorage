@@ -18,16 +18,21 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicFactory;
 
 public class DataAtomicFactorySpy implements DataAtomicFactory {
 
 	public DataAtomicSpy factoredDataAtomic;
+	public List<DataAtomicSpy> factoredDataAtomics = new ArrayList<>();
 
 	@Override
 	public DataAtomic factorUsingNameInDataAndValue(String nameInData, String value) {
 		factoredDataAtomic = new DataAtomicSpy(nameInData, value);
+		factoredDataAtomics.add(factoredDataAtomic);
 		return factoredDataAtomic;
 	}
 

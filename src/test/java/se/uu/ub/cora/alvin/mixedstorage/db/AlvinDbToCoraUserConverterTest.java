@@ -19,8 +19,8 @@
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -32,11 +32,12 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
 import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
 import se.uu.ub.cora.data.DataAtomic;
-import se.uu.ub.cora.data.DataAtomicFactory;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
@@ -51,7 +52,7 @@ public class AlvinDbToCoraUserConverterTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "AlvinDbToCoraUserConverter";
 	private DataGroupFactorySpy dataGroupFactory;
-	private DataAtomicFactory dataAtomicFactory;
+	private DataAtomicFactorySpy dataAtomicFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
@@ -129,15 +130,30 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("lastname", "");
 		rowFromDb.put("email", "");
 		DataGroup user = converter.fromMap(rowFromDb);
+
 		assertEquals(user.getNameInData(), "user");
 		assertEquals(user.getAttribute("type"), "coraUser");
 
-		assertCorrectRecordInfoWithId(user, 52);
-		assertEquals(user.getFirstAtomicValueWithNameInData("activeStatus"), "active");
+		DataGroupSpy factoredRecordInfo = dataGroupFactory.factoredDataGroups.get(1);
+		assertEquals(factoredRecordInfo.nameInData, "recordInfo");
+		assertSame(factoredRecordInfo, user.getFirstChildWithNameInData("recordInfo"));
 
-		assertFalse(user.containsChildWithNameInData("userFirstname"));
-		assertFalse(user.containsChildWithNameInData("userLastname"));
-		assertFalse(user.containsChildWithNameInData("email"));
+		DataAtomicSpy factoredDataAtomicForId = dataAtomicFactory.factoredDataAtomics.get(1);
+		assertEquals(factoredDataAtomicForId.nameInData, "id");
+		assertEquals(factoredDataAtomicForId.value, String.valueOf(52));
+
+		DataGroupSpy factoredUpdated = dataGroupFactory.factoredDataGroups.get(2);
+		assertEquals(factoredUpdated.nameInData, "type");
+
+		DataGroupSpy factoredDataDivider = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(factoredDataDivider.nameInData, "dataDivider");
+
+		DataGroupSpy factoredCreatedInfo = dataGroupFactory.factoredDataGroups.get(4);
+		assertEquals(factoredCreatedInfo.nameInData, "createdBy");
+
+		DataGroupSpy factoredUpdatedInfo = dataGroupFactory.factoredDataGroups.get(5);
+		assertEquals(factoredUpdatedInfo.nameInData, "updated");
+
 	}
 
 	@Test
@@ -216,43 +232,6 @@ public class AlvinDbToCoraUserConverterTest {
 		DataGroup userRole = dataGroup.getFirstGroupWithNameInData("userRole");
 		String linkedRecordId = userRole.getFirstAtomicValueWithNameInData("linkedRecordId");
 		return linkedRecordId;
-	}
-
-	private void assertCorrectRecordInfoWithId(DataGroup dataGroup, int id) {
-		DataGroup recordInfo = dataGroup.getFirstGroupWithNameInData("recordInfo");
-		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("id"), String.valueOf(id));
-
-		DataGroup type = recordInfo.getFirstGroupWithNameInData("type");
-		assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordType"), "recordType");
-		assertEquals(type.getFirstAtomicValueWithNameInData("linkedRecordId"), "coraUser");
-
-		DataGroup dataDivider = recordInfo.getFirstGroupWithNameInData("dataDivider");
-		assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordType"), "system");
-		assertEquals(dataDivider.getFirstAtomicValueWithNameInData("linkedRecordId"), "alvin");
-
-		assertCorrectCreatedInfo(recordInfo);
-		assertCorrectUpdatedInfo(recordInfo);
-	}
-
-	private void assertCorrectCreatedInfo(DataGroup recordInfo) {
-		String tsCreated = recordInfo.getFirstAtomicValueWithNameInData("tsCreated");
-		assertEquals(tsCreated, "2017-10-01 00:00:00.000");
-		DataGroup createdBy = recordInfo.getFirstGroupWithNameInData("createdBy");
-		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"coraUser:4412566252284358");
-	}
-
-	private void assertCorrectUpdatedInfo(DataGroup recordInfo) {
-		DataGroup updated = recordInfo.getFirstGroupWithNameInData("updated");
-		DataGroup updatedBy = updated.getFirstGroupWithNameInData("updatedBy");
-		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "coraUser");
-		assertEquals(updatedBy.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				"coraUser:4412566252284358");
-		assertEquals(updated.getRepeatId(), "0");
-
-		assertEquals(updated.getFirstAtomicValueWithNameInData("tsUpdated"),
-				"2017-10-01 00:00:00.000");
 	}
 
 	@Test

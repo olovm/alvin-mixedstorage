@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class UserRoleConverterHelper {
 
@@ -55,7 +57,7 @@ public class UserRoleConverterHelper {
 	}
 
 	private static DataGroup createUserRoleWithRoleId(String roleId) {
-		DataGroup userRole = DataGroup.withNameInData(USER_ROLE);
+		DataGroup userRole = DataGroupProvider.getDataGroupUsingNameInData(USER_ROLE);
 		createAndAddLinkedUserRoleUsingParentGroupAndRoleId(userRole, roleId);
 		addSystemPermissionTermAccessToAllSystems(userRole);
 		return userRole;
@@ -63,8 +65,8 @@ public class UserRoleConverterHelper {
 
 	private static void createAndAddLinkedUserRoleUsingParentGroupAndRoleId(DataGroup userRole,
 			String roleId) {
-		DataGroup linkedUserRole = DataGroup.asLinkWithNameInDataAndTypeAndId(USER_ROLE,
-				"permissionRole", roleId);
+		DataGroup linkedUserRole = DataGroupProvider
+				.getDataGroupAsLinkUsingNameInDataTypeAndId(USER_ROLE, "permissionRole", roleId);
 		userRole.addChild(linkedUserRole);
 	}
 
@@ -75,19 +77,23 @@ public class UserRoleConverterHelper {
 
 	private static void createAndAddRulePartUsingParentGroupRuleIdAndRulePartValue(
 			DataGroup userRole, String ruleLinkRecordId, String rulePartValue) {
-		DataGroup permissionTermRulePart = DataGroup.withNameInData("permissionTermRulePart");
+		DataGroup permissionTermRulePart = DataGroupProvider
+				.getDataGroupUsingNameInData("permissionTermRulePart");
 		userRole.addChild(permissionTermRulePart);
 		permissionTermRulePart.setRepeatId("0");
 
 		createAndAddRuleLinkUsingParentGroupAndRuleId(permissionTermRulePart, ruleLinkRecordId);
 
-		permissionTermRulePart.addChild(
-				DataAtomic.withNameInDataAndValueAndRepeatId("value", rulePartValue, "0"));
+		DataAtomic rulePartAtomic = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("value",
+				rulePartValue);
+		rulePartAtomic.setRepeatId("0");
+		permissionTermRulePart.addChild(rulePartAtomic);
+
 	}
 
 	private static void createAndAddRuleLinkUsingParentGroupAndRuleId(
 			DataGroup permissionTermRulePart, String ruleLinkRecordId) {
-		DataGroup ruleLink = DataGroup.asLinkWithNameInDataAndTypeAndId("rule",
+		DataGroup ruleLink = DataGroupProvider.getDataGroupAsLinkUsingNameInDataTypeAndId("rule",
 				"collectPermissionTerm", ruleLinkRecordId);
 		permissionTermRulePart.addChild(ruleLink);
 	}
