@@ -154,6 +154,10 @@ public class AlvinDbToCoraUserConverterTest {
 		DataGroupSpy factoredUpdatedInfo = dataGroupFactory.factoredDataGroups.get(5);
 		assertEquals(factoredUpdatedInfo.nameInData, "updated");
 
+		int numOfAtomicsFactoredWhenNamesAreMissing = 5;
+		assertEquals(dataAtomicFactory.factoredDataAtomics.size(),
+				numOfAtomicsFactoredWhenNamesAreMissing);
+
 	}
 
 	@Test
@@ -161,9 +165,21 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("firstname", "johan");
 		rowFromDb.put("lastname", "andersson");
 		rowFromDb.put("email", "johan.andersson@ub.uu.se");
-		DataGroup user = converter.fromMap(rowFromDb);
-		assertEquals(user.getFirstAtomicValueWithNameInData("userFirstname"), "johan");
-		assertEquals(user.getFirstAtomicValueWithNameInData("userLastname"), "andersson");
+
+		converter.fromMap(rowFromDb);
+
+		int numOfAtomicsFactoredWhenNamesArePresent = 7;
+		assertEquals(dataAtomicFactory.factoredDataAtomics.size(),
+				numOfAtomicsFactoredWhenNamesArePresent);
+
+		DataAtomicSpy factoredDataAtomicForFirstname = dataAtomicFactory.factoredDataAtomics.get(4);
+		assertEquals(factoredDataAtomicForFirstname.nameInData, "userFirstname");
+		assertEquals(factoredDataAtomicForFirstname.value, "johan");
+
+		DataAtomicSpy factoredDataAtomicForLastname = dataAtomicFactory.factoredDataAtomics.get(5);
+		assertEquals(factoredDataAtomicForLastname.nameInData, "userLastname");
+		assertEquals(factoredDataAtomicForLastname.value, "andersson");
+
 	}
 
 	@Test
