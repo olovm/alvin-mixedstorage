@@ -45,13 +45,15 @@ import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
-import se.uu.ub.cora.data.converter.DataToJsonConverterFactory;
 import se.uu.ub.cora.data.converter.DataToJsonConverterProvider;
+import se.uu.ub.cora.data.converter.JsonToDataConverterFactory;
+import se.uu.ub.cora.data.converter.JsonToDataConverterProvider;
 import se.uu.ub.cora.data.copier.DataCopierFactory;
 import se.uu.ub.cora.data.copier.DataCopierProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
+import se.uu.ub.cora.storage.testdata.TestDataAppTokenStorage;
 
 public class FromAlvinClassicUserStorageProviderTest {
 	private String basePath = "/tmp/recordStorageOnDiskTemp/";
@@ -61,7 +63,8 @@ public class FromAlvinClassicUserStorageProviderTest {
 	private UserStorageProvider userStorageProvider;
 	private DataGroupFactory dataGroupFactory;
 	private DataCopierFactory dataCopierFactory;
-	private DataToJsonConverterFactory dataToJsonConverterFactory;
+	private DataToJsonConverterFactorySpy dataToJsonConverterFactory;
+	private JsonToDataConverterFactory jsonToDataConverterFactory;
 
 	@BeforeMethod
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
@@ -73,10 +76,12 @@ public class FromAlvinClassicUserStorageProviderTest {
 		DataCopierProvider.setDataCopierFactory(dataCopierFactory);
 		dataToJsonConverterFactory = new DataToJsonConverterFactorySpy();
 		DataToJsonConverterProvider.setDataToJsonConverterFactory(dataToJsonConverterFactory);
+		jsonToDataConverterFactory = new JsonToDataConverterFactorySpy();
+		JsonToDataConverterProvider.setJsonToDataConverterFactory(jsonToDataConverterFactory);
 		File dir = new File(basePath);
 		dir.mkdir();
 		deleteFiles(basePath);
-		// TestDataAppTokenStorage.createRecordStorageInMemoryWithTestData(basePath);
+		TestDataAppTokenStorage.createRecordStorageInMemoryWithTestData(basePath);
 
 		initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", basePath);

@@ -9,7 +9,7 @@
  *     (at your option) any later version.
  *
  *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of	
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
@@ -18,17 +18,15 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.data.DataPart;
-import se.uu.ub.cora.data.converter.DataToJsonConverter;
-import se.uu.ub.cora.data.converter.DataToJsonConverterFactory;
-import se.uu.ub.cora.json.builder.JsonBuilderFactory;
+import se.uu.ub.cora.data.converter.JsonToDataConverter;
+import se.uu.ub.cora.data.converter.JsonToDataConverterFactory;
+import se.uu.ub.cora.json.parser.JsonValue;
 
-public class DataToJsonConverterFactorySpy implements DataToJsonConverterFactory {
+public class JsonToDataConverterFactorySpy implements JsonToDataConverterFactory {
 
 	@Override
-	public DataToJsonConverter createForDataElement(JsonBuilderFactory factory, DataPart dataPart) {
-		// TODO Auto-generated method stub
-		return new DataToJsonConverterSpy();
+	public JsonToDataConverter createForJsonObject(JsonValue jsonValue) {
+		return new JsonToDataConverterSpy();
 	}
 
 }

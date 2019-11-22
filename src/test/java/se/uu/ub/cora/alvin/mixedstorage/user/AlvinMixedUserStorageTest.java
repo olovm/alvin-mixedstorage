@@ -27,9 +27,14 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 
@@ -43,11 +48,17 @@ public class AlvinMixedUserStorageTest {
 			+ " and alvinuser.domain=?;";
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "AlvinMixedUserStorage";
+	private DataGroupFactorySpy dataGroupFactory;
+	private DataAtomicFactorySpy dataAtomicFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		dataReaderForUsers = new DataReaderSpy();
 		userStorageForGuest = new UserStorageSpy();
 		alvinMixedUserStorage = AlvinMixedUserStorage.usingUserStorageForGuestAndDataReaderForUsers(
@@ -162,27 +173,45 @@ public class AlvinMixedUserStorageTest {
 	@Test
 	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForAdminUser() {
 		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
-		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 5);
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataAdmin", "0",
-				"system.*");
+		// 4 groups per userRole, 5 userRoles + main group and recordInfo group
+		int numOfGroupsExpected = 22;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(1), "systemConfigurator",
-				"1", "system.*");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(firstRoleGroup.recordId, "metadataAdmin");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(7);
+		assertEquals(secondRoleGroup.recordId, "systemConfigurator");
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(11);
+		assertEquals(thirdRoleGroup.recordId, "binaryUserRole");
+		DataGroupSpy fourthRoleGroup = dataGroupFactory.factoredDataGroups.get(15);
+		assertEquals(fourthRoleGroup.recordId, "userAdminRole");
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(19);
+		assertEquals(fifthRoleGroup.recordId, "systemOneSystemUserRole");
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "binaryUserRole", "2",
-				"system.*");
-
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(3), "userAdminRole", "3",
-				"system.*");
-
-		DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
-		assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
-				"system.*");
+		// assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 5);
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataAdmin", "0",
+		// "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(1), "systemConfigurator",
+		// "1", "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "binaryUserRole", "2",
+		// "system.*");
+		//
+		// assertCorrectUserRoleWithSystemPermissionTerm(
+		// userDataGroup.getAllGroupsWithNameInData("userRole").get(3), "userAdminRole", "3",
+		// "system.*");
+		//
+		// DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
+		// assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
+		// "system.*");
 
 	}
 

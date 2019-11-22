@@ -9,26 +9,23 @@
  *     (at your option) any later version.
  *
  *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of	
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.alvin.mixedstorage.user;
+package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import se.uu.ub.cora.data.DataPart;
-import se.uu.ub.cora.data.converter.DataToJsonConverter;
-import se.uu.ub.cora.data.converter.DataToJsonConverterFactory;
-import se.uu.ub.cora.json.builder.JsonBuilderFactory;
+import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataAttributeFactory;
 
-public class DataToJsonConverterFactorySpy implements DataToJsonConverterFactory {
+public class DataAttibuteFactorySpy implements DataAttributeFactory {
 
 	@Override
-	public DataToJsonConverter createForDataElement(JsonBuilderFactory factory, DataPart dataPart) {
-		// TODO Auto-generated method stub
-		return new DataToJsonConverterSpy();
+	public DataAttribute factorUsingNameInDataAndValue(String nameInData, String value) {
+		return new DataAttributeSpy(nameInData, value);
 	}
 
 }

@@ -21,15 +21,27 @@ package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
 import static org.testng.Assert.assertEquals;
 
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
 import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAttributeFactory;
+import se.uu.ub.cora.data.DataAttributeProvider;
 import se.uu.ub.cora.data.DataGroup;
 
 public class AlvinCoraToFedoraPlaceConverterTest {
+
+	private DataAttributeFactory dataAttributeFactory;
+
+	@BeforeMethod
+	public void setUp() {
+		dataAttributeFactory = new DataAttibuteFactorySpy();
+		DataAttributeProvider.setDataAttributeFactory(dataAttributeFactory);
+	}
+
 	@Test
 	public void testConvertToFedoraXML() throws Exception {
 
