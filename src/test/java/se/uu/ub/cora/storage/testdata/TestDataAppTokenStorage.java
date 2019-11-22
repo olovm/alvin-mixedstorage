@@ -24,12 +24,6 @@ import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.basicstorage.RecordStorageInMemory;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.data.DataPart;
-import se.uu.ub.cora.data.converter.JsonToDataConverter;
-import se.uu.ub.cora.data.converter.JsonToDataConverterFactory;
-import se.uu.ub.cora.json.parser.JsonParser;
-import se.uu.ub.cora.json.parser.JsonValue;
-import se.uu.ub.cora.json.parser.org.OrgJsonParser;
 
 public class TestDataAppTokenStorage {
 	private static DataGroup emptyCollectedData = DataCreator.createEmptyCollectedData();
@@ -45,35 +39,44 @@ public class TestDataAppTokenStorage {
 		addRecordTypeAppToken(recordsOnDisk);
 
 		addRecordTypeImage(recordsOnDisk);
-		String dummyUserJson1 = "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"dummy1\"},{\"name\":\"type\",\"value\":\"systemOneUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"active\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appToken1\"}]},{\"name\":\"note\",\"value\":\"My phone\"}],\"repeatId\":\"1\"}]}";
-		DataGroup dummyUser1 = convertJsonStringToDataGroup(dummyUserJson1);
-		recordsOnDisk.create("systemOneUser", "dummy1", dummyUser1, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "systemOne");
-
-		String appTokenJson1 = "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appToken1\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someSecretString\"}]}";
-		DataGroup appToken1 = convertJsonStringToDataGroup(appTokenJson1);
-		recordsOnDisk.create("appToken", "appToken1", appToken1, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "cora");
-
-		String dummyUserJson2 = "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"dummy2\"},{\"name\":\"type\",\"value\":\"systemTwoUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"active\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appToken2\"}]},{\"name\":\"note\",\"value\":\"My phone\"}],\"repeatId\":\"1\"}]}";
-		DataGroup dummyUser2 = convertJsonStringToDataGroup(dummyUserJson2);
-		recordsOnDisk.create("systemTwoUser", "dummy2", dummyUser2, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "systemOne");
-
-		String appTokenJson2 = "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appToken2\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someOtherSecretString\"}]}";
-		DataGroup appToken2 = convertJsonStringToDataGroup(appTokenJson2);
-		recordsOnDisk.create("appToken", "appToken2", appToken2, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "cora");
-
-		String inactiveUserJson = "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"inactiveUser\"},{\"name\":\"type\",\"value\":\"systemTwoUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"inactive\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appTokenJson\"}]},{\"name\":\"note\",\"value\":\"My phone\"}],\"repeatId\":\"1\"}]}";
-		DataGroup inactiveUser = convertJsonStringToDataGroup(inactiveUserJson);
-		recordsOnDisk.create("systemTwoUser", "inactiveUser", inactiveUser, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "systemTwo");
-
-		String appTokenJson3 = "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appTokenJson\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someOtherSecretString\"}]}";
-		DataGroup appTokenJson = convertJsonStringToDataGroup(appTokenJson3);
-		recordsOnDisk.create("appToken", "appTokenJson", appTokenJson, emptyCollectedData,
-				new DataGroupSpy("collectedLinksList"), "cora");
+		// String dummyUserJson1 =
+		// "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"dummy1\"},{\"name\":\"type\",\"value\":\"systemOneUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"active\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appToken1\"}]},{\"name\":\"note\",\"value\":\"My
+		// phone\"}],\"repeatId\":\"1\"}]}";
+		// DataGroup dummyUser1 = convertJsonStringToDataGroup(dummyUserJson1);
+		// recordsOnDisk.create("systemOneUser", "dummy1", dummyUser1, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "systemOne");
+		//
+		// String appTokenJson1 =
+		// "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appToken1\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someSecretString\"}]}";
+		// DataGroup appToken1 = convertJsonStringToDataGroup(appTokenJson1);
+		// recordsOnDisk.create("appToken", "appToken1", appToken1, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "cora");
+		//
+		// String dummyUserJson2 =
+		// "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"dummy2\"},{\"name\":\"type\",\"value\":\"systemTwoUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"active\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appToken2\"}]},{\"name\":\"note\",\"value\":\"My
+		// phone\"}],\"repeatId\":\"1\"}]}";
+		// DataGroup dummyUser2 = convertJsonStringToDataGroup(dummyUserJson2);
+		// recordsOnDisk.create("systemTwoUser", "dummy2", dummyUser2, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "systemOne");
+		//
+		// String appTokenJson2 =
+		// "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appToken2\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someOtherSecretString\"}]}";
+		// DataGroup appToken2 = convertJsonStringToDataGroup(appTokenJson2);
+		// recordsOnDisk.create("appToken", "appToken2", appToken2, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "cora");
+		//
+		// String inactiveUserJson =
+		// "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"inactiveUser\"},{\"name\":\"type\",\"value\":\"systemTwoUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"dummy@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"inactive\"},{\"name\":\"userAppTokenGroup\",\"children\":[{\"name\":\"appTokenLink\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"appToken\"},{\"name\":\"linkedRecordId\",\"value\":\"appTokenJson\"}]},{\"name\":\"note\",\"value\":\"My
+		// phone\"}],\"repeatId\":\"1\"}]}";
+		// DataGroup inactiveUser = convertJsonStringToDataGroup(inactiveUserJson);
+		// recordsOnDisk.create("systemTwoUser", "inactiveUser", inactiveUser, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "systemTwo");
+		//
+		// String appTokenJson3 =
+		// "{\"name\":\"appToken\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"appTokenJson\"},{\"name\":\"type\",\"value\":\"appToken\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"cora\"}]}]},{\"name\":\"token\",\"value\":\"someOtherSecretString\"}]}";
+		// DataGroup appTokenJson = convertJsonStringToDataGroup(appTokenJson3);
+		// recordsOnDisk.create("appToken", "appTokenJson", appTokenJson, emptyCollectedData,
+		// new DataGroupSpy("collectedLinksList"), "cora");
 
 		// String noAppTokenUserJson =
 		// "{\"name\":\"user\",\"children\":[{\"name\":\"recordInfo\",\"children\":[{\"name\":\"id\",\"value\":\"noAppTokenUser\"},{\"name\":\"type\",\"value\":\"systemTwoUser\"},{\"name\":\"createdBy\",\"value\":\"131313\"},{\"name\":\"dataDivider\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"system\"},{\"name\":\"linkedRecordId\",\"value\":\"systemOne\"}]}]},{\"name\":\"userId\",\"value\":\"noAppTokenUser@ub.uu.se\"},{\"name\":\"userFirstname\",\"value\":\"Dummy\"},{\"name\":\"userLastname\",\"value\":\"Dumsson\"},{\"name\":\"userRole\",\"children\":[{\"name\":\"userRole\",\"children\":[{\"name\":\"linkedRecordType\",\"value\":\"permissionRole\"},{\"name\":\"linkedRecordId\",\"value\":\"nothing\"}]},{\"name\":\"userRoleRulePart\",\"children\":[{\"name\":\"permissionRulePart\",\"children\":[{\"name\":\"permissionRulePartValue\",\"value\":\"system.\",\"repeatId\":\"0\"}],\"attributes\":{\"type\":\"organisation\"}}]}],\"repeatId\":\"0\"},{\"name\":\"activeStatus\",\"value\":\"inactive\"}]}";
@@ -131,14 +134,16 @@ public class TestDataAppTokenStorage {
 	}
 
 	private static DataGroup convertJsonStringToDataGroup(String jsonRecord) {
-		JsonParser jsonParser = new OrgJsonParser();
-		JsonValue jsonValue = jsonParser.parseString(jsonRecord);
-		JsonToDataConverterFactory jsonToDataConverterFactory = new JsonToDataConverterFactoryImp();
-		JsonToDataConverter jsonToDataConverter = jsonToDataConverterFactory
-				.createForJsonObject(jsonValue);
-		DataPart dataPart = jsonToDataConverter.toInstance();
-
-		return (DataGroup) dataPart;
+		// JsonParser jsonParser = new OrgJsonParser();
+		// JsonValue jsonValue = jsonParser.parseString(jsonRecord);
+		//// JsonToDataConverterFactory jsonToDataConverterFactory = new
+		// JsonToDataConverterFactoryImp();
+		// JsonToDataConverter jsonToDataConverter = jsonToDataConverterFactory
+		// .createForJsonObject(jsonValue);
+		// DataPart dataPart = jsonToDataConverter.toInstance();
+		DataGroupSpy dataGroupSpy = new DataGroupSpy("someNameInData");
+		return dataGroupSpy;
+		// return (DataGroup) dataPart;
 	}
 
 	private static void addRecordType(RecordStorageInMemory recordsInMemory) {

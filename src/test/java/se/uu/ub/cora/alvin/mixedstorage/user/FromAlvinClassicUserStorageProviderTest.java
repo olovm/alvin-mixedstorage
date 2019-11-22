@@ -38,14 +38,20 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.basicstorage.UserStorageImp;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.converter.DataToJsonConverterFactory;
+import se.uu.ub.cora.data.converter.DataToJsonConverterProvider;
+import se.uu.ub.cora.data.copier.DataCopierFactory;
+import se.uu.ub.cora.data.copier.DataCopierProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
-import se.uu.ub.cora.storage.testdata.TestDataAppTokenStorage;
 
 public class FromAlvinClassicUserStorageProviderTest {
 	private String basePath = "/tmp/recordStorageOnDiskTemp/";
@@ -53,15 +59,24 @@ public class FromAlvinClassicUserStorageProviderTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "FromAlvinClassicUserStorageProvider";
 	private UserStorageProvider userStorageProvider;
+	private DataGroupFactory dataGroupFactory;
+	private DataCopierFactory dataCopierFactory;
+	private DataToJsonConverterFactory dataToJsonConverterFactory;
 
 	@BeforeMethod
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataCopierFactory = new DataCopierFactorySpy();
+		DataCopierProvider.setDataCopierFactory(dataCopierFactory);
+		dataToJsonConverterFactory = new DataToJsonConverterFactorySpy();
+		DataToJsonConverterProvider.setDataToJsonConverterFactory(dataToJsonConverterFactory);
 		File dir = new File(basePath);
 		dir.mkdir();
 		deleteFiles(basePath);
-		TestDataAppTokenStorage.createRecordStorageInMemoryWithTestData(basePath);
+		// TestDataAppTokenStorage.createRecordStorageInMemoryWithTestData(basePath);
 
 		initInfo = new HashMap<>();
 		initInfo.put("storageOnDiskBasePath", basePath);
