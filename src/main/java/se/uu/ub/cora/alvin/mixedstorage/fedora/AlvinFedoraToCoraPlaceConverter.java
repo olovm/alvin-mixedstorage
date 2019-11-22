@@ -25,7 +25,9 @@ import se.uu.ub.cora.alvin.mixedstorage.TextUtil;
 import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConverter {
 
@@ -43,7 +45,7 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private DataGroup tryToCreateDataGroupFromDocument() {
-		DataGroup place = DataGroup.withNameInData("authority");
+		DataGroup place = DataGroupProvider.getDataGroupUsingNameInData("authority");
 		place.addAttributeByIdWithValue("type", "place");
 		createRecordInfoAndAddToPlace(place);
 		createDefaultNameAndAddToPlace(place);
@@ -61,17 +63,17 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private void createDefaultNameAndAddToPlace(DataGroup place) {
-		DataGroup defaultName = DataGroup.withNameInData("name");
+		DataGroup defaultName = DataGroupProvider.getDataGroupUsingNameInData("name");
 		place.addChild(defaultName);
 		defaultName.addAttributeByIdWithValue("type", "authorized");
 		createDefaultNamePartAndAddToName(defaultName);
 	}
 
 	private void createDefaultNamePartAndAddToName(DataGroup defaultName) {
-		DataGroup defaultNamePart = DataGroup.withNameInData("namePart");
+		DataGroup defaultNamePart = DataGroupProvider.getDataGroupUsingNameInData("namePart");
 		defaultName.addChild(defaultNamePart);
 		defaultNamePart.addAttributeByIdWithValue("type", "defaultName");
-		defaultNamePart.addChild(DataAtomic.withNameInDataAndValue("value",
+		defaultNamePart.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("value",
 				getStringFromDocumentUsingXPath("/place/defaultPlaceName/name/text()")));
 	}
 
@@ -93,9 +95,11 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 
 	private void createCoordinatesAndAddToPlace(DataGroup place, String latitude,
 			String longitude) {
-		DataGroup coordinates = DataGroup.withNameInData("coordinates");
-		coordinates.addChild(DataAtomic.withNameInDataAndValue("latitude", latitude));
-		coordinates.addChild(DataAtomic.withNameInDataAndValue("longitude", longitude));
+		DataGroup coordinates = DataGroupProvider.getDataGroupUsingNameInData("coordinates");
+		coordinates.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("latitude", latitude));
+		coordinates.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("longitude", longitude));
 		place.addChild(coordinates);
 	}
 
@@ -114,7 +118,8 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private void createCountryAndAddToPlace(DataGroup place, String alpha2Code) {
-		DataAtomic country = DataAtomic.withNameInDataAndValue("country", alpha2Code);
+		DataAtomic country = DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("country",
+				alpha2Code);
 		place.addChild(country);
 	}
 
@@ -128,8 +133,8 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 
 	private void createHistoricCountryAndAddToPlace(DataGroup place, String historicCountryCode) {
 		String modifiedCodeString = removeNonAlpahbeticCharacters(historicCountryCode);
-		DataAtomic historicCountry = DataAtomic.withNameInDataAndValue("historicCountry",
-				modifiedCodeString);
+		DataAtomic historicCountry = DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("historicCountry", modifiedCodeString);
 		place.addChild(historicCountry);
 	}
 
@@ -161,7 +166,7 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private DataGroup createDataGroupWithRepeatId(int repeatId) {
-		DataGroup localName = DataGroup.withNameInData("name");
+		DataGroup localName = DataGroupProvider.getDataGroupUsingNameInData("name");
 		localName.setRepeatId(String.valueOf(repeatId));
 		localName.addAttributeByIdWithValue("type", "alternative");
 		return localName;
@@ -169,8 +174,8 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 
 	private void convertLanguagePart(DataGroup localName, Node placeName) {
 		String languageValue = extractValueFromNode(placeName, "placeNameForm/language/alpha3Code");
-		DataAtomic alternativeLanguage = DataAtomic.withNameInDataAndValue("language",
-				languageValue);
+		DataAtomic alternativeLanguage = DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("language", languageValue);
 		localName.addChild(alternativeLanguage);
 	}
 
@@ -185,14 +190,15 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private DataGroup createNamePart() {
-		DataGroup namePart = DataGroup.withNameInData("namePart");
+		DataGroup namePart = DataGroupProvider.getDataGroupUsingNameInData("namePart");
 		namePart.addAttributeByIdWithValue("type", "defaultName");
 		return namePart;
 	}
 
 	private void extractNameValueAndAddToNamePart(DataGroup namePart, Node alternativeNameXML) {
 		String nameValue = extractValueFromNode(alternativeNameXML, "placeNameForm/name");
-		DataAtomic alternativeName = DataAtomic.withNameInDataAndValue("value", nameValue);
+		DataAtomic alternativeName = DataAtomicProvider
+				.getDataAtomicUsingNameInDataAndValue("value", nameValue);
 		namePart.addChild(alternativeName);
 	}
 
@@ -220,20 +226,22 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 	}
 
 	private DataGroup createIdentifierGroupWithRepeatId(int repeatId) {
-		DataGroup identifierGroup = DataGroup.withNameInData("identifier");
+		DataGroup identifierGroup = DataGroupProvider.getDataGroupUsingNameInData("identifier");
 		identifierGroup.setRepeatId(String.valueOf(repeatId));
 		return identifierGroup;
 	}
 
 	private void extractAndAddLocalIdentifierType(Node localIdentifier, DataGroup identifierGroup) {
 		String code = extractValueFromNode(localIdentifier, "type/code");
-		identifierGroup.addChild(DataAtomic.withNameInDataAndValue("identifierType", code));
+		identifierGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("identifierType", code));
 	}
 
 	private void extractAndAddLocalIdentifierValue(Node localIdentifier,
 			DataGroup identifierGroup) {
 		String text = extractValueFromNode(localIdentifier, "text");
-		identifierGroup.addChild(DataAtomic.withNameInDataAndValue("identifierValue", text));
+		identifierGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("identifierValue", text));
 	}
 
 }

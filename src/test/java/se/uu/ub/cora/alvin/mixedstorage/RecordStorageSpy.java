@@ -12,9 +12,9 @@ import se.uu.ub.cora.storage.StorageReadResult;
 public class RecordStorageSpy implements RecordStorage, SearchStorage {
 	public RecordStorageSpyData data = new RecordStorageSpyData();
 	public String searchTermId;
-	public DataGroup returnedSearchTerm = DataGroup.withNameInData("searchTerm");
+	public DataGroup returnedSearchTerm = new DataGroupSpy("searchTerm");
 	public String indexTermId;
-	public DataGroup returnedIndexTerm = DataGroup.withNameInData("indexTerm");
+	public DataGroup returnedIndexTerm = new DataGroupSpy("indexTerm");
 
 	@Override
 	public DataGroup read(String type, String id) {
@@ -22,7 +22,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		data.id = id;
 		data.calledMethod = "read";
 
-		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
+		DataGroup dummyDataGroup = new DataGroupSpy("DummyGroupFromRecordStorageSpy");
 		data.answer = dummyDataGroup;
 		return dummyDataGroup;
 	}
@@ -74,7 +74,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		data.filter = filter;
 		data.calledMethod = "readList";
 		Collection<DataGroup> readList = new ArrayList<>();
-		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
+		DataGroup dummyDataGroup = new DataGroupSpy("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
 		StorageReadResult storageReadResult = new StorageReadResult();
@@ -88,7 +88,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		data.filter = filter;
 		data.calledMethod = "readAbstractList";
 		Collection<DataGroup> readList = new ArrayList<>();
-		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
+		DataGroup dummyDataGroup = new DataGroupSpy("DummyGroupFromRecordStorageSpy");
 		readList.add(dummyDataGroup);
 		data.answer = readList;
 		StorageReadResult storageReadResult = new StorageReadResult();
@@ -102,7 +102,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		data.id = id;
 		data.calledMethod = "readLinkList";
 
-		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
+		DataGroup dummyDataGroup = new DataGroupSpy("DummyGroupFromRecordStorageSpy");
 		data.answer = dummyDataGroup;
 		return dummyDataGroup;
 	}
@@ -113,7 +113,7 @@ public class RecordStorageSpy implements RecordStorage, SearchStorage {
 		data.id = id;
 		data.calledMethod = "generateLinkCollectionPointingToRecord";
 		Collection<DataGroup> generatedList = new ArrayList<>();
-		DataGroup dummyDataGroup = DataGroup.withNameInData("DummyGroupFromRecordStorageSpy");
+		DataGroup dummyDataGroup = new DataGroupSpy("DummyGroupFromRecordStorageSpy");
 		generatedList.add(dummyDataGroup);
 		data.answer = generatedList;
 		return generatedList;

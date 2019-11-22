@@ -2,6 +2,7 @@ package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import java.util.Map;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.data.DataGroup;
 
 public class AlvinDbToCoraConverterSpy implements AlvinDbToCoraConverter {
@@ -14,7 +15,7 @@ public class AlvinDbToCoraConverterSpy implements AlvinDbToCoraConverter {
 	@Override
 	public DataGroup fromMap(Map<String, Object> map) {
 		mapToConvert = map;
-		convertedDbDataGroup = DataGroup.withNameInData("from Db converter");
+		convertedDbDataGroup = new DataGroupSpy("from Db converter");
 		return convertedDbDataGroup;
 	}
 

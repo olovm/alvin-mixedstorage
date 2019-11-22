@@ -31,8 +31,9 @@ import java.util.Iterator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
-import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -153,7 +154,7 @@ public class FedoraRecordStorageTest {
 	@Test
 	public void createPlaceCreatesRecordInStorages() throws Exception {
 		setUpResponsesForOkCreate();
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -252,7 +253,7 @@ public class FedoraRecordStorageTest {
 	public void createPlaceErrorCreatingObjectDoNotCreateRelationOrDatastreamAndThrowsException()
 			throws Exception {
 		setUpResponsesForObjectCreationFailure();
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -284,7 +285,7 @@ public class FedoraRecordStorageTest {
 	public void createPlaceErrorCreatingRelationDoNotCreateDatastreamAndThrowsException()
 			throws Exception {
 		setUpResponsesForRelationCreationFailure();
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -318,7 +319,7 @@ public class FedoraRecordStorageTest {
 	@Test
 	public void createPlaceErrorCreatingDatastreamThrowsException() throws Exception {
 		setUpResponsesForDatastreamFailure();
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -399,7 +400,7 @@ public class FedoraRecordStorageTest {
 	public void updateUpdatesRecordInStoragesName() throws Exception {
 		httpHandlerFactory.responseCodes.add(200);
 		httpHandlerFactory.responseTexts.add("Dummy response text");
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
@@ -431,20 +432,19 @@ public class FedoraRecordStorageTest {
 	}
 
 	private DataGroup createCollectTermsWithRecordLabel() {
-		DataGroup collectedTerms = DataGroup.withNameInData("collectedData");
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("type", "place"));
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("id", "alvin-place:22"));
+		DataGroup collectedTerms = new DataGroupSpy("collectedData");
+		collectedTerms.addChild(new DataAtomicSpy("type", "place"));
+		collectedTerms.addChild(new DataAtomicSpy("id", "alvin-place:22"));
 
-		DataGroup storageTerms = DataGroup.withNameInData("storage");
+		DataGroup storageTerms = new DataGroupSpy("storage");
 		collectedTerms.addChild(storageTerms);
 
-		DataGroup collectedRecordLabel = DataGroup.withNameInData("collectedDataTerm");
+		DataGroup collectedRecordLabel = new DataGroupSpy("collectedDataTerm");
 		storageTerms.addChild(collectedRecordLabel);
 		collectedRecordLabel.setRepeatId("someRepeatId");
-		collectedRecordLabel.addChild(
-				DataAtomic.withNameInDataAndValue("collectTermId", "recordLabelStorageTerm"));
-		collectedRecordLabel.addChild(DataAtomic.withNameInDataAndValue("collectTermValue",
-				"Some Place Collected Name åäö"));
+		collectedRecordLabel.addChild(new DataAtomicSpy("collectTermId", "recordLabelStorageTerm"));
+		collectedRecordLabel
+				.addChild(new DataAtomicSpy("collectTermValue", "Some Place Collected Name åäö"));
 		return collectedTerms;
 	}
 
@@ -452,22 +452,22 @@ public class FedoraRecordStorageTest {
 	public void updateIsMissingRecordLabelInCollectedStorageTerms() throws Exception {
 		httpHandlerFactory.responseCodes.add(200);
 		httpHandlerFactory.responseTexts.add("Dummy response text");
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 
-		DataGroup collectedTerms = DataGroup.withNameInData("collectedData");
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("type", "place"));
-		collectedTerms.addChild(DataAtomic.withNameInDataAndValue("id", "alvin-place:22"));
+		DataGroup collectedTerms = new DataGroupSpy("collectedData");
+		collectedTerms.addChild(new DataAtomicSpy("type", "place"));
+		collectedTerms.addChild(new DataAtomicSpy("id", "alvin-place:22"));
 
-		DataGroup storageTerms = DataGroup.withNameInData("storage");
+		DataGroup storageTerms = new DataGroupSpy("storage");
 		collectedTerms.addChild(storageTerms);
 
-		DataGroup collectedRecordLabel = DataGroup.withNameInData("collectedDataTerm");
+		DataGroup collectedRecordLabel = new DataGroupSpy("collectedDataTerm");
 		storageTerms.addChild(collectedRecordLabel);
 		collectedRecordLabel.setRepeatId("someRepeatId");
-		collectedRecordLabel.addChild(
-				DataAtomic.withNameInDataAndValue("collectTermId", "NOTrecordLabelStorageTerm"));
-		collectedRecordLabel.addChild(
-				DataAtomic.withNameInDataAndValue("collectTermValue", "SomePlaceCollectedName"));
+		collectedRecordLabel
+				.addChild(new DataAtomicSpy("collectTermId", "NOTrecordLabelStorageTerm"));
+		collectedRecordLabel
+				.addChild(new DataAtomicSpy("collectTermValue", "SomePlaceCollectedName"));
 
 		DataGroup linkList = null;
 		String dataDivider = null;
@@ -487,7 +487,7 @@ public class FedoraRecordStorageTest {
 		httpHandlerFactory.responseTexts.add("Dummy response text");
 		httpHandlerFactory.responseCodes.add(500);
 
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
 		alvinToCoraRecordStorage.update("place", "alvin-place:22", record, collectedTerms, null,
@@ -500,7 +500,7 @@ public class FedoraRecordStorageTest {
 		httpHandlerFactory.responseTexts.add("Dummy response text");
 		httpHandlerFactory.responseCodes.add(505);
 
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 		DataGroup collectedTerms = createCollectTermsWithRecordLabel();
 
 		alvinToCoraRecordStorage.update("place", "alvin-place:23", record, collectedTerms, null,
@@ -519,7 +519,7 @@ public class FedoraRecordStorageTest {
 	public void readListThrowsParseExceptionOnBrokenXML() throws Exception {
 		httpHandlerFactory.responseTexts.add("<someTag></notSameTag>");
 		httpHandlerFactory.responseCodes.add(200);
-		alvinToCoraRecordStorage.readList("place", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readList("place", new DataGroupSpy("filter"));
 	}
 
 	@Test
@@ -529,7 +529,7 @@ public class FedoraRecordStorageTest {
 		addDummyResponsesForAllObjectsInList();
 
 		Collection<DataGroup> readPlaceList = alvinToCoraRecordStorage.readList("place",
-				DataGroup.withNameInData("filter")).listOfDataGroups;
+				new DataGroupSpy("filter")).listOfDataGroups;
 		assertEquals(httpHandlerFactory.urls.get(0), baseURL
 				+ "objects?pid=true&maxResults=10000&resultFormat=xml&query=state%3DA+pid%7Ealvin-place%3A*");
 		assertEquals(httpHandlerFactory.factoredHttpHandlers.size(), 7);

@@ -22,8 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorage;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
@@ -112,7 +113,8 @@ public class AlvinMixedUserStorage implements UserStorage {
 	private DataGroup createDataGroupWithUserInfo(String idFromLogin,
 			List<Map<String, Object>> dbResult) {
 		DataGroup userGroup = UserConverterHelper.createBasicActiveUser();
-		userGroup.addChild(DataAtomic.withNameInDataAndValue("userId", idFromLogin));
+		userGroup.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("userId", idFromLogin));
 
 		Map<String, Object> firstRowFromDb = dbResult.get(0);
 		createAndAddRecordInfo(userGroup, firstRowFromDb);
@@ -124,25 +126,26 @@ public class AlvinMixedUserStorage implements UserStorage {
 	}
 
 	private void createAndAddRecordInfo(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
-		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
+		DataGroup recordInfo = DataGroupProvider.getDataGroupUsingNameInData("recordInfo");
 		userGroup.addChild(recordInfo);
 		String idFromDb = String.valueOf(firstRowFromDb.get("id"));
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", idFromDb));
+		recordInfo
+				.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("id", idFromDb));
 	}
 
 	private void possiblyAddFirstName(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
 		Object firstname = firstRowFromDb.get("firstname");
 		if (firstname != null) {
-			userGroup.addChild(
-					DataAtomic.withNameInDataAndValue("userFirstName", (String) firstname));
+			userGroup.addChild(DataAtomicProvider
+					.getDataAtomicUsingNameInDataAndValue("userFirstName", (String) firstname));
 		}
 	}
 
 	private void possiblyAddLastName(DataGroup userGroup, Map<String, Object> firstRowFromDb) {
 		Object lastname = firstRowFromDb.get("lastname");
 		if (lastname != null) {
-			userGroup
-					.addChild(DataAtomic.withNameInDataAndValue("userLastName", (String) lastname));
+			userGroup.addChild(DataAtomicProvider
+					.getDataAtomicUsingNameInDataAndValue("userLastName", (String) lastname));
 		}
 	}
 

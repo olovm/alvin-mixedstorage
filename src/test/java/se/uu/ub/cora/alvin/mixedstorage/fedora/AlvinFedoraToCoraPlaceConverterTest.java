@@ -26,16 +26,28 @@ import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
+import se.uu.ub.cora.data.DataAtomicFactory;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class AlvinFedoraToCoraPlaceConverterTest {
 
 	private AlvinFedoraToCoraPlaceConverter converter;
+	private DataGroupFactory dataGroupFactory;
+	private DataAtomicFactory dataAtomicFactory;
 
 	@BeforeMethod
 	public void beforeMethod() {
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		converter = new AlvinFedoraToCoraPlaceConverter();
 	}
 
@@ -311,8 +323,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 	@Test
 	public void convertFromXMLNoAlternativeName() throws Exception {
 		DataGroup placeDataGroup = converter.fromXML(TestDataProvider.place22_noCountry_XML);
-		DataAttribute alternativeAttribute = DataAttribute.withNameInDataAndValue("type",
-				"alternative");
+		DataAttribute alternativeAttribute = new DataAttributeSpy("type", "alternative");
 
 		List<DataGroup> alternativeNames = (List<DataGroup>) placeDataGroup
 				.getAllGroupsWithNameInDataAndAttributes("name", alternativeAttribute);
@@ -328,8 +339,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		DataGroup defaultNamePart = defaultName.getFirstGroupWithNameInData("namePart");
 		assertEquals(defaultNamePart.getAttribute("type"), "defaultName");
 		assertEquals(defaultNamePart.getFirstAtomicValueWithNameInData("value"), "Lund");
-		DataAttribute alternativeAttribute = DataAttribute.withNameInDataAndValue("type",
-				"alternative");
+		DataAttribute alternativeAttribute = new DataAttributeSpy("type", "alternative");
 
 		List<DataGroup> alternativeNames = (List<DataGroup>) placeDataGroup
 				.getAllGroupsWithNameInDataAndAttributes("name", alternativeAttribute);
@@ -341,6 +351,19 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 
 	}
 
+	// private List<DataGroup> getAllGroupsWithNameInDataAndAttributes(DataGroup dataGroup,
+	// String nameInData, DataAttribute dataAttribute) {
+	// List<DataGroup> foundDataGroups = new ArrayList<>();
+	// List<DataGroup> allGroupsWithNameInData = dataGroup.getAllGroupsWithNameInData(nameInData);
+	// for (DataGroup childDataGroup : allGroupsWithNameInData) {
+	// String childAttribute = childDataGroup.getAttribute(dataAttribute.getNameInData());
+	// if (childAttribute != null && childAttribute.equals(dataAttribute.getValue())) {
+	// foundDataGroups.add(childDataGroup);
+	// }
+	// }
+	// return foundDataGroups;
+	// }
+
 	@Test
 	public void convertTwoAlternativeNamesFromXML24() throws Exception {
 		DataGroup placeDataGroup = converter.fromXML(TestDataProvider.place24DoublePlacesXML);
@@ -350,8 +373,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		DataGroup defaultNamePart = defaultName.getFirstGroupWithNameInData("namePart");
 		assertEquals(defaultNamePart.getAttribute("type"), "defaultName");
 		assertEquals(defaultNamePart.getFirstAtomicValueWithNameInData("value"), "Lund");
-		DataAttribute alternativeAttribute = DataAttribute.withNameInDataAndValue("type",
-				"alternative");
+		DataAttribute alternativeAttribute = new DataAttributeSpy("type", "alternative");
 
 		List<DataGroup> alternativeNames = (List<DataGroup>) placeDataGroup
 				.getAllGroupsWithNameInDataAndAttributes("name", alternativeAttribute);

@@ -22,8 +22,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class AlvinFedoraToCoraRecordInfoConverter {
 	private XMLXPathParser parser;
@@ -40,7 +41,7 @@ public class AlvinFedoraToCoraRecordInfoConverter {
 	}
 
 	private DataGroup createRecordInfoAsDataGroup() {
-		recordInfo = DataGroup.withNameInData("recordInfo");
+		recordInfo = DataGroupProvider.getDataGroupUsingNameInData("recordInfo");
 		addType();
 		parseAndAddId();
 		addDataDivider();
@@ -58,15 +59,17 @@ public class AlvinFedoraToCoraRecordInfoConverter {
 
 	private static DataGroup createLinkWithNameInDataAndTypeAndId(String nameInData,
 			String linkedRecordType, String linkedRecordId) {
-		DataGroup type = DataGroup.withNameInData(nameInData);
-		type.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", linkedRecordType));
-		type.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", linkedRecordId));
+		DataGroup type = DataGroupProvider.getDataGroupUsingNameInData(nameInData);
+		type.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("linkedRecordType",
+				linkedRecordType));
+		type.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("linkedRecordId",
+				linkedRecordId));
 		return type;
 	}
 
 	private void parseAndAddId() {
 		String pid = parser.getStringFromDocumentUsingXPath("/place/pid/text()");
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", pid));
+		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("id", pid));
 	}
 
 	private void addDataDivider() {
@@ -84,7 +87,8 @@ public class AlvinFedoraToCoraRecordInfoConverter {
 		String tsCreatedWithUTC = parser
 				.getStringFromDocumentUsingXPath("/place/recordInfo/created/date");
 		String tsCreated = removeUTCFromTimestamp(tsCreatedWithUTC);
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("tsCreated", tsCreated));
+		recordInfo.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsCreated", tsCreated));
 	}
 
 	private String removeUTCFromTimestamp(String tsCreatedWithUTC) {
@@ -104,7 +108,7 @@ public class AlvinFedoraToCoraRecordInfoConverter {
 	}
 
 	private void createAndAddUpdateUsingNodeAndRepeatId(Node userUpdated, int repeatId) {
-		DataGroup updated = DataGroup.withNameInData("updated");
+		DataGroup updated = DataGroupProvider.getDataGroupUsingNameInData("updated");
 		updated.setRepeatId(String.valueOf(repeatId));
 		addUpdatedBy(updated);
 		parseAndAddTsUpdated(updated, userUpdated);
@@ -119,7 +123,8 @@ public class AlvinFedoraToCoraRecordInfoConverter {
 	private void parseAndAddTsUpdated(DataGroup updated, Node node) {
 		String tsUpdatedWithUTC = parser.getStringFromNodeUsingXPath(node, "date/text()");
 		String tsUpdated = removeUTCFromTimestampOrUseTsCreated(tsUpdatedWithUTC);
-		updated.addChild(DataAtomic.withNameInDataAndValue("tsUpdated", tsUpdated));
+		updated.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsUpdated", tsUpdated));
 	}
 
 	private String removeUTCFromTimestampOrUseTsCreated(String tsUpdatedWithUTC) {

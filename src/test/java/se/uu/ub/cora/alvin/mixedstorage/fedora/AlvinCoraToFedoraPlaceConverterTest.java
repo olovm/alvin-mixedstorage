@@ -23,6 +23,8 @@ import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataGroup;
@@ -53,30 +55,28 @@ public class AlvinCoraToFedoraPlaceConverterTest {
 	}
 
 	private DataGroup createPlaceDataGroupUsingPid(String id) {
-		DataGroup record = DataGroup.withNameInData("authority");
+		DataGroup record = new DataGroupSpy("authority");
 		record.addAttributeByIdWithValue("type", "place");
-		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
+		DataGroup recordInfo = new DataGroupSpy("recordInfo");
 		record.addChild(recordInfo);
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", id));
+		recordInfo.addChild(new DataAtomicSpy("id", id));
 
-		DataGroup createdBy = DataGroup.withNameInData("createdBy");
+		DataGroup createdBy = new DataGroupSpy("createdBy");
 		recordInfo.addChild(createdBy);
-		createdBy.addChild(DataAtomic.withNameInDataAndValue("linkedRecordType", "coraUser"));
-		createdBy.addChild(DataAtomic.withNameInDataAndValue("linkedRecordId", "user1234"));
+		createdBy.addChild(new DataAtomicSpy("linkedRecordType", "coraUser"));
+		createdBy.addChild(new DataAtomicSpy("linkedRecordId", "user1234"));
 
-		recordInfo.addChild(
-				DataAtomic.withNameInDataAndValue("tsCreated", "2019-03-11 09:27:22.306"));
+		recordInfo.addChild(new DataAtomicSpy("tsCreated", "2019-03-11 09:27:22.306"));
 
-		DataGroup authorizedNameGroup = DataGroup.withNameInData("name");
+		DataGroup authorizedNameGroup = new DataGroupSpy("name");
 		record.addChild(authorizedNameGroup);
 		authorizedNameGroup.addAttributeByIdWithValue("type", "authorized");
 
-		DataGroup defaultNameGroup = DataGroup.withNameInData("namePart");
+		DataGroup defaultNameGroup = new DataGroupSpy("namePart");
 		authorizedNameGroup.addChild(defaultNameGroup);
 		defaultNameGroup.addAttributeByIdWithValue("type", "defaultName");
 
-		DataAtomic defaultNameValue = DataAtomic.withNameInDataAndValue("value",
-				"CORA_Uppsala_CORA");
+		DataAtomic defaultNameValue = new DataAtomicSpy("value", "CORA_Uppsala_CORA");
 		defaultNameGroup.addChild(defaultNameValue);
 
 		return record;

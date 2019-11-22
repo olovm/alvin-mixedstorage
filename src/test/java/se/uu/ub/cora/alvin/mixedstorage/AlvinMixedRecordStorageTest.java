@@ -157,7 +157,7 @@ public class AlvinMixedRecordStorageTest {
 	public void readListGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = alvinMixedRecordStorage.readList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 
@@ -171,7 +171,7 @@ public class AlvinMixedRecordStorageTest {
 	public void readPlaceListGoesToAlvinToCoraStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "place";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = alvinMixedRecordStorage.readList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 
@@ -186,9 +186,9 @@ public class AlvinMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		alvinMixedRecordStorage.create(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
@@ -257,9 +257,9 @@ public class AlvinMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		alvinMixedRecordStorage.update(expectedData.type, expectedData.id, expectedData.record,
 				expectedData.collectedTerms, expectedData.linkList, expectedData.dataDivider);
@@ -336,9 +336,9 @@ public class AlvinMixedRecordStorageTest {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "place";
 		expectedData.id = "someId";
-		expectedData.record = DataGroup.withNameInData("dummyRecord");
-		expectedData.collectedTerms = DataGroup.withNameInData("collectedTerms");
-		expectedData.linkList = DataGroup.withNameInData("linkList");
+		expectedData.record = new DataGroupSpy("dummyRecord");
+		expectedData.collectedTerms = new DataGroupSpy("collectedTerms");
+		expectedData.linkList = new DataGroupSpy("linkList");
 		expectedData.dataDivider = "someDataDivider";
 		return expectedData;
 	}
@@ -347,7 +347,7 @@ public class AlvinMixedRecordStorageTest {
 	public void readAbstractListGoesToBasicStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "someType";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = alvinMixedRecordStorage.readAbstractList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 
@@ -505,7 +505,7 @@ public class AlvinMixedRecordStorageTest {
 	public void readAbstractListForUserGoesToAlvinDBToCoraStorage() throws Exception {
 		RecordStorageSpyData expectedData = new RecordStorageSpyData();
 		expectedData.type = "user";
-		expectedData.filter = DataGroup.withNameInData("filter");
+		expectedData.filter = new DataGroupSpy("filter");
 		expectedData.answer = alvinMixedRecordStorage.readAbstractList(expectedData.type,
 				expectedData.filter).listOfDataGroups;
 

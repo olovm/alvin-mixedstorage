@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
 import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
-import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataAttributeProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.httphandler.HttpHandler;
 import se.uu.ub.cora.httphandler.HttpHandlerFactory;
@@ -77,10 +77,12 @@ public class AlvinCoraToFedoraPlaceConverter implements AlvinCoraToFedoraConvert
 
 	private String getDefaultNameFromPlaceRecord(DataGroup record) {
 		Collection<DataGroup> nameGroups = record.getAllGroupsWithNameInDataAndAttributes("name",
-				DataAttribute.withNameInDataAndValue("type", "authorized"));
+				DataAttributeProvider.getDataAttributeUsingNameInDataAndValue("type",
+						"authorized"));
 		DataGroup nameGroup = nameGroups.iterator().next();
-		Collection<DataGroup> defaultNames = nameGroup.getAllGroupsWithNameInDataAndAttributes(
-				"namePart", DataAttribute.withNameInDataAndValue("type", "defaultName"));
+		Collection<DataGroup> defaultNames = nameGroup
+				.getAllGroupsWithNameInDataAndAttributes("namePart", DataAttributeProvider
+						.getDataAttributeUsingNameInDataAndValue("type", "defaultName"));
 		DataGroup defaultName = defaultNames.iterator().next();
 		return defaultName.getFirstAtomicValueWithNameInData("value");
 	}
