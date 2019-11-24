@@ -194,20 +194,28 @@ public class AlvinDbToCoraUserConverterTest {
 	public void testUserRolesWhenAdmin() {
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(52));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 5);
+		// 4 groups per userRole, 5 userRoles + main group and 6 groups for recordInfo group = 27
+		int numOfGroupsExpected = 27;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "metadataAdmin");
-		assertCorrectRole(userRoles, 1, "binaryUserRole");
-		assertCorrectRole(userRoles, 2, "systemConfigurator");
-		assertCorrectRole(userRoles, 3, "systemOneSystemUserRole");
-		assertCorrectRole(userRoles, 4, "userAdminRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "metadataAdmin");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(secondRoleGroup.recordId, "binaryUserRole");
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(16);
+		assertEquals(thirdRoleGroup.recordId, "systemConfigurator");
+		DataGroupSpy fourthRoleGroup = dataGroupFactory.factoredDataGroups.get(20);
+		assertEquals(fourthRoleGroup.recordId, "systemOneSystemUserRole");
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(24);
+		assertEquals(fifthRoleGroup.recordId, "userAdminRole");
 	}
 
 	private void assertCorrectRole(List<DataGroup> userRoles, int index, String roleId) {
@@ -255,9 +263,16 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 150);
 		DataReader dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
+		converter.fromMap(rowFromDb);
+
+		// 4 groups per userRole, 1 userRoles + main group and 6 groups for recordInfo group = 11
+		int numOfGroupsExpected = 11;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
+
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(secondRoleGroup.recordId, "metadataUserRole");
 	}
 
 	@Test
@@ -265,17 +280,23 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 100);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(100));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 2);
+		// 4 groups per userRole, 2 userRoles + main group and 6 groups for recordInfo group = 15
+		int numOfGroupsExpected = 15;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "userAdminRole");
-		assertCorrectRole(userRoles, 1, "metadataUserRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "userAdminRole");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(secondRoleGroup.recordId, "metadataUserRole");
+
 	}
 
 	@Test
@@ -297,17 +318,22 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 101);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(101));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 2);
+		// 4 groups per userRole, 2 userRoles + main group and 6 groups for recordInfo group = 15
+		int numOfGroupsExpected = 15;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "personAdminRole");
-		assertCorrectRole(userRoles, 1, "metadataUserRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "personAdminRole");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(secondRoleGroup.recordId, "metadataUserRole");
 	}
 
 	@Test
@@ -329,17 +355,23 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 102);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(102));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 2);
+		// 4 groups per userRole, 2 userRoles + main group and 6 groups for recordInfo group = 15
+		int numOfGroupsExpected = 15;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "organisationAdminRole");
-		assertCorrectRole(userRoles, 1, "metadataUserRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "organisationAdminRole");
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(fifthRoleGroup.recordId, "metadataUserRole");
+
 	}
 
 	@Test
@@ -367,11 +399,16 @@ public class AlvinDbToCoraUserConverterTest {
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(103));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 2);
+		// 4 groups per userRole, 2 userRoles + main group and 6 groups for recordInfo group = 15
+		int numOfGroupsExpected = 15;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "placeAdminRole");
-		assertCorrectRole(userRoles, 1, "metadataUserRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "placeAdminRole");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(secondRoleGroup.recordId, "metadataUserRole");
 	}
 
 	@Test
@@ -399,14 +436,23 @@ public class AlvinDbToCoraUserConverterTest {
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(110));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 5);
+		// 4 groups per userRole, 5 userRoles + main group and 6 groups for recordInfo group = 27
+		int numOfGroupsExpected = 27;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectRole(userRoles, 0, "userAdminRole");
-		assertCorrectRole(userRoles, 1, "personAdminRole");
-		assertCorrectRole(userRoles, 2, "organisationAdminRole");
-		assertCorrectRole(userRoles, 3, "placeAdminRole");
-		assertCorrectRole(userRoles, 4, "metadataUserRole");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(firstRoleGroup.recordId, "userAdminRole");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(12);
+		assertEquals(secondRoleGroup.recordId, "personAdminRole");
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(16);
+		assertEquals(thirdRoleGroup.recordId, "organisationAdminRole");
+		DataGroupSpy fourthRoleGroup = dataGroupFactory.factoredDataGroups.get(20);
+		assertEquals(fourthRoleGroup.recordId, "placeAdminRole");
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(24);
+		assertEquals(fifthRoleGroup.recordId, "metadataUserRole");
+
 	}
 
 	@Test
@@ -448,9 +494,14 @@ public class AlvinDbToCoraUserConverterTest {
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
 		assertTrue(dataReaderRoles.valuesSentToReader.contains(1000));
 
-		List<DataGroup> userRoles = user.getAllGroupsWithNameInData("userRole");
-		assertEquals(userRoles.size(), 1);
-		assertCorrectRole(userRoles, 0, "metadataUserRole");
+		// 4 groups per userRole, 1 userRoles + main group and 6 groups for recordInfo group = 11
+		int numOfGroupsExpected = 11;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
+
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(8);
+		assertEquals(fifthRoleGroup.recordId, "metadataUserRole");
 
 	}
 
