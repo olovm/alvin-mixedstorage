@@ -24,7 +24,6 @@ import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeMethod;
@@ -37,7 +36,6 @@ import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
-import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupProvider;
@@ -218,46 +216,6 @@ public class AlvinDbToCoraUserConverterTest {
 		assertEquals(fifthRoleGroup.recordId, "userAdminRole");
 	}
 
-	private void assertCorrectRole(List<DataGroup> userRoles, int index, String roleId) {
-		DataGroup role = userRoles.get(index);
-
-		DataGroup permissionTermRulePart = role
-				.getFirstGroupWithNameInData("permissionTermRulePart");
-		assertEquals(permissionTermRulePart.getRepeatId(), "0");
-
-		assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
-				"systemPermissionTerm");
-
-		assertRulePartContainsCorrectValue(permissionTermRulePart, "system.*");
-
-		String linkedRecordIdBinaryUserRole = extractRoleIdUsingRole(role);
-
-		assertEquals(linkedRecordIdBinaryUserRole, roleId);
-		assertEquals(role.getRepeatId(), String.valueOf(index));
-	}
-
-	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
-			String linkedPermissionTerm) {
-		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"collectPermissionTerm");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				linkedPermissionTerm);
-	}
-
-	private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
-			String rulePartValue) {
-		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
-		assertEquals(value.getValue(), rulePartValue);
-		assertEquals(value.getRepeatId(), "0");
-	}
-
-	private String extractRoleIdUsingRole(DataGroup dataGroup) {
-		DataGroup userRole = dataGroup.getFirstGroupWithNameInData("userRole");
-		String linkedRecordId = userRole.getFirstAtomicValueWithNameInData("linkedRecordId");
-		return linkedRecordId;
-	}
-
 	@Test
 	public void testNoUserRolesInDbStillGivesMetadataUserRole() {
 		rowFromDb.put("id", 150);
@@ -393,7 +351,7 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 103);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
@@ -430,7 +388,7 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 110);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
@@ -488,7 +446,7 @@ public class AlvinDbToCoraUserConverterTest {
 		rowFromDb.put("id", 1000);
 		DataReaderRolesSpy dataReaderRoles = new DataReaderRolesSpy();
 		converter = AlvinDbToCoraUserConverter.usingDataReader(dataReaderRoles);
-		DataGroup user = converter.fromMap(rowFromDb);
+		converter.fromMap(rowFromDb);
 
 		assertEquals(dataReaderRoles.sqlSentToReader,
 				"select * from alvin_role ar left join alvin_group ag on ar.group_id = ag.id where user_id = ?");
