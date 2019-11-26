@@ -16,27 +16,16 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.alvin.mixedstorage.user;
+package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.data.DataAttribute;
+import se.uu.ub.cora.data.DataAttributeFactory;
 
-public class UserStorageSpy implements UserStorage {
-
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
+public class DataAttibuteFactorySpy implements DataAttributeFactory {
 
 	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
-	}
-
-	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
+	public DataAttribute factorUsingNameInDataAndValue(String nameInData, String value) {
+		return new DataAttributeSpy(nameInData, value);
 	}
 
 }

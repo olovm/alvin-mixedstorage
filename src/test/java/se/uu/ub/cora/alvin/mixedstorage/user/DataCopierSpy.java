@@ -9,7 +9,7 @@
  *     (at your option) any later version.
  *
  *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of	
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
@@ -18,24 +18,18 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.data.DataElement;
+import se.uu.ub.cora.data.copier.DataCopier;
 
-public class UserStorageSpy implements UserStorage {
+public class DataCopierSpy implements DataCopier {
 
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
-
-	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
+	public DataCopierSpy(DataElement dataElement) {
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
+	public DataElement copy() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

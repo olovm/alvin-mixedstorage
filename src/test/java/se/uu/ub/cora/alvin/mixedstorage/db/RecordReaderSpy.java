@@ -10,16 +10,16 @@ import se.uu.ub.cora.sqldatabase.RecordReader;
 public class RecordReaderSpy implements RecordReader {
 
 	public String usedTableName = "";
-	public List<Map<String, String>> returnedList;
+	public List<Map<String, Object>> returnedList;
 	public int noOfRecordsToReturn = 1;
-	public Map<String, String> usedConditions = new HashMap<>();
+	public Map<String, Object> usedConditions = new HashMap<>();
 
 	@Override
-	public List<Map<String, String>> readAllFromTable(String tableName) {
+	public List<Map<String, Object>> readAllFromTable(String tableName) {
 		usedTableName = tableName;
 		returnedList = new ArrayList<>();
 		for (int i = 0; i < noOfRecordsToReturn; i++) {
-			Map<String, String> map = new HashMap<>();
+			Map<String, Object> map = new HashMap<>();
 			map.put("someKey" + i, "someValue" + i);
 			returnedList.add(map);
 		}
@@ -27,11 +27,11 @@ public class RecordReaderSpy implements RecordReader {
 	}
 
 	@Override
-	public Map<String, String> readOneRowFromDbUsingTableAndConditions(String tableName,
-			Map<String, String> conditions) {
+	public Map<String, Object> readOneRowFromDbUsingTableAndConditions(String tableName,
+			Map<String, Object> conditions) {
 		usedTableName = tableName;
 		usedConditions = conditions;
-		Map<String, String> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("someKey", "someValue");
 		returnedList = new ArrayList<>();
 		returnedList.add(map);
@@ -40,8 +40,8 @@ public class RecordReaderSpy implements RecordReader {
 	}
 
 	@Override
-	public List<Map<String, String>> readFromTableUsingConditions(String arg0,
-			Map<String, String> arg1) {
+	public List<Map<String, Object>> readFromTableUsingConditions(String arg0,
+			Map<String, Object> arg1) {
 		// TODO Auto-generated method stub
 		return null;
 	}

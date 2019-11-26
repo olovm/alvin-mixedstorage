@@ -16,26 +16,30 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.alvin.mixedstorage.user;
+package se.uu.ub.cora.alvin.mixedstorage;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UserStorageSpy implements UserStorage {
+import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicFactory;
 
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
+public class DataAtomicFactorySpy implements DataAtomicFactory {
+
+	public DataAtomicSpy factoredDataAtomic;
+	public List<DataAtomicSpy> factoredDataAtomics = new ArrayList<>();
 
 	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
+	public DataAtomic factorUsingNameInDataAndValue(String nameInData, String value) {
+		factoredDataAtomic = new DataAtomicSpy(nameInData, value);
+		factoredDataAtomics.add(factoredDataAtomic);
+		return factoredDataAtomic;
 	}
 
 	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
+	public DataAtomic factorUsingNameInDataAndValueAndRepeatId(String nameInData, String value,
+			String repeatId) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

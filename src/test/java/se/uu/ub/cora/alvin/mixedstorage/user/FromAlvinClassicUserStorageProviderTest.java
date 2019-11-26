@@ -38,10 +38,18 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.basicstorage.UserStorageImp;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
 import se.uu.ub.cora.connection.SqlConnectionProvider;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.data.converter.DataToJsonConverterProvider;
+import se.uu.ub.cora.data.converter.JsonToDataConverterFactory;
+import se.uu.ub.cora.data.converter.JsonToDataConverterProvider;
+import se.uu.ub.cora.data.copier.DataCopierFactory;
+import se.uu.ub.cora.data.copier.DataCopierProvider;
 import se.uu.ub.cora.gatekeeper.user.UserStorageProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
@@ -53,11 +61,23 @@ public class FromAlvinClassicUserStorageProviderTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "FromAlvinClassicUserStorageProvider";
 	private UserStorageProvider userStorageProvider;
+	private DataGroupFactory dataGroupFactory;
+	private DataCopierFactory dataCopierFactory;
+	private DataToJsonConverterFactorySpy dataToJsonConverterFactory;
+	private JsonToDataConverterFactory jsonToDataConverterFactory;
 
 	@BeforeMethod
 	public void makeSureBasePathExistsAndIsEmpty() throws IOException {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataCopierFactory = new DataCopierFactorySpy();
+		DataCopierProvider.setDataCopierFactory(dataCopierFactory);
+		dataToJsonConverterFactory = new DataToJsonConverterFactorySpy();
+		DataToJsonConverterProvider.setDataToJsonConverterFactory(dataToJsonConverterFactory);
+		jsonToDataConverterFactory = new JsonToDataConverterFactorySpy();
+		JsonToDataConverterProvider.setJsonToDataConverterFactory(jsonToDataConverterFactory);
 		File dir = new File(basePath);
 		dir.mkdir();
 		deleteFiles(basePath);

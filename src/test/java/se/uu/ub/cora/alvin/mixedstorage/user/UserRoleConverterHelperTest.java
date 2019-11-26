@@ -19,6 +19,7 @@
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import java.lang.reflect.Constructor;
@@ -32,11 +33,18 @@ import java.util.Map;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicSpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class UserRoleConverterHelperTest {
 	List<Map<String, Object>> rowsFromDb = new ArrayList<>();
+	private DataGroupFactorySpy dataGroupFactory;
+	private DataAtomicFactorySpy dataAtomicFactory;
 
 	@BeforeMethod
 	public void setUp() {
@@ -47,6 +55,11 @@ public class UserRoleConverterHelperTest {
 		rowFromDb.put("group_id", 51);
 		rowFromDb.put("user_id", 1);
 		rowsFromDb.add(rowFromDb);
+
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 	}
 
 	@Test
@@ -72,37 +85,53 @@ public class UserRoleConverterHelperTest {
 		DataGroup role = UserRoleConverterHelper
 				.createUserRoleWithAllSystemsPermissionUsingRoleId(roleId);
 
-		assertEquals(role.getNameInData(), "userRole");
+		DataGroupSpy factoredUserRole = dataGroupFactory.factoredDataGroups.get(0);
 
-		DataGroup innerUserRole = role.getFirstGroupWithNameInData("userRole");
-		assertEquals(innerUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"permissionRole");
-		assertEquals(innerUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleId);
+		assertEquals(factoredUserRole.nameInData, "userRole");
+		assertSame(factoredUserRole, role);
 
-		DataGroup permissionTermRulePart = role
-				.getFirstGroupWithNameInData("permissionTermRulePart");
+		DataGroupSpy innerUserRole = dataGroupFactory.factoredDataGroups.get(1);
+		assertCorrectInnerUserRole(roleId, factoredUserRole, innerUserRole);
+
+		DataGroupSpy permissionTermRulePart = dataGroupFactory.factoredDataGroups.get(2);
+		assertCorrectPermissionRulePart(factoredUserRole, permissionTermRulePart);
+
+	}
+
+	private void assertCorrectInnerUserRole(String roleId, DataGroupSpy factoredUserRole,
+			DataGroupSpy innerUserRole) {
+		assertEquals(innerUserRole.nameInData, "userRole");
+		assertEquals(innerUserRole.recordType, "permissionRole");
+		assertEquals(innerUserRole.recordId, roleId);
+		assertSame(innerUserRole, factoredUserRole.getFirstChildWithNameInData("userRole"));
+	}
+
+	private void assertCorrectPermissionRulePart(DataGroupSpy factoredUserRole,
+			DataGroupSpy permissionTermRulePart) {
+		assertEquals(permissionTermRulePart.nameInData, "permissionTermRulePart");
 		assertEquals(permissionTermRulePart.getRepeatId(), "0");
+		assertSame(permissionTermRulePart,
+				factoredUserRole.getFirstChildWithNameInData("permissionTermRulePart"));
 
-		assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
-				"systemPermissionTerm");
+		assertCorrectRuleLink(permissionTermRulePart);
 
-		assertRulePartContainsCorrectValue(permissionTermRulePart, "system.*");
+		assertCorrectValuePart(permissionTermRulePart);
 	}
 
-	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
-			String linkedPermissionTerm) {
-		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"collectPermissionTerm");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				linkedPermissionTerm);
+	private void assertCorrectRuleLink(DataGroupSpy permissionTermRulePart) {
+		DataGroupSpy ruleLink = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(ruleLink.nameInData, "rule");
+		assertEquals(ruleLink.recordType, "collectPermissionTerm");
+		assertEquals(ruleLink.recordId, "systemPermissionTerm");
+		assertSame(ruleLink, permissionTermRulePart.getFirstChildWithNameInData("rule"));
 	}
 
-	private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
-			String rulePartValue) {
-		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
-		assertEquals(value.getValue(), rulePartValue);
-		assertEquals(value.getRepeatId(), "0");
+	private void assertCorrectValuePart(DataGroupSpy permissionTermRulePart) {
+		DataAtomicSpy factoredDataAtomic = dataAtomicFactory.factoredDataAtomic;
+		assertEquals(factoredDataAtomic.nameInData, "value");
+		assertEquals(factoredDataAtomic.value, "system.*");
+		assertEquals(factoredDataAtomic.repeatId, "0");
+		assertSame(factoredDataAtomic, permissionTermRulePart.getFirstChildWithNameInData("value"));
 	}
 
 	@Test

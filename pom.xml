@@ -33,13 +33,13 @@
 	
 	<properties>
 		<logger.version>2.0.0</logger.version>
-		<coradata.version>2.0.0</coradata.version>
-		<gatekeeper.version>2.0.0</gatekeeper.version>
-		<storage.version>2.1.0</storage.version>
-		<searchstorage.version>2.0.0</searchstorage.version>
+		<coradata.version>3.1.0</coradata.version>
+		<gatekeeper.version>3.1.0</gatekeeper.version>
+		<storage.version>3.1.0</storage.version>
+		<searchstorage.version>3.1.0</searchstorage.version>
 		<httphandler.version>2.0.0</httphandler.version>
-		<basicstorage.version>2.1.0</basicstorage.version>
-		<sqldatabase.version>2.0.0</sqldatabase.version>
+		<basicstorage.version>3.1.0</basicstorage.version>
+		<sqldatabase.version>2.2.0</sqldatabase.version>
 		<messaging.version>2.1.0</messaging.version>
 		<rabbitmq.version>2.0.0</rabbitmq.version>
 	</properties>

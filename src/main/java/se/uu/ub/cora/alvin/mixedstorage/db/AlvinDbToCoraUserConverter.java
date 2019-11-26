@@ -1,3 +1,21 @@
+/*
+ * Copyright 2019 Uppsala University Library
+ *
+ * This file is part of Cora.
+ *
+ *     Cora is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     Cora is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import java.util.ArrayList;
@@ -8,7 +26,9 @@ import se.uu.ub.cora.alvin.mixedstorage.ConversionException;
 import se.uu.ub.cora.alvin.mixedstorage.user.UserConverterHelper;
 import se.uu.ub.cora.alvin.mixedstorage.user.UserRoleConverterHelper;
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReader;
@@ -63,13 +83,19 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	}
 
 	private void createAndAddRecordInfo(DataGroup user) {
-		DataGroup recordInfo = DataGroup.withNameInData("recordInfo");
-		recordInfo.addChild(DataAtomic.withNameInDataAndValue("id", String.valueOf(map.get("id"))));
+		DataGroup recordInfo = DataGroupProvider.getDataGroupUsingNameInData("recordInfo");
+		recordInfo.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("id",
+				String.valueOf(map.get("id"))));
 		createAndAddType(recordInfo);
 		createAndAddDataDivider(recordInfo);
 		addCreatedInfoToRecordInfo(recordInfo);
 		addUpdatedInfoToRecordInfo(recordInfo);
 		user.addChild(recordInfo);
+	}
+
+	private void createAndAddType(DataGroup recordInfo) {
+		DataGroup type = UserConverterHelper.createType();
+		recordInfo.addChild(type);
 	}
 
 	private void addUpdatedInfoToRecordInfo(DataGroup recordInfo) {
@@ -81,11 +107,6 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 	private void createAndAddDataDivider(DataGroup recordInfo) {
 		DataGroup dataDivider = UserConverterHelper.createDataDivider();
 		recordInfo.addChild(dataDivider);
-	}
-
-	private void createAndAddType(DataGroup recordInfo) {
-		DataGroup type = UserConverterHelper.createType();
-		recordInfo.addChild(type);
 	}
 
 	private void addCreatedInfoToRecordInfo(DataGroup recordInfo) {
@@ -105,7 +126,8 @@ public class AlvinDbToCoraUserConverter implements AlvinDbToCoraConverter {
 			String valueToGet, String nameInData) {
 		if (!valueIsEmpty(valueToGet)) {
 			String firstname = (String) map.get(valueToGet);
-			user.addChild(DataAtomic.withNameInDataAndValue(nameInData, firstname));
+			user.addChild(
+					DataAtomicProvider.getDataAtomicUsingNameInDataAndValue(nameInData, firstname));
 		}
 	}
 

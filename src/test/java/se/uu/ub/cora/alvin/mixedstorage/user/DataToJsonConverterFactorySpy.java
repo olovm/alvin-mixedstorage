@@ -9,7 +9,7 @@
  *     (at your option) any later version.
  *
  *     Cora is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of	
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU General Public License for more details.
  *
@@ -18,25 +18,17 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.data.DataPart;
+import se.uu.ub.cora.data.converter.DataToJsonConverter;
+import se.uu.ub.cora.data.converter.DataToJsonConverterFactory;
+import se.uu.ub.cora.json.builder.JsonBuilderFactory;
 
-public class UserStorageSpy implements UserStorage {
-
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
+public class DataToJsonConverterFactorySpy implements DataToJsonConverterFactory {
 
 	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
-	}
-
-	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
+	public DataToJsonConverter createForDataElement(JsonBuilderFactory factory, DataPart dataPart) {
+		// TODO Auto-generated method stub
+		return new DataToJsonConverterSpy();
 	}
 
 }

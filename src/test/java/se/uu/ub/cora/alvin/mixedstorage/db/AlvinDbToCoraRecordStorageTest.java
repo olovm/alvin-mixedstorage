@@ -28,6 +28,7 @@ import java.util.List;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.alvin.mixedstorage.user.DataReaderSpy;
 import se.uu.ub.cora.data.DataGroup;
@@ -134,7 +135,7 @@ public class AlvinDbToCoraRecordStorageTest {
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
 			+ "readList is not implemented for type: country")
 	public void testReadCountryListFThrowsNotImplementedException() throws Exception {
-		alvinToCoraRecordStorage.readList("country", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readList("country", new DataGroupSpy("filter"));
 	}
 
 	@Test(expectedExceptions = NotImplementedException.class, expectedExceptionsMessageRegExp = ""
@@ -145,26 +146,26 @@ public class AlvinDbToCoraRecordStorageTest {
 
 	@Test
 	public void testReadUserAbstractListCallsDataReader() throws Exception {
-		alvinToCoraRecordStorage.readAbstractList("user", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readAbstractList("user", new DataGroupSpy("filter"));
 		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user");
 	}
 
 	@Test
 	public void testReadUserAbstractListCallsDataReaderWithEmptyValues() throws Exception {
-		alvinToCoraRecordStorage.readAbstractList("user", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readAbstractList("user", new DataGroupSpy("filter"));
 		assertTrue(dataReader.valuesSentToReader.isEmpty());
 	}
 
 	@Test
 	public void testReadUserAbstractListConverterIsFactored() throws Exception {
-		alvinToCoraRecordStorage.readAbstractList("user", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readAbstractList("user", new DataGroupSpy("filter"));
 		AlvinDbToCoraConverter alvinDbToCoraConverter = converterFactory.factoredConverters.get(0);
 		assertNotNull(alvinDbToCoraConverter);
 	}
 
 	@Test
 	public void testReadUserAbstractListConverterIsCalledWithDataFromDbStorage() throws Exception {
-		alvinToCoraRecordStorage.readAbstractList("user", DataGroup.withNameInData("filter"));
+		alvinToCoraRecordStorage.readAbstractList("user", new DataGroupSpy("filter"));
 		AlvinDbToCoraConverterSpy alvinDbToCoraConverter = (AlvinDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
 		assertNotNull(alvinDbToCoraConverter.mapToConvert);
@@ -174,7 +175,7 @@ public class AlvinDbToCoraRecordStorageTest {
 	@Test
 	public void testReadUserAbstractListConverteredIsAddedToList() throws Exception {
 		List<DataGroup> listOfDataGroups = alvinToCoraRecordStorage.readAbstractList("user",
-				DataGroup.withNameInData("filter")).listOfDataGroups;
+				new DataGroupSpy("filter")).listOfDataGroups;
 		AlvinDbToCoraConverterSpy alvinDbToCoraConverter = (AlvinDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(0);
 		assertEquals(dataReader.listOfRows.size(), 2);

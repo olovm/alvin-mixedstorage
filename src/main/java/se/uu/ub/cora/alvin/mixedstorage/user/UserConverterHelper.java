@@ -22,7 +22,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 
 public class UserConverterHelper {
 
@@ -33,26 +35,31 @@ public class UserConverterHelper {
 	}
 
 	public static DataGroup createBasicActiveUser() {
-		DataGroup user = DataGroup.withNameInData("user");
+		DataGroup user = DataGroupProvider.getDataGroupUsingNameInData("user");
 		user.addAttributeByIdWithValue("type", CORA_USER);
-		user.addChild(DataAtomic.withNameInDataAndValue("activeStatus", "active"));
+		user.addChild(
+				DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("activeStatus", "active"));
 		return user;
 	}
 
 	public static DataGroup createType() {
-		return DataGroup.asLinkWithNameInDataAndTypeAndId("type", "recordType", CORA_USER);
+		return DataGroupProvider.getDataGroupAsLinkUsingNameInDataTypeAndId("type", "recordType",
+				CORA_USER);
 	}
 
 	public static DataGroup createDataDivider() {
-		return DataGroup.asLinkWithNameInDataAndTypeAndId("dataDivider", "system", "alvin");
+		return DataGroupProvider.getDataGroupAsLinkUsingNameInDataTypeAndId("dataDivider", "system",
+				"alvin");
 	}
 
 	public static DataGroup createCreatedByUsingUserId(String userId) {
-		return DataGroup.asLinkWithNameInDataAndTypeAndId("createdBy", CORA_USER, userId);
+		return DataGroupProvider.getDataGroupAsLinkUsingNameInDataTypeAndId("createdBy", CORA_USER,
+				userId);
 	}
 
 	public static DataAtomic createTsCreated() {
-		return DataAtomic.withNameInDataAndValue("tsCreated", getPredefinedTimestampAsString());
+		return DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsCreated",
+				getPredefinedTimestampAsString());
 	}
 
 	private static String getPredefinedTimestampAsString() {
@@ -62,13 +69,13 @@ public class UserConverterHelper {
 	}
 
 	public static DataGroup createUpdatedInfoUsingUserId(String userId) {
-		DataGroup updated = DataGroup.withNameInData("updated");
+		DataGroup updated = DataGroupProvider.getDataGroupUsingNameInData("updated");
 		updated.setRepeatId("0");
-		DataGroup updatedBy = DataGroup.asLinkWithNameInDataAndTypeAndId("updatedBy", CORA_USER,
-				userId);
+		DataGroup updatedBy = DataGroupProvider
+				.getDataGroupAsLinkUsingNameInDataTypeAndId("updatedBy", CORA_USER, userId);
 		updated.addChild(updatedBy);
-		updated.addChild(
-				DataAtomic.withNameInDataAndValue("tsUpdated", getPredefinedTimestampAsString()));
+		updated.addChild(DataAtomicProvider.getDataAtomicUsingNameInDataAndValue("tsUpdated",
+				getPredefinedTimestampAsString()));
 		return updated;
 	}
 

@@ -27,9 +27,13 @@ import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
-import se.uu.ub.cora.data.DataAtomic;
+import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 
@@ -43,11 +47,17 @@ public class AlvinMixedUserStorageTest {
 			+ " and alvinuser.domain=?;";
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "AlvinMixedUserStorage";
+	private DataGroupFactorySpy dataGroupFactory;
+	private DataAtomicFactorySpy dataAtomicFactory;
 
 	@BeforeMethod
 	public void BeforeMethod() {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
+		dataAtomicFactory = new DataAtomicFactorySpy();
+		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		dataReaderForUsers = new DataReaderSpy();
 		userStorageForGuest = new UserStorageSpy();
 		alvinMixedUserStorage = AlvinMixedUserStorage.usingUserStorageForGuestAndDataReaderForUsers(
@@ -161,97 +171,58 @@ public class AlvinMixedUserStorageTest {
 
 	@Test
 	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForAdminUser() {
-		DataGroup userDataGroup = alvinMixedUserStorage.getUserByIdFromLogin(userId);
-		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 5);
+		alvinMixedUserStorage.getUserByIdFromLogin(userId);
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataAdmin", "0",
-				"system.*");
+		// 4 groups per userRole, 5 userRoles + main group and recordInfo group = 22
+		int numOfGroupsExpected = 22;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(1), "systemConfigurator",
-				"1", "system.*");
-
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "binaryUserRole", "2",
-				"system.*");
-
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(3), "userAdminRole", "3",
-				"system.*");
-
-		DataGroup userRole = userDataGroup.getAllGroupsWithNameInData("userRole").get(4);
-		assertCorrectUserRoleWithSystemPermissionTerm(userRole, "systemOneSystemUserRole", "4",
-				"system.*");
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(firstRoleGroup.recordId, "metadataAdmin");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(7);
+		assertEquals(secondRoleGroup.recordId, "systemConfigurator");
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(11);
+		assertEquals(thirdRoleGroup.recordId, "binaryUserRole");
+		DataGroupSpy fourthRoleGroup = dataGroupFactory.factoredDataGroups.get(15);
+		assertEquals(fourthRoleGroup.recordId, "userAdminRole");
+		DataGroupSpy fifthRoleGroup = dataGroupFactory.factoredDataGroups.get(19);
+		assertEquals(fifthRoleGroup.recordId, "systemOneSystemUserRole");
 
 	}
 
 	@Test
 	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForNOTAdminUser() {
-		DataGroup userDataGroup = alvinMixedUserStorage
-				.getUserByIdFromLogin("userIdNotAdmin@ab.sld.tld");
-		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 3);
+		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotAdmin@ab.sld.tld");
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "personAdminRole", "0",
-				"system.*");
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(1),
-				"organisationAdminRole", "1", "system.*");
+		// 4 groups per userRole, 3 userRoles + main group and recordInfo group = 14
+		int numOfGroupsExpected = 14;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
 
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(2), "metadataUserRole",
-				"2", "system.*");
-
+		DataGroupSpy firstRoleGroup = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(firstRoleGroup.recordId, "personAdminRole");
+		DataGroupSpy secondRoleGroup = dataGroupFactory.factoredDataGroups.get(7);
+		assertEquals(secondRoleGroup.recordId, "organisationAdminRole");
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(11);
+		assertEquals(thirdRoleGroup.recordId, "metadataUserRole");
 	}
 
 	@Test
 	public void testGetUserByIdFromLoginReturnsDataGroupWithRoleInfoForNOTAdminUserNoMatchingRoles() {
-		DataGroup userDataGroup = alvinMixedUserStorage
-				.getUserByIdFromLogin("userIdNotAdminNoRole@ab.sld.tld");
-		assertEquals(userDataGroup.getAllGroupsWithNameInData("userRole").size(), 1);
-		assertCorrectUserRoleWithSystemPermissionTerm(
-				userDataGroup.getAllGroupsWithNameInData("userRole").get(0), "metadataUserRole",
-				"0", "system.*");
+		alvinMixedUserStorage.getUserByIdFromLogin("userIdNotAdminNoRole@ab.sld.tld");
+
+		// 4 groups per userRole, 1 userRoles + main group and recordInfo group = 6
+		int numOfGroupsExpected = 6;
+		assertEquals(dataGroupFactory.factoredDataGroups.size(), numOfGroupsExpected);
+		DataGroupSpy firstFactoredGroup = dataGroupFactory.factoredDataGroups.get(0);
+		assertEquals(firstFactoredGroup.nameInData, "user");
+
+		DataGroupSpy thirdRoleGroup = dataGroupFactory.factoredDataGroups.get(3);
+		assertEquals(thirdRoleGroup.recordId, "metadataUserRole");
 
 	}
 
-	private void assertCorrectUserRoleWithSystemPermissionTerm(DataGroup userRole, String roleId,
-			String repeatId, String rulePartValue) {
-		assertEquals(userRole.getRepeatId(), repeatId);
-
-		assertDataGroupContainsRoleWithId(userRole, roleId);
-
-		DataGroup permissionTermRulePart = userRole
-				.getFirstGroupWithNameInData("permissionTermRulePart");
-		assertEquals(permissionTermRulePart.getRepeatId(), "0");
-
-		assertDataGroupContainsCorrectPermissionTerm(permissionTermRulePart,
-				"systemPermissionTerm");
-
-		assertRulePartContainsCorrectValue(permissionTermRulePart, rulePartValue);
-	}
-
-	private void assertRulePartContainsCorrectValue(DataGroup permissionTermRulePart,
-			String rulePartValue) {
-		DataAtomic value = (DataAtomic) permissionTermRulePart.getFirstChildWithNameInData("value");
-		assertEquals(value.getValue(), rulePartValue);
-		assertEquals(value.getRepeatId(), "0");
-	}
-
-	private void assertDataGroupContainsRoleWithId(DataGroup userRole, String roleId) {
-		DataGroup linkedUserRole = userRole.getFirstGroupWithNameInData("userRole");
-		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"permissionRole");
-		assertEquals(linkedUserRole.getFirstAtomicValueWithNameInData("linkedRecordId"), roleId);
-	}
-
-	private void assertDataGroupContainsCorrectPermissionTerm(DataGroup permissionTermRulePart,
-			String linkedPermissionTerm) {
-		DataGroup ruleLink = permissionTermRulePart.getFirstGroupWithNameInData("rule");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordType"),
-				"collectPermissionTerm");
-		assertEquals(ruleLink.getFirstAtomicValueWithNameInData("linkedRecordId"),
-				linkedPermissionTerm);
-	}
 }

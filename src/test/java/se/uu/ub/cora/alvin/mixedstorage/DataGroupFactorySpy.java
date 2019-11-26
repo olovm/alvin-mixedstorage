@@ -16,27 +16,32 @@
  *     You should have received a copy of the GNU General Public License
  *     along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.uu.ub.cora.alvin.mixedstorage.user;
+package se.uu.ub.cora.alvin.mixedstorage;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
+import java.util.ArrayList;
+import java.util.List;
+
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.data.DataGroupFactory;
 
-public class UserStorageSpy implements UserStorage {
+public class DataGroupFactorySpy implements DataGroupFactory {
 
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
+	public DataGroupSpy factoredDataGroup;
+	public List<DataGroupSpy> factoredDataGroups = new ArrayList<>();
 
 	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
+	public DataGroup factorUsingNameInData(String nameInData) {
+		factoredDataGroup = new DataGroupSpy(nameInData);
+		factoredDataGroups.add(factoredDataGroup);
+		return factoredDataGroup;
 	}
 
 	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
+	public DataGroup factorAsLinkWithNameInDataTypeAndId(String nameInData, String recordType,
+			String recordId) {
+		factoredDataGroup = new DataGroupSpy(nameInData, recordType, recordId);
+		factoredDataGroups.add(factoredDataGroup);
+		return factoredDataGroup;
 	}
 
 }

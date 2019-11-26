@@ -18,25 +18,15 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.user;
 
-import se.uu.ub.cora.alvin.mixedstorage.DataGroupSpy;
-import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.gatekeeper.user.UserStorage;
+import se.uu.ub.cora.data.converter.JsonToDataConverter;
+import se.uu.ub.cora.data.converter.JsonToDataConverterFactory;
+import se.uu.ub.cora.json.parser.JsonValue;
 
-public class UserStorageSpy implements UserStorage {
-
-	public String idSentToGetUserById;
-	public DataGroup userGroupById;
+public class JsonToDataConverterFactorySpy implements JsonToDataConverterFactory {
 
 	@Override
-	public DataGroup getUserById(String id) {
-		idSentToGetUserById = id;
-		userGroupById = new DataGroupSpy("user");
-		return userGroupById;
-	}
-
-	@Override
-	public DataGroup getUserByIdFromLogin(String idFromLogin) {
-		return null;
+	public JsonToDataConverter createForJsonObject(JsonValue jsonValue) {
+		return new JsonToDataConverterSpy();
 	}
 
 }
