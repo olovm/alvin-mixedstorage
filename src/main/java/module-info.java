@@ -8,6 +8,7 @@ module se.uu.ub.cora.alvin.mixedstorage {
 	requires transitive se.uu.ub.cora.storage;
 	requires se.uu.ub.cora.searchstorage;
 	requires se.uu.ub.cora.messaging;
+	requires se.uu.ub.cora.converter;
 
 	exports se.uu.ub.cora.alvin.mixedstorage.db;
 	exports se.uu.ub.cora.alvin.mixedstorage.fedora;

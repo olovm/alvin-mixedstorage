@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
+import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
 import se.uu.ub.cora.data.DataAtomicFactory;
 import se.uu.ub.cora.data.DataAtomicProvider;
@@ -35,15 +36,20 @@ import se.uu.ub.cora.data.DataAttribute;
 import se.uu.ub.cora.data.DataGroup;
 import se.uu.ub.cora.data.DataGroupFactory;
 import se.uu.ub.cora.data.DataGroupProvider;
+import se.uu.ub.cora.logger.LoggerProvider;
 
 public class AlvinFedoraToCoraPlaceConverterTest {
 
 	private AlvinFedoraToCoraPlaceConverter converter;
 	private DataGroupFactory dataGroupFactory;
 	private DataAtomicFactory dataAtomicFactory;
+	private LoggerFactorySpy loggerFactorySpy;
+	private String testedClassName = "AlvinFedoraToCoraPlaceConverter";
 
 	@BeforeMethod
 	public void beforeMethod() {
+		loggerFactorySpy = new LoggerFactorySpy();
+		LoggerProvider.setLoggerFactory(loggerFactorySpy);
 		dataGroupFactory = new DataGroupFactorySpy();
 		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		dataAtomicFactory = new DataAtomicFactorySpy();
@@ -128,18 +134,20 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "user");
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "12345");
 
+		// assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
+		// "2014-12-18 23:16:44.623");
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2014-12-18 22:16:44.623");
+				"2014-12-18 22:16:44.623 UTC");
 
 		List<DataGroup> updatedList = recordInfo.getAllGroupsWithNameInData("updated");
 		assertEquals(updatedList.size(), 3);
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(0), "0",
-				"2014-12-18 22:16:44.623");
+				"2014-12-18 23:16:44.623");
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(1), "1",
-				"2014-12-18 22:18:01.276");
+				"2014-12-18 23:18:01.276");
 
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(2), "2",
-				"2016-02-12 10:29:43.147");
+				"2016-02-12 11:29:43.147");
 
 		DataGroup defaultName = placeDataGroup.getFirstGroupWithNameInData("name");
 		assertEquals(defaultName.getAttribute("type"), "authorized");

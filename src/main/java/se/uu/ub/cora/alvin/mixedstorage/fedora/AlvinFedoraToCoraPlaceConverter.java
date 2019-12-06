@@ -18,12 +18,26 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import se.uu.ub.cora.alvin.mixedstorage.TextUtil;
-import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
 import se.uu.ub.cora.alvin.mixedstorage.parse.XMLXPathParser;
+import se.uu.ub.cora.converter.Converter;
+import se.uu.ub.cora.converter.ConverterProvider;
 import se.uu.ub.cora.data.DataAtomic;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataGroup;
@@ -35,14 +49,60 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 
 	@Override
 	public DataGroup fromXML(String xml) {
+
+		String readString;
 		try {
-			parser = XMLXPathParser.forXML(xml);
-			return tryToCreateDataGroupFromDocument();
+			readString = Files.readString(
+					Path.of("./src/main/resources/xslt/AlvinFedoraToCoraPlace.xsl"),
+					StandardCharsets.UTF_8);
+			//
+			// TransformerFactory factory = TransformerFactory.newInstance();
+			// Source xsltSource = new StreamSource(readString);
+			// Templates xslt = factory.newTemplates(xsltSource);
+			//
+			// Source text = new StreamSource(xml);
+			// StreamResult output = new StreamResult();
+			// Transformer transformer = xslt.newTransformer();
+			// transformer.transform(text, output);
+			//
+			// Converter converter = ConverterProvider.getConverter("xml");
+			// return (DataGroup) converter.convert(output.toString());
+
+			Source xmlInput = new StreamSource(new StringReader(xml));
+			Source xslInput = new StreamSource(new StringReader(readString));
+
+			TransformerFactory tFactory = TransformerFactory.newInstance();
+			Transformer transformer = tFactory.newTransformer(xslInput); // this is the line that
+																			// throws the exception
+			// Result result = new StreamResult();
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			Result result = new StreamResult(baos);
+			// transformer.transform(xmlInput, result);
+			// return baos.toString();
+
+			transformer.transform(xmlInput, result);
+
+			Converter converter = ConverterProvider.getConverter("xml");
+			String xmlString = baos.toString();
+			return (DataGroup) converter.convert(xmlString);
 		} catch (Exception e) {
-			throw ParseException.withMessageAndException(
-					"Error converting place to Cora place: " + e.getMessage(), e);
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return null;
 	}
+
+	// @Override
+	// public DataGroup fromXML(String xml) {
+	// try {
+	// parser = XMLXPathParser.forXML(xml);
+	// return tryToCreateDataGroupFromDocument();
+	// } catch (Exception e) {
+	// throw ParseException.withMessageAndException(
+	// "Error converting place to Cora place: " + e.getMessage(), e);
+	// }
+	// }
 
 	private DataGroup tryToCreateDataGroupFromDocument() {
 		DataGroup place = DataGroupProvider.getDataGroupUsingNameInData("authority");
