@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:import href="src/main/resources/xslt/DateFormating.xsl"/>
 	<xsl:output indent="yes" />
 	<xsl:template match="/">
 		<xsl:apply-templates select="place" />
 	</xsl:template>
-		<xsl:template match="place">
+	<xsl:template match="place">
 		<authority type="place">
 			<xsl:apply-templates select="recordInfo">
 				<xsl:with-param name="authorityType" select="'place'"></xsl:with-param>
@@ -34,21 +35,22 @@
 			</type>
 			<createdBy>
 				<linkedRecordType>user</linkedRecordType>
-				<linkedRecordId>
 					<!-- Not implemented correctly yet. Currently hardcoded value 12345 -->
 					<!-- <xsl:value-of select="created/user/userId"></xsl:value-of> -->
-					12345
-				</linkedRecordId>
+				<linkedRecordId>12345</linkedRecordId>
 			</createdBy>
 			<tsCreated>
-				<xsl:value-of select="created/date"></xsl:value-of>
+				<xsl:call-template name="formatDateWithTimeZone">
+					<xsl:with-param name="dateWithTimezone"
+						select="created/date" />
+				</xsl:call-template>
 			</tsCreated>
 			<dataDivider>
 				<linkedRecordType>system</linkedRecordType>
 				<linkedRecordId>alvin</linkedRecordId>
 			</dataDivider>
 			<xsl:for-each
-				select="updated/userAction[type = 'UPDATED']">
+				select="created[type = 'CREATED'] | updated/userAction[type = 'UPDATED']">
 				<updated>
 					<xsl:attribute name="repeatId">
                         <xsl:value-of
@@ -56,14 +58,14 @@
                     </xsl:attribute>
 					<updatedBy>
 						<linkedRecordType>user</linkedRecordType>
-						<linkedRecordId>
-							<xsl:value-of select="user/userId"></xsl:value-of>
-						</linkedRecordId>
+						<linkedRecordId>12345</linkedRecordId>
 					</updatedBy>
 					<tsUpdated>
-						<xsl:value-of select="date"></xsl:value-of>
-						<!-- <xsl:value-of select="date:date-time()"></xsl:value-of> -->
-						<!-- <xsl:value-of select="format-dateTime(current-date(),'[MNn] [D],[Y]')"></xsl:value-of> -->
+						<!-- <xsl:value-of select="date"></xsl:value-of> -->
+						<xsl:call-template name="formatDateWithTimeZone">
+							<xsl:with-param name="dateWithTimezone"
+								select="date" />
+						</xsl:call-template>
 					</tsUpdated>
 				</updated>
 			</xsl:for-each>
@@ -96,18 +98,20 @@
 		</xsl:for-each>
 	</xsl:template>
 	<xsl:template name="coordinates">
-		<coordinates>
-			<xsl:for-each select="latitude">
-				<latitude>
-					<xsl:value-of select="."></xsl:value-of>
-				</latitude>
-			</xsl:for-each>
-			<xsl:for-each select="longitude">
-				<longitude>
-					<xsl:value-of select="."></xsl:value-of>
-				</longitude>
-			</xsl:for-each>
-		</coordinates>
+		<xsl:if test="latitude and longitude">
+			<coordinates>
+				<xsl:for-each select="latitude">
+					<latitude>
+						<xsl:value-of select="."></xsl:value-of>
+					</latitude>
+				</xsl:for-each>
+				<xsl:for-each select="longitude">
+					<longitude>
+						<xsl:value-of select="."></xsl:value-of>
+					</longitude>
+				</xsl:for-each>
+			</coordinates>
+		</xsl:if>
 	</xsl:template>
 	<xsl:template match="country">
 		<xsl:choose>
@@ -138,7 +142,7 @@
 					<xsl:value-of select="code"></xsl:value-of>
 				</identifierType>
 				<identifierValue>
-					<xsl:value-of select="id"></xsl:value-of>
+					<xsl:value-of select="../text"></xsl:value-of>
 				</identifierValue>
 			</identifier>
 		</xsl:for-each>

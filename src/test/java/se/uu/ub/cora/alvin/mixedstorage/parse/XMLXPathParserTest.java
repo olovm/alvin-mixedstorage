@@ -37,13 +37,6 @@ public class XMLXPathParserTest {
 
 	}
 
-	@Test(expectedExceptions = ParseException.class, expectedExceptionsMessageRegExp = ""
-			+ "Unable to use xpathString: javax.xml.transform.TransformerException: Extra illegal tokens: 'not'")
-	public void testMalformedNodeXPath() throws Exception {
-		XMLXPathParser parser = XMLXPathParser.forXML("<pid></pid>");
-		parser.getStringFromNodeUsingXPath(null, "/broken/xpath/string not");
-	}
-
 	@Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ""
 			+ "Error setting string value on node")
 	public void testErrorWhenSettingString() throws Exception {

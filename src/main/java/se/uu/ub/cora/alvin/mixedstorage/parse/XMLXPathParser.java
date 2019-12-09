@@ -88,15 +88,6 @@ public final class XMLXPathParser {
 		return "Unable to use xpathString: " + e.getMessage();
 	}
 
-	public String getStringFromNodeUsingXPath(Node node, String xpathString) {
-		try {
-			XPathExpression expr = xpath.compile(xpathString);
-			return (String) expr.evaluate(node, XPathConstants.STRING);
-		} catch (XPathExpressionException e) {
-			throw ParseException.withMessageAndException(composeMessage(e), e);
-		}
-	}
-
 	public NodeList getNodeListFromDocumentUsingXPath(String xpathString) {
 		try {
 			XPathExpression expr = xpath.compile(xpathString);

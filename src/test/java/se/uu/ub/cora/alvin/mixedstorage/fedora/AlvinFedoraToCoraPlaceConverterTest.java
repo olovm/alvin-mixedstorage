@@ -59,6 +59,8 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 
 	@Test(expectedExceptions = ParseException.class, expectedExceptionsMessageRegExp = ""
 			+ "Error converting place to Cora place: Can not read xml: "
+			+ "javax.xml.transform.TransformerException: "
+			+ "com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: "
 			+ "The element type \"pid\" must be terminated by the matching end-tag \"</pid>\".")
 	public void parseExceptionShouldBeThrownOnMalformedXML() throws Exception {
 		String xml = "<pid></notPid>";
@@ -89,16 +91,16 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "12345");
 
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2014-12-18 20:20:38.346");
+				"2014-12-18T20:20:38.346000Z");
 
 		List<DataGroup> updatedList = recordInfo.getAllGroupsWithNameInData("updated");
 		assertEquals(updatedList.size(), 2);
 
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(0), "0",
-				"2014-12-18 20:20:38.346");
+				"2014-12-18T20:20:38.346000Z");
 
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(1), "1",
-				"2014-12-18 20:21:20.880");
+				"2014-12-18T20:21:20.880000Z");
 
 		DataGroup defaultName = placeDataGroup.getFirstGroupWithNameInData("name");
 		assertEquals(defaultName.getAttribute("type"), "authorized");
@@ -116,7 +118,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 	}
 
 	@Test
-	public void convertFromXML24() throws Exception {
+	public void convertFnromXML24() throws Exception {
 		DataGroup placeDataGroup = converter.fromXML(TestDataProvider.place24XML);
 		assertEquals(placeDataGroup.getNameInData(), "authority");
 		DataGroup recordInfo = placeDataGroup.getFirstGroupWithNameInData("recordInfo");
@@ -134,20 +136,18 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordType"), "user");
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "12345");
 
-		// assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-		// "2014-12-18 23:16:44.623");
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2014-12-18 22:16:44.623 UTC");
+				"2014-12-18T22:16:44.623000Z");
 
 		List<DataGroup> updatedList = recordInfo.getAllGroupsWithNameInData("updated");
 		assertEquals(updatedList.size(), 3);
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(0), "0",
-				"2014-12-18 23:16:44.623");
+				"2014-12-18T22:16:44.623000Z");
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(1), "1",
-				"2014-12-18 23:18:01.276");
+				"2014-12-18T22:18:01.276000Z");
 
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(2), "2",
-				"2016-02-12 11:29:43.147");
+				"2016-02-12T10:29:43.147000Z");
 
 		DataGroup defaultName = placeDataGroup.getFirstGroupWithNameInData("name");
 		assertEquals(defaultName.getAttribute("type"), "authorized");
@@ -194,14 +194,14 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "12345");
 
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2014-12-18 20:20:38.346");
+				"2014-12-18T20:20:38.346000Z");
 
 		List<DataGroup> updatedList = recordInfo.getAllGroupsWithNameInData("updated");
 		assertEquals(updatedList.size(), 2);
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(0), "0",
-				"2014-12-18 20:20:38.346");
+				"2014-12-18T20:20:38.346000Z");
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(1), "1",
-				"2014-12-18 20:21:20.880");
+				"2014-12-18T20:21:20.880000Z");
 
 		DataGroup defaultName = placeDataGroup.getFirstGroupWithNameInData("name");
 		assertEquals(defaultName.getAttribute("type"), "authorized");
@@ -320,12 +320,12 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertEquals(createdBy.getFirstAtomicValueWithNameInData("linkedRecordId"), "12345");
 
 		assertEquals(recordInfo.getFirstAtomicValueWithNameInData("tsCreated"),
-				"2017-10-27 22:36:51.991");
+				"2017-10-27T22:36:51.991000Z");
 
 		List<DataGroup> updatedList = recordInfo.getAllGroupsWithNameInData("updated");
 		assertEquals(updatedList.size(), 1);
 		assertCorrectUpdateWithRepeatIdAndTsUpdated(updatedList.get(0), "0",
-				"2017-10-27 22:36:51.991");
+				"2017-10-27T22:36:51.991000Z");
 	}
 
 	@Test
