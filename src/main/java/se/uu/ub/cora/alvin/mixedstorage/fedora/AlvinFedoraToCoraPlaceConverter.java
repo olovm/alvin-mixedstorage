@@ -56,8 +56,7 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 		return convertXMLToDataElement(coraXml);
 	}
 
-	private String transformXmlUsingXslt(String xmlFromFedora)
-			throws Exception, TransformerException {
+	private String transformXmlUsingXslt(String xmlFromFedora) throws Exception {
 		Transformer transformer = generateTransformer();
 		return transformUsingTransformer(xmlFromFedora, transformer);
 	}
@@ -86,7 +85,7 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		Result outputResult = new StreamResult(output);
 		transformer.transform(xmlSource, outputResult);
-		return output.toString();
+		return output.toString(StandardCharsets.UTF_8);
 	}
 
 	private DataGroup convertXMLToDataElement(String xmlString) {
