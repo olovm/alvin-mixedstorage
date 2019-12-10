@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- 
   Copyright 2018 Uppsala University Library
  
@@ -16,7 +17,6 @@
       You should have received a copy of the GNU General Public License
       along with Cora.  If not, see <http://www.gnu.org/licenses/>.
  -->
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output indent="yes" />

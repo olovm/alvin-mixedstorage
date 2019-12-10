@@ -240,7 +240,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertFalse(placeDataGroup.containsChildWithNameInData("country"));
 
 		String country = placeDataGroup.getFirstAtomicValueWithNameInData("historicCountry");
-		assertEquals(country, "duchyOfSaxeCoburgMeiningen");
+		assertEquals(country, "duchy_of_saxe_coburg_meiningen");
 	}
 
 	@Test
@@ -254,7 +254,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertFalse(placeDataGroup.containsChildWithNameInData("country"));
 
 		String country = placeDataGroup.getFirstAtomicValueWithNameInData("historicCountry");
-		assertEquals(country, "lordshipTrckaLipa");
+		assertEquals(country, "lordship_trcka_lipa");
 	}
 
 	@Test
@@ -268,7 +268,7 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertFalse(placeDataGroup.containsChildWithNameInData("country"));
 
 		String country = placeDataGroup.getFirstAtomicValueWithNameInData("historicCountry");
-		assertEquals(country, "lordshipTrckaLipa");
+		assertEquals(country, "lordship_trcka_lipa");
 	}
 
 	@Test
