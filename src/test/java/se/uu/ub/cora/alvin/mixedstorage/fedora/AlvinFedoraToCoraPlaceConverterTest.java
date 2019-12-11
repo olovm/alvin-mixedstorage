@@ -29,7 +29,6 @@ import org.testng.annotations.Test;
 import se.uu.ub.cora.alvin.mixedstorage.DataAtomicFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.DataGroupFactorySpy;
 import se.uu.ub.cora.alvin.mixedstorage.log.LoggerFactorySpy;
-import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
 import se.uu.ub.cora.data.DataAtomicFactory;
 import se.uu.ub.cora.data.DataAtomicProvider;
 import se.uu.ub.cora.data.DataAttribute;
@@ -55,16 +54,6 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		dataAtomicFactory = new DataAtomicFactorySpy();
 		DataAtomicProvider.setDataAtomicFactory(dataAtomicFactory);
 		converter = new AlvinFedoraToCoraPlaceConverter();
-	}
-
-	@Test(expectedExceptions = ParseException.class, expectedExceptionsMessageRegExp = ""
-			+ "Error converting place to Cora place: Can not read xml: "
-			+ "javax.xml.transform.TransformerException: "
-			+ "com.sun.org.apache.xml.internal.utils.WrappedRuntimeException: "
-			+ "The element type \"pid\" must be terminated by the matching end-tag \"</pid>\".")
-	public void parseExceptionShouldBeThrownOnMalformedXML() throws Exception {
-		String xml = "<pid></notPid>";
-		converter.fromXML(xml);
 	}
 
 	@Test
@@ -358,19 +347,6 @@ public class AlvinFedoraToCoraPlaceConverterTest {
 		assertCorrectAlternativeName("lat", "Londini Gothorum", alternativeName);
 
 	}
-
-	// private List<DataGroup> getAllGroupsWithNameInDataAndAttributes(DataGroup dataGroup,
-	// String nameInData, DataAttribute dataAttribute) {
-	// List<DataGroup> foundDataGroups = new ArrayList<>();
-	// List<DataGroup> allGroupsWithNameInData = dataGroup.getAllGroupsWithNameInData(nameInData);
-	// for (DataGroup childDataGroup : allGroupsWithNameInData) {
-	// String childAttribute = childDataGroup.getAttribute(dataAttribute.getNameInData());
-	// if (childAttribute != null && childAttribute.equals(dataAttribute.getValue())) {
-	// foundDataGroups.add(childDataGroup);
-	// }
-	// }
-	// return foundDataGroups;
-	// }
 
 	@Test
 	public void convertTwoAlternativeNamesFromXML24() throws Exception {

@@ -18,21 +18,9 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
+import se.uu.ub.cora.alvin.mixedstorage.xslt.XsltTransformation;
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterProvider;
 import se.uu.ub.cora.data.DataGroup;
@@ -43,49 +31,9 @@ public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConvert
 
 	@Override
 	public DataGroup fromXML(String xmlToTransform) {
-		try {
-			return tryToConvertToDataGroup(xmlToTransform);
-		} catch (Exception e) {
-			throw ParseException.withMessageAndException(
-					"Error converting place to Cora place: Can not read xml: " + e.getCause(), e);
-		}
-	}
-
-	private DataGroup tryToConvertToDataGroup(String xmlFromFedora) throws Exception {
-		String coraXml = transformXmlUsingXslt(xmlFromFedora);
+		XsltTransformation xsltTransformation = new XsltTransformation(Path.of(XSLT_PATH));
+		String coraXml = xsltTransformation.transform(xmlToTransform);
 		return convertXMLToDataElement(coraXml);
-	}
-
-	private String transformXmlUsingXslt(String xmlFromFedora) throws Exception {
-		Transformer transformer = generateTransformer();
-		return transformUsingTransformer(xmlFromFedora, transformer);
-	}
-
-	private Transformer generateTransformer() throws Exception {
-		String alvinFedoraToCoraPlaceXslt = Files.readString(Path.of(XSLT_PATH),
-				StandardCharsets.UTF_8);
-		Source xslInput = new StreamSource(new StringReader(alvinFedoraToCoraPlaceXslt));
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		return transformerFactory.newTransformer(xslInput);
-	}
-
-	private String transformUsingTransformer(String xmlFromFedora, Transformer transformer)
-			throws TransformerException {
-		Source xmlSource = createSourceFromFedoraXml(xmlFromFedora);
-		return transformUsingTransformerAndSource(transformer, xmlSource);
-	}
-
-	private Source createSourceFromFedoraXml(String xmlFromFedora) {
-		StringReader stringReader = new StringReader(xmlFromFedora);
-		return new StreamSource(stringReader);
-	}
-
-	private String transformUsingTransformerAndSource(Transformer transformer, Source xmlSource)
-			throws TransformerException {
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		Result outputResult = new StreamResult(output);
-		transformer.transform(xmlSource, outputResult);
-		return output.toString(StandardCharsets.UTF_8);
 	}
 
 	private DataGroup convertXMLToDataElement(String xmlString) {
