@@ -18,8 +18,6 @@
  */
 package se.uu.ub.cora.alvin.mixedstorage.fedora;
 
-import java.nio.file.Path;
-
 import se.uu.ub.cora.alvin.mixedstorage.xslt.XsltTransformation;
 import se.uu.ub.cora.converter.Converter;
 import se.uu.ub.cora.converter.ConverterProvider;
@@ -27,11 +25,11 @@ import se.uu.ub.cora.data.DataGroup;
 
 public class AlvinFedoraToCoraPlaceConverter implements AlvinFedoraToCoraConverter {
 
-	private static final String XSLT_PATH = "./src/main/resources/xslt/AlvinFedoraToCoraPlace.xsl";
+	private static final String XSLT_PATH = "xslt/AlvinFedoraToCoraPlace.xsl";
 
 	@Override
 	public DataGroup fromXML(String xmlToTransform) {
-		XsltTransformation xsltTransformation = new XsltTransformation(Path.of(XSLT_PATH));
+		XsltTransformation xsltTransformation = new XsltTransformation(XSLT_PATH);
 		String coraXml = xsltTransformation.transform(xmlToTransform);
 		return convertXMLToDataElement(coraXml);
 	}

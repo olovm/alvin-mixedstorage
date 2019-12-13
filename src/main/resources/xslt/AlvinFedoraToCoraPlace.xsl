@@ -19,7 +19,6 @@
  -->
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:import href="src/main/resources/xslt/DateFormating.xsl"/>
 	<xsl:output indent="yes" />
 	<xsl:template match="/">
 		<xsl:apply-templates select="place" />
@@ -164,5 +163,22 @@
 				</identifierValue>
 			</identifier>
 		</xsl:for-each>
+	</xsl:template>
+	<!-- DATE TEMPLATE, should be extrated and added as a library -->
+	<!-- Expected format for dateWithTimezone : yyyy-mm-dd hh:mm:ss.SSS UTC -->
+	<xsl:template name="formatDateWithTimeZone">
+		<xsl:param name="dateWithTimezone" />
+
+		<xsl:variable name="date">
+			<xsl:value-of select="substring($dateWithTimezone,1,10)" />
+		</xsl:variable>
+
+		<xsl:variable name="time">
+			<xsl:value-of
+				select="substring($dateWithTimezone,12,12)" />
+		</xsl:variable>
+
+		<xsl:value-of select="concat($date,'T', $time,'000Z')" />
+<!-- 		<xsl:value-of select="concat($date,' ', $time)" /> -->
 	</xsl:template>
 </xsl:stylesheet>

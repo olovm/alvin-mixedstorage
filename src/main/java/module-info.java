@@ -26,4 +26,5 @@ module se.uu.ub.cora.alvin.mixedstorage {
 			with se.uu.ub.cora.alvin.mixedstorage.AlvinMixedRecordStorageProvider;
 
 	opens place;
+	opens xslt;
 }

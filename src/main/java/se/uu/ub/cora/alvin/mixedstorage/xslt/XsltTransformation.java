@@ -1,11 +1,8 @@
 package se.uu.ub.cora.alvin.mixedstorage.xslt;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -16,21 +13,14 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import se.uu.ub.cora.alvin.mixedstorage.parse.ParseException;
+import se.uu.ub.cora.alvin.mixedstorage.resource.ResourceReader;
 
 public class XsltTransformation {
 
 	private String xslt;
 
-	public XsltTransformation(Path xsltPath) {
-
-		try {
-			this.xslt = Files.readString(xsltPath, StandardCharsets.UTF_8);
-		} catch (IOException exception) {
-			throw ParseException.withMessageAndException(
-					"Error converting place to Cora place: Can not read xslt file with path "
-							+ xsltPath.toString(),
-					exception);
-		}
+	public XsltTransformation(String xsltPath) {
+		this.xslt = ResourceReader.readResourceAsString(xsltPath);
 	}
 
 	public String transform(String inputXml) {
