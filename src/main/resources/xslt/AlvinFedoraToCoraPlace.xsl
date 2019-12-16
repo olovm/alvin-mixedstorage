@@ -175,10 +175,15 @@
 
 		<xsl:variable name="time">
 			<xsl:value-of
-				select="substring($dateWithTimezone,12,12)" />
+				select="substring($dateWithTimezone,12,8)" />
+		</xsl:variable>
+		<xsl:variable name="milliseconds">
+			<xsl:value-of
+				select="translate(substring($dateWithTimezone,21,3),'0123456789 UTC', '01234567890000')" />
 		</xsl:variable>
 
-		<xsl:value-of select="concat($date,'T', $time,'000Z')" />
+		
+		<xsl:value-of select="concat($date,'T', $time,'.',$milliseconds,'000Z')" />
 <!-- 		<xsl:value-of select="concat($date,' ', $time)" /> -->
 	</xsl:template>
 </xsl:stylesheet>

@@ -9,7 +9,7 @@
             <linkedRecordType>user</linkedRecordType>
             <linkedRecordId>12345</linkedRecordId>
         </createdBy>
-        <tsCreated>2015-02-12T07:08:10.19 000Z</tsCreated>
+        <tsCreated>2015-02-12T07:08:10.190000Z</tsCreated>
         <dataDivider>
             <linkedRecordType>system</linkedRecordType>
             <linkedRecordId>alvin</linkedRecordId>
@@ -19,7 +19,7 @@
                 <linkedRecordType>user</linkedRecordType>
                 <linkedRecordId>12345</linkedRecordId>
             </updatedBy>
-            <tsUpdated>2016-10-12T17:19:56.542000Z</tsUpdated>
+            <tsUpdated>2016-10-12T17:19:56.000000Z</tsUpdated>
         </updated>
     </recordInfo>
     <name type="authorized">

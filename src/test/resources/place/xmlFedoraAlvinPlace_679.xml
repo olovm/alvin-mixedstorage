@@ -21,7 +21,7 @@
 		<updated id="7">
 			<userAction reference="3"/>
 			<userAction id="8">
-				<date id="9">2016-10-12 17:19:56.542 UTC</date>
+				<date id="9">2016-10-12 17:19:56 UTC</date>
 				<user class="seamUser" id="10">
 					<lastUpdated class="sql-timestamp" id="11">2014-04-17 08:12:52.853</lastUpdated>
 					<id>51</id>
