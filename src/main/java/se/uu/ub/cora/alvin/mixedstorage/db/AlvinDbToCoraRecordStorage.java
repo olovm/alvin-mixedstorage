@@ -209,7 +209,7 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 		return converterFactory;
 	}
 
-	public RecordReaderFactory getrecordReaderFactory() {
+	public RecordReaderFactory getRecordReaderFactory() {
 		// needed for test
 		return recordReaderFactory;
 	}

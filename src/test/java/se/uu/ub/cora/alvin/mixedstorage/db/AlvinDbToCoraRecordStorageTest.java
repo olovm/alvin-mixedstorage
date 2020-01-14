@@ -63,7 +63,7 @@ public class AlvinDbToCoraRecordStorageTest {
 
 	@Test
 	public void testParametersSentToConstrucor() {
-		assertEquals(alvinToCoraRecordStorage.getrecordReaderFactory(), recordReaderFactory);
+		assertEquals(alvinToCoraRecordStorage.getRecordReaderFactory(), recordReaderFactory);
 		assertEquals(alvinToCoraRecordStorage.getConverterFactory(), converterFactory);
 	}
 
@@ -189,11 +189,11 @@ public class AlvinDbToCoraRecordStorageTest {
 
 		assertEquals(recordReaderFactory.factored.returnedList.get(0),
 				alvinDbToCoraConverter.mapToConvert);
-		// assertEquals(dataReader.listOfRows.get(0), alvinDbToCoraConverter.mapToConvert);
 	}
 
 	@Test
 	public void testReadUserAbstractListConverteredIsAddedToList() throws Exception {
+		recordReaderFactory.noOfRecordsToReturn = 2;
 		List<DataGroup> listOfDataGroups = alvinToCoraRecordStorage.readAbstractList("user",
 				new DataGroupSpy("filter")).listOfDataGroups;
 		AlvinDbToCoraConverterSpy alvinDbToCoraConverter = (AlvinDbToCoraConverterSpy) converterFactory.factoredConverters
@@ -201,13 +201,10 @@ public class AlvinDbToCoraRecordStorageTest {
 		RecordReaderSpy factoredReader = recordReaderFactory.factored;
 
 		assertEquals(factoredReader.returnedList.size(), 2);
-		// assertEquals(dataReader.listOfRows.size(), 2);
 		assertEquals(factoredReader.returnedList.get(0), alvinDbToCoraConverter.mapToConvert);
-		// assertEquals(dataReader.listOfRows.get(0), alvinDbToCoraConverter.mapToConvert);
 		AlvinDbToCoraConverterSpy alvinDbToCoraConverter2 = (AlvinDbToCoraConverterSpy) converterFactory.factoredConverters
 				.get(1);
 		assertEquals(factoredReader.returnedList.get(1), alvinDbToCoraConverter2.mapToConvert);
-		// assertEquals(dataReader.listOfRows.get(1), alvinDbToCoraConverter2.mapToConvert);
 		assertEquals(listOfDataGroups.get(0), alvinDbToCoraConverter.convertedDbDataGroup);
 	}
 
@@ -244,7 +241,6 @@ public class AlvinDbToCoraRecordStorageTest {
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "26");
 		assertTrue(recordReaderFactory.factored.readOneRowWasCalled);
 		assertEquals(recordReaderFactory.factored.usedTableName, "alvin_seam_user");
-		// assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
 		assertTrue(userExists);
 	}
 
@@ -259,8 +255,9 @@ public class AlvinDbToCoraRecordStorageTest {
 	public void recordExistsForAbstractOrImplementingRecordTypeAndRecordIdForUserWhenUserDoesNotExist() {
 		boolean userExists = alvinToCoraRecordStorage
 				.recordExistsForAbstractOrImplementingRecordTypeAndRecordId("user", "60000");
-		assertTrue(dataReader.readOneRowWasCalled);
-		assertEquals(dataReader.sqlSentToReader, "select * from alvin_seam_user where id = ?");
+		assertTrue(recordReaderFactory.factored.readOneRowWasCalled);
+		assertEquals(recordReaderFactory.factored.usedTableName, "alvin_seam_user");
+		assertEquals(recordReaderFactory.factored.usedConditions.get("id"), 60000);
 		assertFalse(userExists);
 	}
 

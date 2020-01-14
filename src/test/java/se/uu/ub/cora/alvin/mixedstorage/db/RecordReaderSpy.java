@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.sqldatabase.SqlStorageException;
 
 public class RecordReaderSpy implements RecordReader {
 
@@ -30,12 +31,28 @@ public class RecordReaderSpy implements RecordReader {
 		return returnedList;
 	}
 
+	private Map<String, Object> createDbRowUsingGroupId(int groupId) {
+		Map<String, Object> row1 = new HashMap<>();
+		row1.put("id", 52);
+		// row1.put("lastupdated", '2014-04-17 10:12:52.87');
+		row1.put("domain", "'uu");
+		row1.put("email", "");
+		row1.put("firstname", "SomeFirstName");
+		row1.put("lastname", "SomeLastName");
+		row1.put("userid", "user52");
+		row1.put("group_id", groupId);
+		return row1;
+	}
+
 	@Override
 	public Map<String, Object> readOneRowFromDbUsingTableAndConditions(String tableName,
 			Map<String, Object> conditions) {
 		readOneRowWasCalled = true;
 		usedTableName = tableName;
 		usedConditions = conditions;
+		if (conditions.get("id").equals(60000)) {
+			throw SqlStorageException.withMessage("Error from spy");
+		}
 		returnedOneRow = new HashMap<>();
 		returnedOneRow.put("someKey", "someValue");
 		returnedList = new ArrayList<>();
