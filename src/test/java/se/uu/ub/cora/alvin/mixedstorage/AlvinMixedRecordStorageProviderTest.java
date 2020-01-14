@@ -49,9 +49,12 @@ import se.uu.ub.cora.basicstorage.RecordStorageInMemoryReadFromDisk;
 import se.uu.ub.cora.basicstorage.RecordStorageInstance;
 import se.uu.ub.cora.basicstorage.RecordStorageOnDisk;
 import se.uu.ub.cora.connection.ContextConnectionProviderImp;
+import se.uu.ub.cora.data.DataGroupFactory;
+import se.uu.ub.cora.data.DataGroupProvider;
 import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -62,11 +65,14 @@ public class AlvinMixedRecordStorageProviderTest {
 	private LoggerFactorySpy loggerFactorySpy;
 	private String testedClassName = "AlvinMixedRecordStorageProvider";
 	private AlvinMixedRecordStorageProvider recordStorageOnDiskProvider;
+	private DataGroupFactory dataGroupFactory;
 
 	@BeforeMethod
 	public void beforeMethod() throws Exception {
 		loggerFactorySpy = new LoggerFactorySpy();
 		LoggerProvider.setLoggerFactory(loggerFactorySpy);
+		dataGroupFactory = new DataGroupFactorySpy();
+		DataGroupProvider.setDataGroupFactory(dataGroupFactory);
 		initInfo = new HashMap<>();
 		initInfo.put("storageType", "memory");
 		initInfo.put("storageOnDiskBasePath", basePath);
@@ -182,9 +188,10 @@ public class AlvinMixedRecordStorageProviderTest {
 		assertTrue(dbStorageInRecordStorage instanceof AlvinDbToCoraRecordStorage);
 
 		AlvinDbToCoraRecordStorage dbStorage = (AlvinDbToCoraRecordStorage) dbStorageInRecordStorage;
-		DataReaderImp dataReader = (DataReaderImp) dbStorage.getDataReader();
+		RecordReaderFactoryImp recordReaderFactory = (RecordReaderFactoryImp) dbStorage
+				.getRecordReaderFactory();
 
-		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) dataReader
+		ContextConnectionProviderImp connectionProvider = (ContextConnectionProviderImp) recordReaderFactory
 				.getSqlConnectionProvider();
 		assertTrue(connectionProvider instanceof ContextConnectionProviderImp);
 
@@ -195,7 +202,7 @@ public class AlvinMixedRecordStorageProviderTest {
 
 		AlvinDbToCoraConverterFactoryImp dbToCoraConverter = (AlvinDbToCoraConverterFactoryImp) dbStorage
 				.getConverterFactory();
-		assertSame(dbToCoraConverter.getDataReader(), dataReader);
+		assertTrue(dbToCoraConverter.getDataReader() instanceof DataReaderImp);
 
 	}
 

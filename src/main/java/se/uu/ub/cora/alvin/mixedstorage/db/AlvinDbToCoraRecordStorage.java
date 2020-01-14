@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, 2019 Uppsala University Library
+ * Copyright 2018, 2019, 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -20,13 +20,14 @@ package se.uu.ub.cora.alvin.mixedstorage.db;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import se.uu.ub.cora.alvin.mixedstorage.NotImplementedException;
 import se.uu.ub.cora.data.DataGroup;
-import se.uu.ub.cora.sqldatabase.DataReader;
+import se.uu.ub.cora.sqldatabase.RecordReader;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
 import se.uu.ub.cora.sqldatabase.SqlStorageException;
 import se.uu.ub.cora.storage.RecordNotFoundException;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -35,17 +36,18 @@ import se.uu.ub.cora.storage.StorageReadResult;
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	private AlvinDbToCoraConverterFactory converterFactory;
-	private DataReader dataReader;
+	private RecordReaderFactory recordReaderFactory;
 
-	private AlvinDbToCoraRecordStorage(DataReader dataReader,
+	private AlvinDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
 			AlvinDbToCoraConverterFactory converterFactory) {
+		this.recordReaderFactory = recordReaderFactory;
 		this.converterFactory = converterFactory;
-		this.dataReader = dataReader;
 	}
 
-	public static AlvinDbToCoraRecordStorage usingDataReaderAndConverterFactory(
-			DataReader dataReader, AlvinDbToCoraConverterFactory converterFactory) {
-		return new AlvinDbToCoraRecordStorage(dataReader, converterFactory);
+	public static AlvinDbToCoraRecordStorage usingRecordReaderFactoryAndConverterFactory(
+			RecordReaderFactory recordReaderFactory,
+			AlvinDbToCoraConverterFactory converterFactory) {
+		return new AlvinDbToCoraRecordStorage(recordReaderFactory, converterFactory);
 	}
 
 	@Override
@@ -64,19 +66,14 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	private Map<String, Object> tryToReadUserFromDb(String id) {
 		try {
-			List<Object> values = createListOfValuesWithId(id);
-			return dataReader.readOneRowOrFailUsingSqlAndValues(
-					"select * from alvin_seam_user where id = ?", values);
+			RecordReader recordReader = recordReaderFactory.factor();
+			Map<String, Object> conditions = new HashMap<>();
+			conditions.put("id", Integer.valueOf(id));
+			return recordReader.readOneRowFromDbUsingTableAndConditions("alvin_seam_user",
+					conditions);
 		} catch (SqlStorageException e) {
 			throw new RecordNotFoundException("User not found: " + id);
 		}
-	}
-
-	private List<Object> createListOfValuesWithId(String id) {
-		Integer idAsInteger = Integer.valueOf(id);
-		List<Object> values = new ArrayList<>();
-		values.add(idAsInteger);
-		return values;
 	}
 
 	private void throwErrorIfIdNotAnIntegerValue(String id) {
@@ -146,8 +143,8 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	}
 
 	private List<Map<String, Object>> readAllUsersFromDb() {
-		return dataReader.executePreparedStatementQueryUsingSqlAndValues(
-				"select * from alvin_seam_user", Collections.emptyList());
+		RecordReader recordReader = recordReaderFactory.factor();
+		return recordReader.readAllFromTable("alvin_seam_user");
 	}
 
 	@Override
@@ -187,14 +184,14 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	public DataReader getDataReader() {
-		// needed for test
-		return dataReader;
-	}
-
 	public AlvinDbToCoraConverterFactory getConverterFactory() {
 		// needed for test
 		return converterFactory;
+	}
+
+	public RecordReaderFactory getRecordReaderFactory() {
+		// needed for test
+		return recordReaderFactory;
 	}
 
 }

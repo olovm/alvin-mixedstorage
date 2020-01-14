@@ -40,6 +40,8 @@ import se.uu.ub.cora.httphandler.HttpHandlerFactoryImp;
 import se.uu.ub.cora.logger.Logger;
 import se.uu.ub.cora.logger.LoggerProvider;
 import se.uu.ub.cora.sqldatabase.DataReaderImp;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactory;
+import se.uu.ub.cora.sqldatabase.RecordReaderFactoryImp;
 import se.uu.ub.cora.storage.MetadataStorage;
 import se.uu.ub.cora.storage.MetadataStorageProvider;
 import se.uu.ub.cora.storage.RecordStorage;
@@ -130,9 +132,11 @@ public class AlvinMixedRecordStorageProvider
 	private AlvinDbToCoraRecordStorage createDbStorage() {
 		SqlConnectionProvider sqlConnectionProvider = tryToCreateConnectionProvider();
 		DataReaderImp dataReader = DataReaderImp.usingSqlConnectionProvider(sqlConnectionProvider);
+		RecordReaderFactory readerFactory = RecordReaderFactoryImp
+				.usingSqlConnectionProvider(sqlConnectionProvider);
 		AlvinDbToCoraConverterFactoryImp converterFactoryImp = AlvinDbToCoraConverterFactoryImp
 				.usingDataReader(dataReader);
-		return AlvinDbToCoraRecordStorage.usingDataReaderAndConverterFactory(dataReader,
+		return AlvinDbToCoraRecordStorage.usingRecordReaderFactoryAndConverterFactory(readerFactory,
 				converterFactoryImp);
 	}
 
