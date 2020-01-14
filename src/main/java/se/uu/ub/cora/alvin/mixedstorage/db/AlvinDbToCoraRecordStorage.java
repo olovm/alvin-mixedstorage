@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, 2019 Uppsala University Library
+ * Copyright 2018, 2019, 2020 Uppsala University Library
  *
  * This file is part of Cora.
  *
@@ -36,7 +36,6 @@ import se.uu.ub.cora.storage.StorageReadResult;
 public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	private AlvinDbToCoraConverterFactory converterFactory;
-	// private DataReader dataReader;
 	private RecordReaderFactory recordReaderFactory;
 
 	private AlvinDbToCoraRecordStorage(RecordReaderFactory recordReaderFactory,
@@ -67,26 +66,15 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 
 	private Map<String, Object> tryToReadUserFromDb(String id) {
 		try {
-			// List<Object> values = createListOfValuesWithId(id);
 			RecordReader recordReader = recordReaderFactory.factor();
 			Map<String, Object> conditions = new HashMap<>();
 			conditions.put("id", Integer.valueOf(id));
 			return recordReader.readOneRowFromDbUsingTableAndConditions("alvin_seam_user",
 					conditions);
-
-			// return dataReader.readOneRowOrFailUsingSqlAndValues(
-			// "select * from alvin_seam_user where id = ?", values);
 		} catch (SqlStorageException e) {
 			throw new RecordNotFoundException("User not found: " + id);
 		}
 	}
-
-	// private List<Object> createListOfValuesWithId(String id) {
-	// Integer idAsInteger = Integer.valueOf(id);
-	// List<Object> values = new ArrayList<>();
-	// values.add(idAsInteger);
-	// return values;
-	// }
 
 	private void throwErrorIfIdNotAnIntegerValue(String id) {
 		try {
@@ -157,8 +145,6 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 	private List<Map<String, Object>> readAllUsersFromDb() {
 		RecordReader recordReader = recordReaderFactory.factor();
 		return recordReader.readAllFromTable("alvin_seam_user");
-		// return dataReader.executePreparedStatementQueryUsingSqlAndValues(
-		// "select * from alvin_seam_user", Collections.emptyList());
 	}
 
 	@Override
@@ -198,13 +184,7 @@ public final class AlvinDbToCoraRecordStorage implements RecordStorage {
 		}
 	}
 
-	// public DataReader getDataReader() {
-	// // needed for test
-	// return dataReader;
-	// }
-
 	public AlvinDbToCoraConverterFactory getConverterFactory() {
-		// needed for test
 		// needed for test
 		return converterFactory;
 	}
